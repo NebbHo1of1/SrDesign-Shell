@@ -4,15 +4,25 @@ import os
 import requests
 import pandas as pd
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 load_dotenv()
 
 API_KEY = os.getenv("NEWS_API_KEY")
+
+if not API_KEY:
+    raise ValueError("NEWS_API_KEY not found. Please add it to your .env file.")
+
 BASE_URL = "https://newsapi.org/v2/everything"
 
-def fetch_news(query="oil OR energy OR OPEC OR gas",
-               from_date="2023-01-01",
-               to_date="2023-01-10"):
+
+def fetch_news(query="oil OR energy OR OPEC OR gas", from_date=None, to_date=None):
+
+    if to_date is None:
+        to_date = datetime.today().strftime("%Y-%m-%d")
+
+    if from_date is None:
+        from_date = (datetime.today() - timedelta(days=7)).strftime("%Y-%m-%d")
 
     params = {
         "q": query,
@@ -24,15 +34,14 @@ def fetch_news(query="oil OR energy OR OPEC OR gas",
         "apiKey": API_KEY
     }
 
-    response = requests.get(BASE_URL, params=params)
-
-    # 🚨 Remove bad API responses
-    if response.status_code != 200:
-        raise Exception(f"API request failed: {response.status_code}")
+    try:
+        response = requests.get(BASE_URL, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Request failed: {e}")
 
     data = response.json()
 
-    # 🚨 Ensure valid NewsAPI response
     if data.get("status") != "ok":
         raise Exception(f"NewsAPI error: {data}")
 
@@ -46,7 +55,6 @@ def fetch_news(query="oil OR energy OR OPEC OR gas",
 
 def json_to_dataframe(articles):
 
-    # Extract structured fields
     records = []
 
     for article in articles:
@@ -61,27 +69,21 @@ def json_to_dataframe(articles):
         })
 
     df = pd.DataFrame(records)
-
     return df
 
 
 def clean_news_dataframe(df):
 
-    # 🔹 Normalize date
     df["published_at"] = pd.to_datetime(df["published_at"], errors="coerce")
     df["date"] = df["published_at"].dt.date
 
-    # 🔹 Remove rows where date conversion failed
     df = df.dropna(subset=["date"])
 
-    # 🔹 Remove null or empty article text
     df = df.dropna(subset=["content"])
     df = df[df["content"].str.strip() != ""]
 
-    # 🔹 Remove duplicates (based on title + date)
     df = df.drop_duplicates(subset=["title", "date"])
 
-    # 🔹 Select final structured schema
     df = df[[
         "date",
         "published_at",
@@ -93,7 +95,6 @@ def clean_news_dataframe(df):
         "url"
     ]]
 
-    # 🔹 Sort for consistency
     df = df.sort_values("published_at")
 
     return df
@@ -101,7 +102,7 @@ def clean_news_dataframe(df):
 
 def save_to_table(df, path="data/processed/news_table.parquet"):
 
-    # Store as structured table (parquet recommended)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     df.to_parquet(path, index=False)
 
 
