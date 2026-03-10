@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 from dashboard.components.sidebar import render_sidebar
 
@@ -7,6 +8,11 @@ st.title("Senior Design: News-Driven Commodity Insight")
 
 filters = render_sidebar()
 st.session_state["filters"] = filters
+
+df = pd.read_parquet("data/processed/news_table.parquet")
+
+st.subheader("Latest News from Ingestion Pipeline")
+st.dataframe(df[["date", "source", "title"]].head(20), use_container_width=True)
 
 st.markdown(
     """

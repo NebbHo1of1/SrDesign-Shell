@@ -7,7 +7,7 @@ import streamlit as st
 
 from dashboard.components.sidebar import render_sidebar
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 
 
 @st.cache_data(ttl=60)
@@ -27,6 +27,12 @@ since_iso = datetime.combine(filters["since_date"], datetime.min.time()).isoform
 
 try:
     data = fetch_headlines(filters["commodity"], since_iso)
+
+    # DEBUG INFO
+    st.write("Rows returned from API:", len(data))
+    st.write("Min confidence filter:", filters["min_confidence"])
+    st.write("Sentiment filter:", filters["sentiment_filter"])
+
 except Exception as exc:
     st.error(f"API unavailable: {exc}")
     st.stop()
@@ -37,22 +43,31 @@ if not data:
 
 df = pd.DataFrame(data)
 
-if filters["sentiment_filter"]:
-    mask = pd.Series([False] * len(df))
+if "sentiment_score" in df.columns and filters["sentiment_filter"]:
+    mask = pd.Series([False] * len(df), index=df.index)
+
     if "Negative" in filters["sentiment_filter"]:
-        mask |= df["sentiment_score"] < -0.15
+        mask |= df["sentiment_score"].fillna(0) < -0.15
+
     if "Neutral" in filters["sentiment_filter"]:
-        mask |= (df["sentiment_score"] >= -0.15) & (df["sentiment_score"] <= 0.15)
+        mask |= (df["sentiment_score"].fillna(0) >= -0.15) & (
+            df["sentiment_score"].fillna(0) <= 0.15
+        )
+
     if "Positive" in filters["sentiment_filter"]:
-        mask |= df["sentiment_score"] > 0.15
+        mask |= df["sentiment_score"].fillna(0) > 0.15
+
     df = df[mask]
 
-df = df[df["pred_confidence"] >= filters["min_confidence"]]
+if "pred_confidence" in df.columns:
+    df = df[df["pred_confidence"].fillna(0.5) >= filters["min_confidence"]]
+
 df = df.sort_values("published_at", ascending=False)
 
 if df.empty:
     st.info("All headlines were filtered out. Relax filters to see more.")
     st.stop()
+
 
 def label_badge(label: str):
     color = {"UP": "🟢", "DOWN": "🔴", "NEUTRAL": "🟡"}.get(label, "⚪")
@@ -60,7 +75,7 @@ def label_badge(label: str):
 
 
 df["pred_label"] = df["pred_label"].map(label_badge)
-df["url"] = df["url"].map(lambda u: f"[Open]({u})")
+df["url"] = df["url"].map(lambda u: f"[Open]({u})" if u else "")
 
 st.dataframe(
     df[

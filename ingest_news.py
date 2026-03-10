@@ -1,5 +1,3 @@
-# src/ingest_news.py
-
 import os
 import requests
 import pandas as pd
@@ -17,7 +15,6 @@ BASE_URL = "https://newsapi.org/v2/everything"
 
 
 def fetch_news(query="oil OR energy OR OPEC OR gas", from_date=None, to_date=None):
-
     if to_date is None:
         to_date = datetime.today().strftime("%Y-%m-%d")
 
@@ -36,7 +33,6 @@ def fetch_news(query="oil OR energy OR OPEC OR gas", from_date=None, to_date=Non
 
     try:
         response = requests.get(BASE_URL, params=params, timeout=10)
-        
         if response.status_code != 200:
             print("Status code:", response.status_code)
             print("Response:", response.text)
@@ -58,7 +54,6 @@ def fetch_news(query="oil OR energy OR OPEC OR gas", from_date=None, to_date=Non
 
 
 def json_to_dataframe(articles):
-
     records = []
 
     for article in articles:
@@ -77,7 +72,6 @@ def json_to_dataframe(articles):
 
 
 def clean_news_dataframe(df):
-
     df["published_at"] = pd.to_datetime(df["published_at"], errors="coerce")
     df["date"] = df["published_at"].dt.date
 
@@ -105,13 +99,11 @@ def clean_news_dataframe(df):
 
 
 def save_to_table(df, path="data/processed/news_table.parquet"):
-
     os.makedirs(os.path.dirname(path), exist_ok=True)
     df.to_parquet(path, index=False)
 
 
 if __name__ == "__main__":
-
     print("Fetching news from NewsAPI...")
     articles = fetch_news()
 
