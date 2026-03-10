@@ -4,6 +4,7 @@ import uuid
 
 import pandas as pd
 from sqlalchemy.orm import Session
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from backend.models import Headline, PricePoint
 
@@ -20,6 +21,8 @@ TOPICS = [
     "hurricane risk",
     "pipeline outage",
 ]
+
+analyzer = SentimentIntensityAnalyzer()
 
 
 def _heuristic_prediction(sentiment: float, impact: float) -> tuple[str, float]:
@@ -105,19 +108,32 @@ def get_headlines(
 
     results = []
     for _, row in df.iterrows():
+        title = str(row["title"])
+        sentiment = analyzer.polarity_scores(title)["compound"]
+
+        if sentiment > 0.15:
+            pred_label = "UP"
+        elif sentiment < -0.15:
+            pred_label = "DOWN"
+        else:
+            pred_label = "NEUTRAL"
+
+        pred_confidence = max(0.5, round(abs(sentiment), 3))
+        impact_score = round(abs(sentiment) * 100, 2)
+
         results.append(
             {
                 "id": str(row["url"]) if "url" in df.columns and pd.notna(row["url"]) else str(uuid.uuid4()),
                 "published_at": row["published_at"].to_pydatetime(),
-                "title": str(row["title"]),
+                "title": title,
                 "source": str(row["source"]) if "source" in df.columns and pd.notna(row["source"]) else "Unknown",
                 "url": str(row["url"]) if "url" in df.columns and pd.notna(row["url"]) else "",
                 "commodity": str(row["commodity"]).upper() if "commodity" in row else commodity.upper(),
-                "sentiment_score": float(row["sentiment_score"]) if "sentiment_score" in df.columns and pd.notna(row["sentiment_score"]) else 0.0,
-                "event_type": str(row["event_type"]) if "event_type" in df.columns and pd.notna(row["event_type"]) else "News",
-                "impact_score": float(row["impact_score"]) if "impact_score" in df.columns and pd.notna(row["impact_score"]) else 0.0,
-                "pred_label": str(row["pred_label"]) if "pred_label" in df.columns and pd.notna(row["pred_label"]) else "NEUTRAL",
-                "pred_confidence": float(row["pred_confidence"]) if "pred_confidence" in df.columns and pd.notna(row["pred_confidence"]) else 0.5,
+                "sentiment_score": round(sentiment, 4),
+                "event_type": "News",
+                "impact_score": impact_score,
+                "pred_label": pred_label,
+                "pred_confidence": pred_confidence,
             }
         )
 
