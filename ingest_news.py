@@ -36,7 +36,11 @@ def fetch_news(query="oil OR energy OR OPEC OR gas", from_date=None, to_date=Non
 
     try:
         response = requests.get(BASE_URL, params=params, timeout=10)
-        response.raise_for_status()
+        
+        if response.status_code != 200:
+            print("Status code:", response.status_code)
+            print("Response:", response.text)
+            raise Exception(f"API request failed: {response.status_code}")
     except requests.exceptions.RequestException as e:
         raise Exception(f"Request failed: {e}")
 
