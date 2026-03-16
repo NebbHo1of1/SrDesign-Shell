@@ -23,6 +23,36 @@ TOPICS = [
     "pipeline outage",
 ]
 
+EVENT_KEYWORDS = {
+    "Geopolitics": [
+        "war", "sanction", "conflict", "iran", "russia", "ukraine",
+        "middle east", "attack", "military", "tariff", "ceasefire"
+    ],
+    "Supply": [
+        "opec", "production cut", "output cut", "refinery outage",
+        "pipeline outage", "shutdown", "disruption", "inventory draw",
+        "export drop", "maintenance", "supply cut", "inventory build",
+        "refinery", "pipeline", "output", "production"
+    ],
+    "Demand": [
+        "demand", "consumption", "import growth", "economic growth",
+        "travel demand", "jet fuel demand", "gasoline demand",
+        "industrial activity", "china demand", "outlook"
+    ],
+    "Macro": [
+        "inflation", "interest rate", "fed", "recession", "gdp",
+        "cpi", "unemployment", "dollar", "economic slowdown", "rate path"
+    ],
+    "Weather": [
+        "hurricane", "storm", "heatwave", "cold snap", "freeze",
+        "flood", "wildfire", "weather", "hurricane risk"
+    ],
+    "Regulatory": [
+        "regulation", "policy", "ban", "restriction", "approval",
+        "compliance", "law", "government rule", "epa"
+    ],
+}
+
 analyzer = SentimentIntensityAnalyzer()
 
 
@@ -35,6 +65,26 @@ def preprocess_text(text: str) -> str:
     text = re.sub(r"[^a-z0-9\s$.\-]", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
+
+
+def classify_event_type(text: str) -> str:
+    text_lower = text.lower()
+
+    best_type = "Other"
+    best_count = 0
+
+    for event_type, keywords in EVENT_KEYWORDS.items():
+        match_count = 0
+
+        for keyword in keywords:
+            if keyword in text_lower:
+                match_count += 1
+
+        if match_count > best_count:
+            best_count = match_count
+            best_type = event_type
+
+    return best_type
 
 
 def _heuristic_prediction(sentiment: float, impact: float) -> tuple[str, float]:
@@ -133,6 +183,7 @@ def get_headlines(
 
         pred_confidence = max(0.5, round(abs(sentiment), 3))
         impact_score = round(abs(sentiment) * 100, 2)
+        event_type = classify_event_type(clean_title)
 
         results.append(
             {
@@ -143,7 +194,7 @@ def get_headlines(
                 "url": str(row["url"]) if "url" in df.columns and pd.notna(row["url"]) else "",
                 "commodity": str(row["commodity"]).upper() if "commodity" in row else commodity.upper(),
                 "sentiment_score": round(sentiment, 4),
-                "event_type": "News",
+                "event_type": event_type,
                 "impact_score": impact_score,
                 "pred_label": pred_label,
                 "pred_confidence": pred_confidence,
@@ -189,4 +240,3 @@ def compute_sentiment_vs_price_change(db: Session, commodity: str) -> list[dict]
                 }
             )
 
-    return output

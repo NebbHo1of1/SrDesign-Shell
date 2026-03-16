@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from dashboard.components.sidebar import render_sidebar
+from components.sidebar import render_sidebar
 
 st.set_page_config(page_title="Commodity Insight Dashboard", page_icon="📈", layout="wide")
 st.title("Senior Design: News-Driven Commodity Insight")
