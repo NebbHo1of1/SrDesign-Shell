@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import random
 import uuid
+import re
 
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -23,6 +24,17 @@ TOPICS = [
 ]
 
 analyzer = SentimentIntensityAnalyzer()
+
+
+def preprocess_text(text: str) -> str:
+    text = str(text).lower()
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"\bbrent crude\b", " brent ", text)
+    text = re.sub(r"\bhenry hub\b", " henry_hub ", text)
+    text = re.sub(r"\bwti crude\b", " wti ", text)
+    text = re.sub(r"[^a-z0-9\s$.\-]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 
 def _heuristic_prediction(sentiment: float, impact: float) -> tuple[str, float]:
@@ -109,7 +121,8 @@ def get_headlines(
     results = []
     for _, row in df.iterrows():
         title = str(row["title"])
-        sentiment = analyzer.polarity_scores(title)["compound"]
+        clean_title = preprocess_text(title)
+        sentiment = analyzer.polarity_scores(clean_title)["compound"]
 
         if sentiment > 0.15:
             pred_label = "UP"
