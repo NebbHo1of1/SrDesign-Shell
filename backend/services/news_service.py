@@ -26,22 +26,26 @@ TOPICS = [
 EVENT_KEYWORDS = {
     "Geopolitics": [
         "war", "sanction", "conflict", "iran", "russia", "ukraine",
-        "middle east", "attack", "military", "tariff", "ceasefire"
+        "middle east", "attack", "military", "tariff", "ceasefire",
+        "export ban", "tensions"
     ],
     "Supply": [
         "opec", "production cut", "output cut", "refinery outage",
         "pipeline outage", "shutdown", "disruption", "inventory draw",
         "export drop", "maintenance", "supply cut", "inventory build",
-        "refinery", "pipeline", "output", "production"
+        "refinery", "pipeline", "output", "production", "supply",
+        "exports", "imports"
     ],
     "Demand": [
         "demand", "consumption", "import growth", "economic growth",
         "travel demand", "jet fuel demand", "gasoline demand",
-        "industrial activity", "china demand", "outlook"
+        "industrial activity", "china demand", "outlook",
+        "recovery", "usage"
     ],
     "Macro": [
         "inflation", "interest rate", "fed", "recession", "gdp",
-        "cpi", "unemployment", "dollar", "economic slowdown", "rate path"
+        "cpi", "unemployment", "dollar", "economic slowdown", "rate path",
+        "central bank", "growth"
     ],
     "Weather": [
         "hurricane", "storm", "heatwave", "cold snap", "freeze",
@@ -49,42 +53,127 @@ EVENT_KEYWORDS = {
     ],
     "Regulatory": [
         "regulation", "policy", "ban", "restriction", "approval",
-        "compliance", "law", "government rule", "epa"
+        "compliance", "law", "government rule", "epa", "rules"
     ],
 }
+
+RELEVANCE_TERMS = [
+    "oil",
+    "crude",
+    "brent",
+    "wti",
+    "henry_hub",
+    "natural_gas",
+    "crude_oil",
+    "opec",
+    "refinery",
+    "pipeline",
+    "production",
+    "inventory",
+    "energy",
+    "barrel",
+    "exports",
+    "imports",
+    "gasoline",
+    "jet fuel",
+    "lng",
+]
 
 analyzer = SentimentIntensityAnalyzer()
 
 
 def preprocess_text(text: str) -> str:
     text = str(text).lower()
+
+    # remove html
     text = re.sub(r"<[^>]+>", " ", text)
+
+    # normalize abbreviations
+    text = re.sub(r"\bu\.s\.\b", " us ", text)
+    text = re.sub(r"\bu\.s\b", " us ", text)
+    text = re.sub(r"\buk\b", " uk ", text)
+
+    # normalize energy phrases
     text = re.sub(r"\bbrent crude\b", " brent ", text)
-    text = re.sub(r"\bhenry hub\b", " henry_hub ", text)
     text = re.sub(r"\bwti crude\b", " wti ", text)
-    text = re.sub(r"[^a-z0-9\s$.\-]", " ", text)
+    text = re.sub(r"\bwest texas intermediate\b", " wti ", text)
+    text = re.sub(r"\bhenry hub\b", " henry_hub ", text)
+    text = re.sub(r"\bnatural gas\b", " natural_gas ", text)
+    text = re.sub(r"\bcrude oil\b", " crude_oil ", text)
+    text = re.sub(r"\boil prices\b", " oil_price ", text)
+    text = re.sub(r"\bgas prices\b", " gas_price ", text)
+
+    # normalize finance / macro phrases
+    text = re.sub(r"\binterest rates\b", " interest_rate ", text)
+    text = re.sub(r"\brate cut\b", " rate_cut ", text)
+    text = re.sub(r"\brate cuts\b", " rate_cut ", text)
+    text = re.sub(r"\brate hike\b", " rate_hike ", text)
+    text = re.sub(r"\brate hikes\b", " rate_hike ", text)
+
+    # normalize event phrases
+    text = re.sub(r"\bproduction cuts\b", " production_cut ", text)
+    text = re.sub(r"\bproduction cut\b", " production_cut ", text)
+    text = re.sub(r"\boutput cuts\b", " output_cut ", text)
+    text = re.sub(r"\boutput cut\b", " output_cut ", text)
+    text = re.sub(r"\bsupply disruptions\b", " supply_disruption ", text)
+    text = re.sub(r"\bsupply disruption\b", " supply_disruption ", text)
+    text = re.sub(r"\bshipping disruptions\b", " shipping_disruption ", text)
+    text = re.sub(r"\bshipping disruption\b", " shipping_disruption ", text)
+    text = re.sub(r"\bpipeline outage\b", " pipeline_outage ", text)
+    text = re.sub(r"\bpipeline outages\b", " pipeline_outage ", text)
+    text = re.sub(r"\brefinery outage\b", " refinery_outage ", text)
+    text = re.sub(r"\brefinery outages\b", " refinery_outage ", text)
+    text = re.sub(r"\binventory build\b", " inventory_build ", text)
+    text = re.sub(r"\binventory draw\b", " inventory_draw ", text)
+
+    # keep useful characters
+    text = re.sub(r"[^a-z0-9\s$%._\-]", " ", text)
+
+    # collapse spaces
     text = re.sub(r"\s+", " ", text)
+
     return text.strip()
 
 
-def classify_event_type(text: str) -> str:
+def classify_event_type(text: str) -> tuple[str, list[str]]:
     text_lower = text.lower()
 
     best_type = "Other"
-    best_count = 0
+    best_matches = []
 
     for event_type, keywords in EVENT_KEYWORDS.items():
-        match_count = 0
+        current_matches = []
 
         for keyword in keywords:
             if keyword in text_lower:
-                match_count += 1
+                current_matches.append(keyword)
 
-        if match_count > best_count:
-            best_count = match_count
+        if len(current_matches) > len(best_matches):
             best_type = event_type
+            best_matches = current_matches
 
-    return best_type
+    return best_type, best_matches
+
+
+def calculate_relevance_score(text: str) -> float:
+    text_lower = text.lower()
+    matches = 0
+
+    for term in RELEVANCE_TERMS:
+        if term in text_lower:
+            matches += 1
+
+    score = matches / len(RELEVANCE_TERMS)
+    return round(min(score * 3, 1.0), 3)
+
+
+def calculate_impact_score(sentiment: float, relevance_score: float, keyword_matches: list[str]) -> float:
+    keyword_boost = min(len(keyword_matches) * 8, 24)
+    sentiment_component = abs(sentiment) * 55
+    relevance_component = relevance_score * 35
+
+    score = sentiment_component + relevance_component + keyword_boost
+    return round(min(score, 100.0), 2)
 
 
 def _heuristic_prediction(sentiment: float, impact: float) -> tuple[str, float]:
@@ -174,16 +263,10 @@ def get_headlines(
         clean_title = preprocess_text(title)
         sentiment = analyzer.polarity_scores(clean_title)["compound"]
 
-        if sentiment > 0.15:
-            pred_label = "UP"
-        elif sentiment < -0.15:
-            pred_label = "DOWN"
-        else:
-            pred_label = "NEUTRAL"
-
-        pred_confidence = max(0.5, round(abs(sentiment), 3))
-        impact_score = round(abs(sentiment) * 100, 2)
-        event_type = classify_event_type(clean_title)
+        event_type, matched_keywords = classify_event_type(clean_title)
+        relevance_score = calculate_relevance_score(clean_title)
+        impact_score = calculate_impact_score(sentiment, relevance_score, matched_keywords)
+        pred_label, pred_confidence = _heuristic_prediction(sentiment, impact_score)
 
         results.append(
             {
@@ -195,6 +278,8 @@ def get_headlines(
                 "commodity": str(row["commodity"]).upper() if "commodity" in row else commodity.upper(),
                 "sentiment_score": round(sentiment, 4),
                 "event_type": event_type,
+                "matched_keywords": matched_keywords,
+                "relevance_score": relevance_score,
                 "impact_score": impact_score,
                 "pred_label": pred_label,
                 "pred_confidence": pred_confidence,
@@ -240,3 +325,4 @@ def compute_sentiment_vs_price_change(db: Session, commodity: str) -> list[dict]
                 }
             )
 
+    return output
