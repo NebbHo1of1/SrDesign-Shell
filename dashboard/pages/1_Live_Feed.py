@@ -5,7 +5,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-from dashboard.components.sidebar import render_sidebar
+from components.sidebar import render_sidebar
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 

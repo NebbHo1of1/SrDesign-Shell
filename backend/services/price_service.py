@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
-import random
+from io import StringIO
 
+import pandas as pd
+import requests
 from sqlalchemy.orm import Session
 
 from backend.models import PricePoint
@@ -12,30 +14,68 @@ RANGE_TO_DAYS = {
     "30d": 30,
 }
 
+SERIES_MAP = {
+    "WTI": "DCOILWTICO",
+    "BRENT": "DCOILBRENTEU",
+    "NATGAS": "DHHNGSP",
+}
 
-def generate_price_curve(commodity: str, days: int = 30, seed: int = 42) -> list[PricePoint]:
-    random.seed(seed)
-    now = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
-    total_points = days * 24
-    start_price = 75.0 if commodity == "WTI" else 85.0
-    trend = 0.015
+
+def fetch_fred_series_csv(series_id: str) -> pd.DataFrame:
+    url = f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+    response = requests.get(url, timeout=20)
+    response.raise_for_status()
+
+    df = pd.read_csv(StringIO(response.text))
+    df.columns = ["date", "value"]
+
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    df = df.dropna(subset=["date", "value"])
+
+    return df
+
+
+def fetch_real_price_points(commodity: str, days: int = 45) -> list[PricePoint]:
+    commodity = commodity.upper()
+    series_id = SERIES_MAP[commodity]
+    df = fetch_fred_series_csv(series_id)
+
+    cutoff = pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(days=days)
+    df = df[df["date"] >= cutoff].copy()
 
     points: list[PricePoint] = []
-    current = start_price
-    for i in range(total_points):
-        timestamp = now - timedelta(hours=total_points - i)
-        shock = random.uniform(-0.8, 0.8)
-        current = max(20.0, current + trend + shock * 0.2)
-        points.append(PricePoint(commodity=commodity, timestamp=timestamp, close=round(current, 2)))
+    for _, row in df.iterrows():
+        points.append(
+            PricePoint(
+                commodity=commodity,
+                timestamp=row["date"].to_pydatetime(),
+                close=round(float(row["value"]), 2),
+            )
+        )
+
     return points
 
 
 def get_prices_for_range(db: Session, commodity: str, range_str: str) -> list[PricePoint]:
-    days = RANGE_TO_DAYS.get(range_str, 7)
+    commodity = commodity.upper()
+    days = RANGE_TO_DAYS.get(range_str.lower(), 7)
     since = datetime.utcnow() - timedelta(days=days)
-    return (
+
+    points = (
         db.query(PricePoint)
         .filter(PricePoint.commodity == commodity, PricePoint.timestamp >= since)
         .order_by(PricePoint.timestamp.asc())
         .all()
+    )
+
+    if points:
+        return points
+
+    return (
+        db.query(PricePoint)
+        .filter(PricePoint.commodity == commodity)
+        .order_by(PricePoint.timestamp.desc())
+        .limit(10)
+        .all()[::-1]
     )
