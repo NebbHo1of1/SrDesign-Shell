@@ -1,13 +1,19 @@
 from datetime import datetime, timedelta
+import os
 import random
-import uuid
 import re
+import uuid
 
-import pandas as pd
+import requests
+from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from backend.models import Headline, PricePoint
+
+load_dotenv()
+
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 SOURCES = ["Reuters", "Bloomberg", "WSJ", "FT", "CNBC", "MarketWatch"]
 EVENT_TYPES = ["Geopolitics", "Supply", "Demand", "Macro"]
@@ -23,37 +29,43 @@ TOPICS = [
     "pipeline outage",
 ]
 
+NEWS_QUERY_MAP = {
+    "WTI": '"WTI" OR "West Texas Intermediate" OR crude oil OR oil prices',
+    "BRENT": '"Brent" OR "Brent crude" OR crude oil OR oil prices',
+    "NATGAS": '"natural gas" OR "Henry Hub" OR LNG OR gas prices',
+}
+
 EVENT_KEYWORDS = {
     "Geopolitics": [
         "war", "sanction", "conflict", "iran", "russia", "ukraine",
         "middle east", "attack", "military", "tariff", "ceasefire",
-        "export ban", "tensions"
+        "export ban", "tensions",
     ],
     "Supply": [
         "opec", "production cut", "output cut", "refinery outage",
         "pipeline outage", "shutdown", "disruption", "inventory draw",
         "export drop", "maintenance", "supply cut", "inventory build",
         "refinery", "pipeline", "output", "production", "supply",
-        "exports", "imports"
+        "exports", "imports",
     ],
     "Demand": [
         "demand", "consumption", "import growth", "economic growth",
         "travel demand", "jet fuel demand", "gasoline demand",
         "industrial activity", "china demand", "outlook",
-        "recovery", "usage"
+        "recovery", "usage",
     ],
     "Macro": [
         "inflation", "interest rate", "fed", "recession", "gdp",
         "cpi", "unemployment", "dollar", "economic slowdown", "rate path",
-        "central bank", "growth"
+        "central bank", "growth",
     ],
     "Weather": [
         "hurricane", "storm", "heatwave", "cold snap", "freeze",
-        "flood", "wildfire", "weather", "hurricane risk"
+        "flood", "wildfire", "weather", "hurricane risk",
     ],
     "Regulatory": [
         "regulation", "policy", "ban", "restriction", "approval",
-        "compliance", "law", "government rule", "epa", "rules"
+        "compliance", "law", "government rule", "epa", "rules",
     ],
 }
 
@@ -85,15 +97,12 @@ analyzer = SentimentIntensityAnalyzer()
 def preprocess_text(text: str) -> str:
     text = str(text).lower()
 
-    # remove html
     text = re.sub(r"<[^>]+>", " ", text)
 
-    # normalize abbreviations
     text = re.sub(r"\bu\.s\.\b", " us ", text)
     text = re.sub(r"\bu\.s\b", " us ", text)
     text = re.sub(r"\buk\b", " uk ", text)
 
-    # normalize energy phrases
     text = re.sub(r"\bbrent crude\b", " brent ", text)
     text = re.sub(r"\bwti crude\b", " wti ", text)
     text = re.sub(r"\bwest texas intermediate\b", " wti ", text)
@@ -103,14 +112,12 @@ def preprocess_text(text: str) -> str:
     text = re.sub(r"\boil prices\b", " oil_price ", text)
     text = re.sub(r"\bgas prices\b", " gas_price ", text)
 
-    # normalize finance / macro phrases
     text = re.sub(r"\binterest rates\b", " interest_rate ", text)
     text = re.sub(r"\brate cut\b", " rate_cut ", text)
     text = re.sub(r"\brate cuts\b", " rate_cut ", text)
     text = re.sub(r"\brate hike\b", " rate_hike ", text)
     text = re.sub(r"\brate hikes\b", " rate_hike ", text)
 
-    # normalize event phrases
     text = re.sub(r"\bproduction cuts\b", " production_cut ", text)
     text = re.sub(r"\bproduction cut\b", " production_cut ", text)
     text = re.sub(r"\boutput cuts\b", " output_cut ", text)
@@ -126,10 +133,7 @@ def preprocess_text(text: str) -> str:
     text = re.sub(r"\binventory build\b", " inventory_build ", text)
     text = re.sub(r"\binventory draw\b", " inventory_draw ", text)
 
-    # keep useful characters
     text = re.sub(r"[^a-z0-9\s$%._\-]", " ", text)
-
-    # collapse spaces
     text = re.sub(r"\s+", " ", text)
 
     return text.strip()
@@ -139,15 +143,10 @@ def classify_event_type(text: str) -> tuple[str, list[str]]:
     text_lower = text.lower()
 
     best_type = "Other"
-    best_matches = []
+    best_matches: list[str] = []
 
     for event_type, keywords in EVENT_KEYWORDS.items():
-        current_matches = []
-
-        for keyword in keywords:
-            if keyword in text_lower:
-                current_matches.append(keyword)
-
+        current_matches = [keyword for keyword in keywords if keyword in text_lower]
         if len(current_matches) > len(best_matches):
             best_type = event_type
             best_matches = current_matches
@@ -157,12 +156,7 @@ def classify_event_type(text: str) -> tuple[str, list[str]]:
 
 def calculate_relevance_score(text: str) -> float:
     text_lower = text.lower()
-    matches = 0
-
-    for term in RELEVANCE_TERMS:
-        if term in text_lower:
-            matches += 1
-
+    matches = sum(1 for term in RELEVANCE_TERMS if term in text_lower)
     score = matches / len(RELEVANCE_TERMS)
     return round(min(score * 3, 1.0), 3)
 
@@ -227,66 +221,89 @@ def generate_headlines(commodity: str, count: int = 180, seed: int = 42) -> list
     return headlines
 
 
-def get_headlines(
-    db: Session, commodity: str, limit: int = 50, since: datetime | None = None
-):
-    parquet_path = "data/processed/news_table.parquet"
-    df = pd.read_parquet(parquet_path)
+def fetch_real_headlines(commodity: str, page_size: int = 40) -> list[Headline]:
+    commodity = commodity.upper()
 
-    if "published_at" in df.columns:
-        df["published_at"] = pd.to_datetime(df["published_at"], utc=True, errors="coerce")
-    elif "date" in df.columns:
-        df["published_at"] = pd.to_datetime(df["date"], utc=True, errors="coerce")
-    else:
-        raise ValueError("Parquet file must contain 'published_at' or 'date' column.")
+    if not NEWS_API_KEY:
+        raise ValueError("NEWS_API_KEY is missing. Add it to your .env file.")
 
-    df = df.dropna(subset=["published_at", "title"])
+    query = NEWS_QUERY_MAP.get(commodity, commodity)
 
-    if "commodity" in df.columns:
-        df["commodity"] = df["commodity"].astype(str).str.upper()
-        if commodity:
-            filtered_df = df[df["commodity"] == commodity.upper()]
-            if not filtered_df.empty:
-                df = filtered_df
-    else:
-        df["commodity"] = commodity.upper()
+    response = requests.get(
+        "https://newsapi.org/v2/everything",
+        params={
+            "q": query,
+            "language": "en",
+            "sortBy": "publishedAt",
+            "pageSize": page_size,
+            "searchIn": "title,description",
+        },
+        headers={
+            "X-Api-Key": NEWS_API_KEY,
+            "X-No-Cache": "true",
+        },
+        timeout=20,
+    )
+    response.raise_for_status()
+    data = response.json()
 
-    if since is not None:
-        since_ts = pd.to_datetime(since, utc=True, errors="coerce")
-        df = df[df["published_at"] >= since_ts]
+    articles = data.get("articles", [])
+    headlines: list[Headline] = []
 
-    df = df.sort_values("published_at", ascending=False).head(limit)
+    for article in articles:
+        title = (article.get("title") or "").strip()
+        url = article.get("url") or ""
+        source_name = (article.get("source") or {}).get("name", "Unknown")
+        published_raw = article.get("publishedAt")
 
-    results = []
-    for _, row in df.iterrows():
-        title = str(row["title"])
+        if not title or not published_raw:
+            continue
+
+        try:
+            published_at = datetime.fromisoformat(
+                published_raw.replace("Z", "+00:00")
+            ).replace(tzinfo=None)
+        except Exception:
+            continue
+
         clean_title = preprocess_text(title)
         sentiment = analyzer.polarity_scores(clean_title)["compound"]
-
         event_type, matched_keywords = classify_event_type(clean_title)
         relevance_score = calculate_relevance_score(clean_title)
         impact_score = calculate_impact_score(sentiment, relevance_score, matched_keywords)
         pred_label, pred_confidence = _heuristic_prediction(sentiment, impact_score)
 
-        results.append(
-            {
-                "id": str(row["url"]) if "url" in df.columns and pd.notna(row["url"]) else str(uuid.uuid4()),
-                "published_at": row["published_at"].to_pydatetime(),
-                "title": title,
-                "source": str(row["source"]) if "source" in df.columns and pd.notna(row["source"]) else "Unknown",
-                "url": str(row["url"]) if "url" in df.columns and pd.notna(row["url"]) else "",
-                "commodity": str(row["commodity"]).upper() if "commodity" in row else commodity.upper(),
-                "sentiment_score": round(sentiment, 4),
-                "event_type": event_type,
-                "matched_keywords": matched_keywords,
-                "relevance_score": relevance_score,
-                "impact_score": impact_score,
-                "pred_label": pred_label,
-                "pred_confidence": pred_confidence,
-            }
+        headlines.append(
+            Headline(
+                id=str(uuid.uuid4()),
+                published_at=published_at,
+                title=title,
+                source=source_name,
+                url=url,
+                commodity=commodity,
+                sentiment_score=round(sentiment, 4),
+                event_type=event_type,
+                impact_score=impact_score,
+                pred_label=pred_label,
+                pred_confidence=pred_confidence,
+            )
         )
 
-    return results
+    return headlines
+
+
+def get_headlines(
+    db: Session,
+    commodity: str,
+    limit: int = 50,
+    since: datetime | None = None,
+):
+    query = db.query(Headline).filter(Headline.commodity == commodity.upper())
+
+    if since is not None:
+        query = query.filter(Headline.published_at >= since)
+
+    return query.order_by(Headline.published_at.desc()).limit(limit).all()
 
 
 def compute_sentiment_vs_price_change(db: Session, commodity: str) -> list[dict]:
@@ -298,31 +315,53 @@ def compute_sentiment_vs_price_change(db: Session, commodity: str) -> list[dict]
         .all()
     )
 
-    output = []
+    results = []
+
     for h in headlines:
         current_price = (
             db.query(PricePoint)
-            .filter(PricePoint.commodity == commodity, PricePoint.timestamp <= h.published_at)
+            .filter(
+                PricePoint.commodity == commodity,
+                PricePoint.timestamp <= h.published_at,
+            )
             .order_by(PricePoint.timestamp.desc())
             .first()
         )
 
+        if not current_price or not current_price.close:
+            current_price = (
+                db.query(PricePoint)
+                .filter(PricePoint.commodity == commodity)
+                .order_by(PricePoint.timestamp.desc())
+                .first()
+            )
+
+        if not current_price or not current_price.close:
+            continue
+
         next_price = (
             db.query(PricePoint)
-            .filter(PricePoint.commodity == commodity, PricePoint.timestamp > h.published_at)
+            .filter(
+                PricePoint.commodity == commodity,
+                PricePoint.timestamp > current_price.timestamp,
+            )
             .order_by(PricePoint.timestamp.asc())
             .first()
         )
 
-        if current_price and next_price and current_price.close:
-            pct = (next_price.close - current_price.close) / current_price.close * 100
-            output.append(
-                {
-                    "headline_id": h.id,
-                    "sentiment_score": h.sentiment_score,
-                    "next_price_change": round(pct, 4),
-                    "pred_label": h.pred_label,
-                }
-            )
+        if not next_price:
+            next_price = current_price
 
-    return output
+        pct = ((next_price.close - current_price.close) / current_price.close) * 100 if current_price.close else 0
+
+        results.append(
+            {
+                "published_at": h.published_at.isoformat() if h.published_at else None,
+                "title": h.title,
+                "sentiment_score": h.sentiment_score,
+                "pred_label": h.pred_label,
+                "next_price_change": round(pct, 4),
+            }
+        )
+
+    return results

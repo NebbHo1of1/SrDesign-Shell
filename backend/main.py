@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from datetime import datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Query
@@ -57,6 +60,7 @@ def get_prices(
 def get_kpis(commodity: str = Query(default="WTI"), db: Session = Depends(get_db)):
     commodity = commodity.upper()
     since = datetime.utcnow() - timedelta(hours=24)
+
     recent = (
         db.query(Headline)
         .filter(Headline.commodity == commodity, Headline.published_at >= since)
@@ -64,9 +68,10 @@ def get_kpis(commodity: str = Query(default="WTI"), db: Session = Depends(get_db
         .all()
     )
 
-    avg_sentiment = round(sum(h.sentiment_score for h in recent) / len(recent), 3) if recent else 0.0
+    avg_sentiment = round(sum(h.sentiment_score for h in recent) / len(recent), 3) if recent else 0
     high_impact = len([h for h in recent if h.impact_score >= 70])
     latest = recent[0] if recent else None
+
     return {
         "avg_sentiment_24h": avg_sentiment,
         "high_impact_count_24h": high_impact,
@@ -77,5 +82,8 @@ def get_kpis(commodity: str = Query(default="WTI"), db: Session = Depends(get_db
 
 
 @app.get("/analytics/sentiment-price")
-def sentiment_price_analytics(commodity: str = Query(default="WTI"), db: Session = Depends(get_db)):
+def sentiment_price_analytics(
+    commodity: str = Query(default="WTI"),
+    db: Session = Depends(get_db),
+):
     return compute_sentiment_vs_price_change(db, commodity.upper())
