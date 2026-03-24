@@ -63,8 +63,11 @@ def insert_prices(conn: sqlite3.Connection, commodity: str, df: pd.DataFrame) ->
     inserted = 0
 
     for _, row in df.iterrows():
-        timestamp_str = str(pd.to_datetime(row["timestamp"]))
-        close_price = float(row["close"])
+        timestamp_value = row.iloc[0]
+        close_value = row.iloc[1]
+
+        timestamp_str = pd.Timestamp(timestamp_value).strftime("%Y-%m-%d %H:%M:%S")
+        close_price = float(close_value)
 
         cur = conn.execute(
             """
