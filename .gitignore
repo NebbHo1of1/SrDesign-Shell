@@ -1,6 +1,16 @@
-.env
 venv/
-.venv/
 __pycache__/
 *.pyc
-backend/data.db
+.env
+.DS_Store
+
+# local data
+data/raw
+!data/processed/
+
+# keys / accidental files
+eval*
+*.pub
+
+# optional (if large models)
+models/

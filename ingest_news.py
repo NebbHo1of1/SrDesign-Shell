@@ -19,7 +19,7 @@ def fetch_news(query="oil OR energy OR OPEC OR gas", from_date=None, to_date=Non
         to_date = datetime.today().strftime("%Y-%m-%d")
 
     if from_date is None:
-        from_date = (datetime.today() - timedelta(days=7)).strftime("%Y-%m-%d")
+        from_date = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
     params = {
         "q": query,
