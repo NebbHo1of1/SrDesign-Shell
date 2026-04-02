@@ -1,69 +1,57 @@
 import os
 import joblib
 import pandas as pd
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import train_test_split
 
-analyzer = SentimentIntensityAnalyzer()
-
-
-def label_headline(title: str) -> str:
-    sentiment = analyzer.polarity_scores(str(title))["compound"]
-
-    if sentiment > 0.15:
-        return "UP"
-    elif sentiment < -0.15:
-        return "DOWN"
-    return "NEUTRAL"
-
-
-def build_features(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.copy()
-
-    df["title"] = df["title"].fillna("").astype(str)
-    df["sentiment_score"] = df["title"].apply(
-        lambda x: analyzer.polarity_scores(x)["compound"]
-    )
-    df["impact_score"] = df["sentiment_score"].abs() * 100
-    df["title_length"] = df["title"].apply(len)
-    df["label"] = df["title"].apply(label_headline)
-
-    return df
-
-
 def main():
-    parquet_path = "data/processed/news_table.parquet"
+    parquet_path = "data/processed/model_training_table.parquet"
 
     if not os.path.exists(parquet_path):
         raise FileNotFoundError(f"Could not find {parquet_path}")
 
     df = pd.read_parquet(parquet_path)
-    df = df.dropna(subset=["title"])
-
-    df = build_features(df)
-
-    feature_cols = ["sentiment_score", "impact_score", "title_length"]
-    X = df[feature_cols]
-    y = df["label"]
-
+    print(f"Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
+    print(f"Columns: {df.columns.tolist()}")
+    
+    # Check for missing values
+    print(f"\nMissing values:\n{df.isna().sum()}")
+    
+    # Drop rows with missing target
+    df = df.dropna(subset=["target_up_down"])
+    
+    # Prepare features and target
+    X = df.drop("target_up_down", axis=1)
+    y = df["target_up_down"]
+    
+    print(f"\nFeatures shape: {X.shape}")
+    print(f"Target distribution:\n{y.value_counts()}")
+    
+    # Split data
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
-
-    model = LogisticRegression(max_iter=1000)
+    
+    # Train model
+    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    print("\nTraining model...")
     model.fit(X_train, y_train)
-
+    
+    # Evaluate
     preds = model.predict(X_test)
-
+    
+    print("\n" + "="*50)
+    print("MODEL PERFORMANCE")
+    print("="*50)
     print("Accuracy:", round(accuracy_score(y_test, preds), 4))
     print("\nClassification Report:\n")
     print(classification_report(y_test, preds))
-
+    
+    # Save model
     os.makedirs("models", exist_ok=True)
     joblib.dump(model, "models/prediction_model.joblib")
-
+    
     print("\nModel saved to models/prediction_model.joblib")
 
 
