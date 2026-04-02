@@ -25,7 +25,11 @@ def main():
     X = df.drop("target_up_down", axis=1)
     y = df["target_up_down"]
     
-    print(f"\nFeatures shape: {X.shape}")
+    # Drop non-numeric columns (date, commodity)
+    X = X.select_dtypes(include=['number'])
+    
+    print(f"\nFeatures shape after dropping non-numeric: {X.shape}")
+    print(f"Numeric columns: {X.columns.tolist()}")
     print(f"Target distribution:\n{y.value_counts()}")
     
     # Split data
@@ -47,6 +51,15 @@ def main():
     print("Accuracy:", round(accuracy_score(y_test, preds), 4))
     print("\nClassification Report:\n")
     print(classification_report(y_test, preds))
+    
+    # Feature importance
+    feature_importance = pd.DataFrame({
+        'feature': X.columns,
+        'importance': model.feature_importances_
+    }).sort_values('importance', ascending=False)
+    
+    print("\nTop 5 Most Important Features:")
+    print(feature_importance.head())
     
     # Save model
     os.makedirs("models", exist_ok=True)
