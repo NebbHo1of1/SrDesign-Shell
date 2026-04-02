@@ -1,0 +1,1 @@
+{\n  "accuracy": 97.06,\n  "feature_importances": {\n    "feature_1": 0.25,\n    "feature_2": 0.15,\n    "feature_3": 0.20,\n    "feature_4": 0.40\n  },\n  "classification_metrics": {\n    "precision": 0.95,\n    "recall": 0.93,\n    "f1_score": 0.94\n  },\n  "timestamp": "2026-04-02 23:57:10"\n}
