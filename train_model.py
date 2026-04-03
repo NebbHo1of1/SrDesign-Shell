@@ -30,6 +30,9 @@ def main():
         errors="ignore"
     )
     
+    print("\nFINAL FEATURES USED:")
+    print(X.columns.tolist())
+    
     print(f"\nFeatures shape after dropping non-numeric: {X.shape}")
     print(f"Numeric columns: {X.columns.tolist()}")
     print(f"Target distribution:\n{y.value_counts()}")
