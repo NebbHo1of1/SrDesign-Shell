@@ -27,6 +27,8 @@ def main():
     
     # Drop rows with missing target
     df = df.dropna(subset=["target_up_down"])
+    # Drop rows with NaNs created by rolling features
+    df = df.dropna()
     
     # Prepare features and target
     y = df["target_up_down"]
