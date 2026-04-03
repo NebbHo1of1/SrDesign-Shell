@@ -12,6 +12,13 @@ def main():
         raise FileNotFoundError(f"Could not find {parquet_path}")
 
     df = pd.read_parquet(parquet_path)
+    
+    # Add engineered features
+    df["price_diff_1"] = df["price"] - df["price_lag_1"]
+    df["price_diff_2"] = df["price_lag_1"] - df["price_lag_2"]
+    df["tone_ma_3"] = df["avg_tone"].rolling(3).mean()
+    df["tone_x_volatility"] = df["avg_tone"] * df["volatility_5"]
+    
     print(f"Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
     print(f"Columns: {df.columns.tolist()}")
     
