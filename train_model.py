@@ -22,11 +22,13 @@ def main():
     df = df.dropna(subset=["target_up_down"])
     
     # Prepare features and target
-    X = df.drop("target_up_down", axis=1)
     y = df["target_up_down"]
     
-    # Drop non-numeric columns (date, commodity)
-    X = X.select_dtypes(include=['number'])
+    # Keep only numeric columns, then remove target leakage columns
+    X = df.select_dtypes(include=["number"]).drop(
+        columns=["target_up_down", "next_price", "next_day_return"],
+        errors="ignore"
+    )
     
     print(f"\nFeatures shape after dropping non-numeric: {X.shape}")
     print(f"Numeric columns: {X.columns.tolist()}")
