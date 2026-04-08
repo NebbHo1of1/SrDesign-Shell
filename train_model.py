@@ -31,17 +31,17 @@ def drop_nan_with_log(df: pd.DataFrame, subset=None, stage: str = "") -> pd.Data
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model", type=str, default="gradient",
+        "--model", type=str, default="forest",
         choices=["gradient", "logistic", "forest", "tabpfn", "xgboost"],
     )
     parser.add_argument(
-        "--threshold", type=float, default=0.60,
+        "--threshold", type=float, default=0.75,
         help=(
             "Confidence threshold (0.50–0.95). Predictions with p > threshold are "
             "classified as UP; predictions with p < (1 - threshold) are classified "
             "as DOWN; everything else is labelled uncertain and excluded from the "
             "confident-only accuracy report. Also used as the decision boundary for "
-            "full-test accuracy (conservative toward the majority class). Default: 0.60."
+            "full-test accuracy (conservative toward the majority class). Default: 0.75."
         ),
     )
     args = parser.parse_args()
@@ -111,6 +111,39 @@ def main():
     df["price_vs_ma5"] = df["price"] / df["price_ma_5"] - 1
     df["ma3_vs_ma5"] = df["price_ma_3"] / df["price_ma_5"] - 1
 
+    # ------------------------------------------------------------------ #
+    # EWM-based technical indicators (no NaN row loss from windowing)     #
+    # ------------------------------------------------------------------ #
+
+    # MACD (Moving Average Convergence Divergence)
+    _ema12 = df["price"].ewm(span=12, adjust=False).mean()
+    _ema26 = df["price"].ewm(span=26, adjust=False).mean()
+    df["macd"] = _ema12 - _ema26
+    df["macd_signal"] = df["macd"].ewm(span=9, adjust=False).mean()
+    df["macd_hist"] = df["macd"] - df["macd_signal"]
+    df["price_vs_ema12"] = _ema12 / df["price"] - 1
+    df["ema12_vs_ema26"] = _ema12 / _ema26 - 1
+
+    # RSI (Relative Strength Index) using Wilder EWM smoothing
+    _delta = df["price"].diff()
+    _avg_gain = _delta.clip(lower=0).ewm(com=13, adjust=False).mean()
+    _avg_loss = (-_delta.clip(upper=0)).ewm(com=13, adjust=False).mean()
+    df["rsi"] = 100 - (100 / (1 + _avg_gain / _avg_loss.replace(0, float("nan"))))
+    df["rsi_norm"] = (df["rsi"] - 50) / 50   # centred on 0; negative = oversold
+    df["rsi_overbought"] = (df["rsi"] > 70).astype(int)
+    df["rsi_oversold"] = (df["rsi"] < 30).astype(int)
+
+    # Cyclical calendar encoding (captures oil-price seasonality)
+    df["date"] = pd.to_datetime(df["date"])
+    import math as _math
+    df["month_sin"] = df["date"].dt.month.apply(lambda m: _math.sin(2 * _math.pi * m / 12))
+    df["month_cos"] = df["date"].dt.month.apply(lambda m: _math.cos(2 * _math.pi * m / 12))
+
+    # Sentiment × technical interaction features
+    df["macd_x_tone"] = df["macd_hist"] * df["avg_tone"]
+    df["rsi_x_tone"] = df["rsi_norm"] * df["avg_tone"]
+    df["macd_x_vol"] = df["macd_hist"] * df["volatility_5"]
+
     log.info("After feature engineering: %d rows, %d columns", *df.shape)
     log.info("Missing values per column:\n%s", df.isna().sum().to_string())
 
@@ -132,7 +165,12 @@ def main():
     # The parquet already contains price_change_1 (= price - price_lag_1).
     # price_diff_1 is the same quantity recomputed above; drop the duplicate
     # so the model sees that signal only once.
-    NON_STATIONARY_COLUMNS = ["price", "price_lag_1", "price_lag_2", "price_ma_3", "price_ma_5", "price_diff_1"]
+    # "date" is also excluded – it is a non-numeric index used only for calendar
+    # feature derivation above and must not be fed raw into the model.
+    NON_STATIONARY_COLUMNS = [
+        "price", "price_lag_1", "price_lag_2", "price_ma_3", "price_ma_5",
+        "price_diff_1",
+    ]
 
     DROP_COLUMNS = LEAKAGE_COLUMNS + NON_STATIONARY_COLUMNS
     y = df["target_up_down"]
@@ -167,9 +205,9 @@ def main():
             cv_model = LogisticRegression(max_iter=1000, class_weight="balanced")
         elif args.model == "forest":
             cv_model = RandomForestClassifier(
-                n_estimators=200,
+                n_estimators=500,
                 random_state=42,
-                class_weight="balanced",
+                class_weight={0: 1, 1: 2},
             )
         elif args.model == "tabpfn":
             cv_model = TabPFNClassifier(device="cpu", ignore_pretraining_limits=True)
@@ -224,9 +262,9 @@ def main():
         model = LogisticRegression(max_iter=1000, class_weight="balanced")
     elif args.model == "forest":
         model = RandomForestClassifier(
-            n_estimators=200,
+            n_estimators=500,
             random_state=42,
-            class_weight="balanced",
+            class_weight={0: 1, 1: 2},
         )
     elif args.model == "tabpfn":
         model = TabPFNClassifier(device="cpu", ignore_pretraining_limits=True)
