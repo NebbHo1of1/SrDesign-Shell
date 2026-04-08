@@ -8,6 +8,7 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
+from tabpfn import TabPFNClassifier
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,7 +31,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model", type=str, default="gradient",
-        choices=["gradient", "logistic", "forest"],
+        choices=["gradient", "logistic", "forest", "tabpfn"],
     )
     args = parser.parse_args()
 
@@ -107,12 +108,21 @@ def main():
 
     # ------------------------------------------------------------------ #
     # 4. Prepare features and target                                      #
-    #    Explicitly exclude all forward-looking / leakage columns.        #
+    #    Explicitly exclude forward-looking / leakage columns AND        #
+    #    raw non-stationary price levels (absolute price values do not   #
+    #    generalise; use only price-change / return features instead).   #
     # ------------------------------------------------------------------ #
     LEAKAGE_COLUMNS = ["target_up_down", "future_return_3", "next_price", "next_day_return"]
-    y = df["target_up_down"]
-    X = df.select_dtypes(include=["number"]).drop(columns=LEAKAGE_COLUMNS, errors="ignore")
 
+    # price_diff_1 == price_change_1 (both are price - price_lag_1); drop the
+    # redundant computed column so the model sees the signal only once.
+    NON_STATIONARY_COLUMNS = ["price", "price_lag_1", "price_lag_2", "price_ma_3", "price_ma_5", "price_diff_1"]
+
+    DROP_COLUMNS = LEAKAGE_COLUMNS + NON_STATIONARY_COLUMNS
+    y = df["target_up_down"]
+    X = df.select_dtypes(include=["number"]).drop(columns=DROP_COLUMNS, errors="ignore")
+
+    log.info("Excluded non-stationary price levels: %s", NON_STATIONARY_COLUMNS)
     log.info("Features used (%d): %s", X.shape[1], X.columns.tolist())
     log.info("Feature matrix shape: %s", X.shape)
     log.info("Target distribution:\n%s", y.value_counts().to_string())
@@ -123,19 +133,35 @@ def main():
     tscv = TimeSeriesSplit(n_splits=5)
     scores = []
 
-    for train_idx, test_idx in tscv.split(X):
+    for fold, (train_idx, test_idx) in enumerate(tscv.split(X)):
         X_train_cv, X_test_cv = X.iloc[train_idx], X.iloc[test_idx]
         y_train_cv, y_test_cv = y.iloc[train_idx], y.iloc[test_idx]
 
-        cv_model = GradientBoostingClassifier(
-            n_estimators=300,
-            learning_rate=0.03,
-            max_depth=3,
-            random_state=42,
-        )
+        if args.model == "gradient":
+            cv_model = GradientBoostingClassifier(
+                n_estimators=300,
+                learning_rate=0.03,
+                max_depth=3,
+                random_state=42,
+            )
+        elif args.model == "logistic":
+            scaler_cv = StandardScaler()
+            X_train_cv = scaler_cv.fit_transform(X_train_cv)
+            X_test_cv = scaler_cv.transform(X_test_cv)
+            cv_model = LogisticRegression(max_iter=1000, class_weight="balanced")
+        elif args.model == "forest":
+            cv_model = RandomForestClassifier(
+                n_estimators=200,
+                random_state=42,
+                class_weight="balanced",
+            )
+        elif args.model == "tabpfn":
+            cv_model = TabPFNClassifier(device="cpu", ignore_pretraining_limits=True)
+
         cv_model.fit(X_train_cv, y_train_cv)
         acc = accuracy_score(y_test_cv, cv_model.predict(X_test_cv))
         scores.append(acc)
+        log.info("  Fold %d: train=%d, test=%d, acc=%.4f", fold + 1, len(train_idx), len(test_idx), acc)
 
     log.info("Cross-Validation Accuracy Scores: %s", scores)
     log.info("Average CV Accuracy: %.4f", sum(scores) / len(scores))
@@ -170,6 +196,8 @@ def main():
             random_state=42,
             class_weight="balanced",
         )
+    elif args.model == "tabpfn":
+        model = TabPFNClassifier(device="cpu", ignore_pretraining_limits=True)
 
     # ------------------------------------------------------------------ #
     # 8. Train and evaluate                                               #
@@ -222,6 +250,8 @@ def main():
         }).sort_values("importance", ascending=False)
         print("\nTop 5 Most Important Features:")
         print(feature_importance.head())
+    elif args.model == "tabpfn":
+        print("\n(TabPFN is a prior-fitted network; per-feature importance is not directly available.)")
 
     # ------------------------------------------------------------------ #
     # 10. Save model (and scaler when applicable)                         #
