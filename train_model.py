@@ -9,6 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
 from tabpfn import TabPFNClassifier
+from xgboost import XGBClassifier
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,7 +32,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model", type=str, default="gradient",
-        choices=["gradient", "logistic", "forest", "tabpfn"],
+        choices=["gradient", "logistic", "forest", "tabpfn", "xgboost"],
+    )
+    parser.add_argument(
+        "--threshold", type=float, default=0.60,
+        help=(
+            "Confidence threshold (0.50–0.95). Predictions with p > threshold are "
+            "classified as UP; predictions with p < (1 - threshold) are classified "
+            "as DOWN; everything else is labelled uncertain and excluded from the "
+            "confident-only accuracy report. Also used as the decision boundary for "
+            "full-test accuracy (conservative toward the majority class). Default: 0.60."
+        ),
     )
     args = parser.parse_args()
 
@@ -96,6 +107,10 @@ def main():
     # 3-period momentum
     df["momentum_3"] = df["price"] - df["price_lag_2"]
 
+    # Stationary ratio features (price position relative to moving averages)
+    df["price_vs_ma5"] = df["price"] / df["price_ma_5"] - 1
+    df["ma3_vs_ma5"] = df["price_ma_3"] / df["price_ma_5"] - 1
+
     log.info("After feature engineering: %d rows, %d columns", *df.shape)
     log.info("Missing values per column:\n%s", df.isna().sum().to_string())
 
@@ -114,8 +129,9 @@ def main():
     # ------------------------------------------------------------------ #
     LEAKAGE_COLUMNS = ["target_up_down", "future_return_3", "next_price", "next_day_return"]
 
-    # price_diff_1 == price_change_1 (both are price - price_lag_1); drop the
-    # redundant computed column so the model sees the signal only once.
+    # The parquet already contains price_change_1 (= price - price_lag_1).
+    # price_diff_1 is the same quantity recomputed above; drop the duplicate
+    # so the model sees that signal only once.
     NON_STATIONARY_COLUMNS = ["price", "price_lag_1", "price_lag_2", "price_ma_3", "price_ma_5", "price_diff_1"]
 
     DROP_COLUMNS = LEAKAGE_COLUMNS + NON_STATIONARY_COLUMNS
@@ -157,6 +173,22 @@ def main():
             )
         elif args.model == "tabpfn":
             cv_model = TabPFNClassifier(device="cpu", ignore_pretraining_limits=True)
+        elif args.model == "xgboost":
+            pos_cv = int((y_train_cv == 1).sum())
+            neg_cv = int((y_train_cv == 0).sum())
+            if pos_cv == 0:
+                log.warning("Fold %d: no positive-class samples in training split; scale_pos_weight set to 1.", fold + 1)
+            cv_model = XGBClassifier(
+                n_estimators=300,
+                learning_rate=0.03,
+                max_depth=3,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                scale_pos_weight=neg_cv / max(pos_cv, 1),
+                random_state=42,
+                eval_metric="logloss",
+                verbosity=0,
+            )
 
         cv_model.fit(X_train_cv, y_train_cv)
         acc = accuracy_score(y_test_cv, cv_model.predict(X_test_cv))
@@ -198,6 +230,22 @@ def main():
         )
     elif args.model == "tabpfn":
         model = TabPFNClassifier(device="cpu", ignore_pretraining_limits=True)
+    elif args.model == "xgboost":
+        pos_n = int((y_train == 1).sum())
+        neg_n = int((y_train == 0).sum())
+        if pos_n == 0:
+            log.warning("No positive-class samples in training set; scale_pos_weight set to 1.")
+        model = XGBClassifier(
+            n_estimators=300,
+            learning_rate=0.03,
+            max_depth=3,
+            subsample=0.8,
+            colsample_bytree=0.8,
+            scale_pos_weight=neg_n / max(pos_n, 1),
+            random_state=42,
+            eval_metric="logloss",
+            verbosity=0,
+        )
 
     # ------------------------------------------------------------------ #
     # 8. Train and evaluate                                               #
@@ -208,35 +256,49 @@ def main():
     probs = model.predict_proba(X_test)[:, 1]
     log.info("Sample probabilities (first 10): %s", probs[:10].tolist())
 
-    preds = []
-    for p in probs:
-        if p > 0.7:
-            preds.append(1)
-        elif p < 0.3:
-            preds.append(0)
-        else:
-            preds.append(-1)  # unsure zone
+    # ------------------------------------------------------------------ #
+    # Threshold-based prediction                                           #
+    # p > threshold        → class 1  (confident UP)                     #
+    # p < (1 - threshold)  → class 0  (confident DOWN)                   #
+    # otherwise            → uncertain (excluded from confident report)   #
+    # Full-test prediction uses the threshold as its decision boundary    #
+    # (conservative: uncertain zone defaults to class 0).                 #
+    # ------------------------------------------------------------------ #
+    conf_high = args.threshold
+    conf_low = 1.0 - args.threshold
 
-    filtered_preds = [preds[i] for i in range(len(preds)) if preds[i] != -1]
-    filtered_y = [y_test.iloc[i] for i in range(len(preds)) if preds[i] != -1]
+    full_preds = (probs >= conf_high).astype(int)  # conservative: uncertain → 0
+
+    conf_mask = (probs >= conf_high) | (probs <= conf_low)
+    conf_preds = (probs[conf_mask] >= conf_high).astype(int)
+    conf_y = y_test.values[conf_mask]
 
     print("\n" + "=" * 50)
     print("MODEL PERFORMANCE")
     print("=" * 50)
-    print("Total test samples:", len(y_test))
-    print("Confident predictions:", len(filtered_preds))
+    print(f"Decision threshold : {conf_high:.2f}  (uncertain zone: {conf_low:.2f}–{conf_high:.2f})")
+    print(f"Total test samples : {len(y_test)}")
+    print()
+    print(f"--- Full test-set accuracy (uncertain predicted as DOWN) ---")
+    print(f"Accuracy: {accuracy_score(y_test, full_preds):.4f}")
+    print()
+    print("Classification Report:\n")
+    print(classification_report(y_test, full_preds))
 
-    if filtered_preds:
-        print("Confident accuracy:", round(accuracy_score(filtered_y, filtered_preds), 4))
-        print("\nClassification Report (Confident Only):\n")
-        print(classification_report(filtered_y, filtered_preds))
+    print(f"--- Confident predictions only (p>{conf_high:.2f} or p<{conf_low:.2f}) ---")
+    print(f"Confident predictions : {conf_mask.sum()} / {len(y_test)}")
+    if conf_mask.sum() > 0:
+        print(f"Confident accuracy    : {accuracy_score(conf_y, conf_preds):.4f}")
+        print()
+        print("Classification Report (Confident Only):\n")
+        print(classification_report(conf_y, conf_preds, zero_division=0))
     else:
-        print("No confident predictions made.")
+        print("No confident predictions at this threshold — try lowering --threshold.")
 
     # ------------------------------------------------------------------ #
     # 9. Feature importance / coefficients                                #
     # ------------------------------------------------------------------ #
-    if args.model in ["gradient", "forest"]:
+    if args.model in ["gradient", "forest", "xgboost"]:
         feature_importance = pd.DataFrame({
             "feature": X.columns,
             "importance": model.feature_importances_,
