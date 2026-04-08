@@ -33,6 +33,11 @@ This repo contains a shippable MVP for a news-driven commodity insight platform:
 
 ## Quickstart
 
+> **macOS only:** `xgboost` requires OpenMP via Homebrew before installing Python dependencies:
+> ```bash
+> brew install libomp
+> ```
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
