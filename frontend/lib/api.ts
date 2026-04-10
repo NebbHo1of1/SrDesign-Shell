@@ -82,7 +82,11 @@ async function get<T>(path: string, params?: Record<string, string>): Promise<T>
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   }
   const res = await fetch(url.toString(), { cache: "no-store" });
-  if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`);
+  if (!res.ok) {
+    const msg = `API ${res.status}: ${res.statusText}`;
+    console.error(`[SIGNAL API] ${msg} — ${url.pathname}`);
+    throw new Error(msg);
+  }
   return res.json();
 }
 

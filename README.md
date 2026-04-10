@@ -1,35 +1,10 @@
-# Senior Design Shell MVP (API v1 + Streamlit UI v1)
+# SIGNAL — Shell Intelligence System
 
-This repo contains a shippable MVP for a news-driven commodity insight platform:
-- **FastAPI backend** with SQLite and a stable JSON contract.
-- **Streamlit dashboard** with 3 pages consuming the backend contract.
-- **Offline seed generator** (no NewsAPI dependency yet).
+News-driven crude oil market intelligence platform with AI-powered predictions.
 
-## Project structure
-
-```
-/README.md
-/requirements.txt
-/.env.example
-/backend/
-  main.py
-  db.py
-  models.py
-  schemas.py
-  services/
-    news_service.py
-    price_service.py
-    seed.py
-/dashboard/
-  app.py
-  pages/
-    1_Live_Feed.py
-    2_Commodity_View.py
-    3_Analytics.py
-  components/
-    sidebar.py
-    charts.py
-```
+- **FastAPI backend** — REST API with SQLite, auto-seeding, and ML predictions.
+- **Next.js frontend** — real-time dashboard with KPIs, price charts, and news feed.
+- **XGBoost model** — trained on sentiment + price features for market direction.
 
 ## Quickstart
 
@@ -38,6 +13,8 @@ This repo contains a shippable MVP for a news-driven commodity insight platform:
 > brew install libomp
 > ```
 
+### 1. Backend (Terminal 1)
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -45,25 +22,43 @@ pip install -r requirements.txt
 uvicorn backend.main:app --reload
 ```
 
-In a second terminal:
+The backend starts on **http://localhost:8000** and auto-seeds the database on
+first run.  If the NEWS_API_KEY or FRED API is unavailable it falls back to
+synthetic data automatically.
+
+### 2. Frontend (Terminal 2)
 
 ```bash
-source .venv/bin/activate
-streamlit run dashboard/app.py
+cd frontend
+npm install
+npm run dev
 ```
 
-## Seed data
+The frontend starts on **http://localhost:3000**.  Open that URL in your browser
+to see the dashboard.
 
-Populate local SQLite with realistic fake data:
+> **Important:** Both the backend (port 8000) and frontend (port 3000) must be
+> running at the same time.  Make sure the frontend starts on port 3000 — if
+> that port is already in use the dev server may pick a different port and API
+> calls will fail due to CORS.  The backend allows ports 3000–3009 by default;
+> set `CORS_ORIGINS` in `.env` to override.
+
+### 3. (Optional) Reseed the database
 
 ```bash
 curl -X POST http://localhost:8000/seed
 ```
 
-The seed includes:
-- 3 commodities (`WTI`, `BRENT`, `NATGAS`)
-- 360 headlines total (120 each)
-- 30 days of hourly prices per commodity
+## Project structure
+
+```
+/backend/            FastAPI API server
+/frontend/           Next.js 16 dashboard (React 19)
+/dashboard/          Legacy Streamlit UI (deprecated)
+/models/             Trained XGBoost model artifacts
+/scripts/            Helper scripts
+/data/               Raw / processed datasets
+```
 
 ## API contract
 

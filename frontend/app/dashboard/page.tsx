@@ -36,10 +36,10 @@ export default function DashboardPage() {
     async function load() {
       try {
         const [wti, brent, news, priceData] = await Promise.all([
-          api.kpis("WTI").catch(() => null),
-          api.kpis("BRENT").catch(() => null),
-          api.headlines("WTI", 30).catch(() => []),
-          api.prices("WTI", "14d").catch(() => null),
+          api.kpis("WTI").catch((e) => { console.warn("[SIGNAL] KPI WTI fetch failed:", e.message); return null; }),
+          api.kpis("BRENT").catch((e) => { console.warn("[SIGNAL] KPI BRENT fetch failed:", e.message); return null; }),
+          api.headlines("WTI", 30).catch((e) => { console.warn("[SIGNAL] Headlines fetch failed:", e.message); return []; }),
+          api.prices("WTI", "14d").catch((e) => { console.warn("[SIGNAL] Prices fetch failed:", e.message); return null; }),
         ]);
         setKpiWTI(wti);
         setKpiBrent(brent);

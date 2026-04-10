@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
@@ -40,10 +41,25 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="SIGNAL — Shell Intelligence API", version="2.0.0", lifespan=lifespan)
 
-# Allow the Next.js frontend to reach the API
+# Allow the Next.js frontend to reach the API.
+# In development the Next.js dev-server may start on a different port
+# (e.g. 3001) if 3000 is already in use, so we allow a small range by default.
+# Set CORS_ORIGINS env-var (comma-separated) to override.
+_default_origins = [
+    f"http://localhost:{p}" for p in range(3000, 3010)
+] + [
+    f"http://127.0.0.1:{p}" for p in range(3000, 3010)
+]
+_cors_origins = os.getenv("CORS_ORIGINS")
+ALLOWED_ORIGINS: list[str] = (
+    [o.strip() for o in _cors_origins.split(",") if o.strip()]
+    if _cors_origins
+    else _default_origins
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
