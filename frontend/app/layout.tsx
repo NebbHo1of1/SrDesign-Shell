@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
+import ClientOnly from "@/components/ClientOnly";
 
 export const metadata: Metadata = {
   title: "SIGNAL — Shell Intelligence System",
@@ -16,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased dark" suppressHydrationWarning>
       <body className="min-h-full flex flex-col bg-[#0A0E17] text-[#E2E8F0] font-sans" suppressHydrationWarning>
-        <AuthProvider>{children}</AuthProvider>
+        <ClientOnly>
+          <AuthProvider>{children}</AuthProvider>
+        </ClientOnly>
       </body>
     </html>
   );
