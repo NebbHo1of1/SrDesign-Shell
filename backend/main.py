@@ -31,8 +31,8 @@ async def lifespan(app: FastAPI):
             logger.info("Database is empty — auto-seeding with initial data…")
             result = seed_database(db)
             logger.info("Auto-seed complete: %s", result)
-    except Exception as exc:
-        logger.error("Auto-seed failed: %s", exc)
+    except Exception:
+        logger.exception("Auto-seed failed")
     finally:
         db.close()
     yield

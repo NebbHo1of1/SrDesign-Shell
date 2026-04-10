@@ -1,5 +1,6 @@
 import logging
 
+import requests
 from sqlalchemy.orm import Session
 
 from backend.models import Headline, PricePoint
@@ -24,7 +25,7 @@ def seed_database(db: Session) -> dict:
         # Attempt REAL news, fall back to synthetic
         try:
             headlines = fetch_real_headlines(commodity=commodity, page_size=40)
-        except Exception as exc:
+        except (ValueError, requests.RequestException, OSError) as exc:
             logger.warning("Real headlines unavailable for %s (%s), using synthetic data", commodity, exc)
             headlines = generate_headlines(commodity=commodity, count=40)
             used_fallback = True
@@ -32,7 +33,7 @@ def seed_database(db: Session) -> dict:
         # Attempt REAL prices, fall back to synthetic
         try:
             prices = fetch_real_price_points(commodity=commodity, days=45)
-        except Exception as exc:
+        except (ValueError, requests.RequestException, OSError) as exc:
             logger.warning("Real prices unavailable for %s (%s), using synthetic data", commodity, exc)
             prices = generate_price_points(commodity=commodity, days=45)
             used_fallback = True
