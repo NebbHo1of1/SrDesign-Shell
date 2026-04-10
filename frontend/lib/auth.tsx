@@ -4,6 +4,11 @@
    so every page can gate on permissions.
 
    Auth state is persisted to localStorage so sessions survive refresh.
+
+   IMPORTANT: `user` and `isLoaded` are stored in a SINGLE state object
+   so that they always update atomically.  This prevents intermediate
+   renders where `isLoaded=true` but `user` is still null — which would
+   cause the dashboard AuthGate to redirect back to "/".
    ──────────────────────────────────────────────────────────────────── */
 
 "use client";
@@ -25,10 +30,13 @@ export interface User {
   role: Role;
 }
 
-interface AuthCtx {
+interface AuthState {
   user: User | null;
   /** True once the provider has attempted to restore a session from localStorage. */
   isLoaded: boolean;
+}
+
+interface AuthCtx extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -72,17 +80,15 @@ function loadStoredUser(): User | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  /* Always start with null to match the server render.
-     Load from localStorage in useEffect (client-only) to avoid hydration mismatch. */
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  /* Start with isLoaded=false to match the server render.
+     Load from localStorage in useEffect (client-only) to avoid hydration mismatch.
+     A SINGLE state object guarantees user+isLoaded update atomically. */
+  const [auth, setAuth] = useState<AuthState>({ user: null, isLoaded: false });
 
   useEffect(() => {
     const stored = loadStoredUser();
-    if (stored) {
-      setUser(stored); // eslint-disable-line react-hooks/set-state-in-effect -- restoring persisted auth on mount
-    }
-    setIsLoaded(true);
+    /* Single setState call — no intermediate render where isLoaded=true but user=null */
+    setAuth({ user: stored, isLoaded: true }); // eslint-disable-line react-hooks/set-state-in-effect -- restoring persisted auth on mount
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -94,16 +100,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("Invalid credentials. Access denied.");
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry.user));
-    setUser(entry.user);
+    setAuth({ user: entry.user, isLoaded: true });
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
-    setUser(null);
+    setAuth({ user: null, isLoaded: true });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoaded, login, logout }}>
+    <AuthContext.Provider value={{ user: auth.user, isLoaded: auth.isLoaded, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

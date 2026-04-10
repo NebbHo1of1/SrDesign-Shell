@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -18,23 +18,25 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showGreeting, setShowGreeting] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  /* Generate particle positions once on the client to prevent hydration mismatch */
-  const particles = useMemo(
-    () =>
+  /* Particle positions are generated ONLY on the client via useEffect.
+     This guarantees no Math.random() calls during SSR or hydration render,
+     completely eliminating the hydration mismatch. */
+  const [particles, setParticles] = useState<
+    Array<{ id: number; left: number; duration: number; delay: number; size: number }>
+  >([]);
+
+  useEffect(() => {
+    setParticles(
       Array.from({ length: 30 }).map((_, i) => ({
         id: i,
         left: Math.random() * 100,
         duration: 6 + Math.random() * 10,
         delay: Math.random() * 8,
         size: 1 + Math.random() * 2,
-      })),
-    []
-  );
-
-  /* Wait for client mount before rendering particles */
-  useEffect(() => setMounted(true), []);
+      }))
+    );
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -61,8 +63,8 @@ export default function LoginScreen() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(221,29,33,0.08)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(56,189,248,0.06)_0%,transparent_50%)]" />
 
-      {/* ── Floating particles (only rendered after client mount to avoid hydration mismatch) */}
-      {mounted && (
+      {/* ── Floating particles (only rendered after client-side generation) */}
+      {particles.length > 0 && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {particles.map((p) => (
             <div
