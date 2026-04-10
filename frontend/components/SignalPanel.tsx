@@ -60,8 +60,9 @@ export default function SignalPanel({ kpi, headline, loading }: Props) {
         : "bg-[#EF4444]";
 
   // Simulated top drivers (in production these come from feature importance)
+  const sentimentPositive = (kpi?.avg_sentiment_24h ?? 0) > 0;
   const drivers = [
-    { label: "Sentiment", direction: kpi?.avg_sentiment_24h && kpi.avg_sentiment_24h > 0 ? "↑" : "↓", positive: kpi?.avg_sentiment_24h ? kpi.avg_sentiment_24h > 0 : false },
+    { label: "Sentiment", direction: sentimentPositive ? "↑" : "↓", positive: sentimentPositive },
     { label: "Momentum", direction: isUp ? "↑" : "↓", positive: isUp },
     { label: "Geopolitical Risk", direction: (kpi?.high_impact_count_24h ?? 0) > 2 ? "↑" : "↓", positive: false },
   ];

@@ -61,10 +61,10 @@ export default function TopBar() {
         {/* Notification bell */}
         <button
           className="relative text-[#64748B] hover:text-[#F8FAFC] transition-colors"
-          aria-label="Notifications"
+          aria-label="Notifications — new alerts available"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#DD1D21] rounded-full animate-pulse-dot" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#DD1D21] rounded-full animate-pulse-dot" aria-hidden="true" />
         </button>
 
         {/* Role badge */}

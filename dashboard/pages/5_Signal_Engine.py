@@ -10,6 +10,12 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
+# ── Risk Thresholds ───────────────────────────────────────────────────
+_CRITICAL_SENT_THRESHOLD = 0.5
+_CRITICAL_IMPACT_THRESHOLD = 5
+_ELEVATED_SENT_THRESHOLD = 0.3
+_ELEVATED_IMPACT_THRESHOLD = 3
+
 from components.api import fetch_headlines, fetch_kpis, safe_fetch, default_since_iso
 from components.charts import risk_meter
 from components.sidebar import render_sidebar
@@ -66,9 +72,9 @@ for i, c in enumerate(commodities):
         pred_icon = PRED_ICONS.get(pred, "●")
 
         # Status indicator — check critical first (higher thresholds)
-        if abs(avg_sent) > 0.5 or kpis.get("high_impact_count_24h", 0) > 5:
+        if abs(avg_sent) > _CRITICAL_SENT_THRESHOLD or kpis.get("high_impact_count_24h", 0) > _CRITICAL_IMPACT_THRESHOLD:
             status = ("CRITICAL", "status-critical", SHELL_RED_SOFT)
-        elif abs(avg_sent) > 0.3 or kpis.get("high_impact_count_24h", 0) > 3:
+        elif abs(avg_sent) > _ELEVATED_SENT_THRESHOLD or kpis.get("high_impact_count_24h", 0) > _ELEVATED_IMPACT_THRESHOLD:
             status = ("ELEVATED", "status-warning", SHELL_AMBER)
         else:
             status = ("STABLE", "status-live", SHELL_GREEN)

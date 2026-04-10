@@ -160,7 +160,7 @@ export default function NewsPanel({ headlines, loading }: Props) {
               </div>
 
               {/* External link hint */}
-              <ExternalLink className="w-3 h-3 text-[#334155] group-hover:text-[#38BDF8] absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity hidden" />
+              <ExternalLink className="w-3 h-3 text-[#334155] group-hover:text-[#38BDF8] absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </a>
           );
         })}

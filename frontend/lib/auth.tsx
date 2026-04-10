@@ -34,7 +34,9 @@ const AuthContext = createContext<AuthCtx>({
   logout: () => {},
 });
 
-/* Demo credential map — replace with real auth in production */
+/* ⚠️ DEMO ONLY — In production, replace with Azure AD / OAuth2 / JWT.
+   These hardcoded credentials exist solely for demo presentations.
+   Never use this pattern in production deployments. */
 const DEMO_USERS: Record<string, { password: string; user: User }> = {
   "admin@shell.com": {
     password: "signal",
