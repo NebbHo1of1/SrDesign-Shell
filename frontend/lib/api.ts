@@ -47,6 +47,33 @@ export interface SentimentPricePoint {
   next_price_change: number;
 }
 
+export interface ModelPrediction {
+  prediction: "UP" | "DOWN" | "UNCERTAIN";
+  confidence: number;
+  probability_up: number;
+  commodity: string;
+  features_used: number;
+  model_type: string;
+  timestamp: string;
+}
+
+export interface ModelReport {
+  model_type: string;
+  n_estimators: number;
+  threshold: number;
+  test_accuracy: number;
+  classification_metrics: {
+    precision: number;
+    recall: number;
+    f1_score: number;
+  };
+  feature_count: number;
+  training_samples: number;
+  test_samples: number;
+  feature_importances: Record<string, number>;
+  all_features: string[];
+}
+
 /* ── Fetcher ─────────────────────────────────────────────────────────── */
 
 async function get<T>(path: string, params?: Record<string, string>): Promise<T> {
@@ -80,4 +107,11 @@ export const api = {
 
   sentimentPrice: (commodity = "WTI") =>
     get<SentimentPricePoint[]>("/analytics/sentiment-price", { commodity }),
+
+  /** Run the trained AI model and get a market-direction prediction. */
+  predict: (commodity = "WTI") =>
+    get<ModelPrediction>("/predict", { commodity }),
+
+  /** Fetch the model training report (accuracy, features, etc.). */
+  modelReport: () => get<ModelReport>("/model-report"),
 };

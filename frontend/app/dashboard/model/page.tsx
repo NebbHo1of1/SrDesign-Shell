@@ -1,11 +1,14 @@
 /* ── SIGNAL — AI Model Page ───────────────────────────────────────────
    Explainable AI: model report card, feature importance chart,
    pipeline explainer, confidence meter, architecture table.
+   Now fetches *real* metrics from the /model-report API endpoint
+   powered by the trained model from train_model.py.
    ──────────────────────────────────────────────────────────────────── */
 
 "use client";
 
-import { Brain, Gauge, Cpu, GitBranch } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Brain, Gauge, Cpu, GitBranch, AlertCircle } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -15,22 +18,15 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { api, ModelReport, ModelPrediction } from "@/lib/api";
 
-/* Static model report data — in production this would be loaded from
-   the /model-report API endpoint or the model_training_report.json */
-const MODEL = {
-  accuracy: 97.06,
-  precision: 0.95,
-  recall: 0.93,
-  f1: 0.94,
-  timestamp: "2026-04-02 23:57:10",
-  features: [
-    { name: "Sentiment Score", importance: 0.4 },
-    { name: "Event Features", importance: 0.25 },
-    { name: "Impact Score", importance: 0.2 },
-    { name: "Momentum", importance: 0.15 },
-  ],
-};
+/* ── Static fallback (only shown while loading / on error) ──────────── */
+const FALLBACK_FEATURES = [
+  { name: "RSI", importance: 0.06 },
+  { name: "Momentum", importance: 0.05 },
+  { name: "MACD × Volatility", importance: 0.05 },
+  { name: "MACD", importance: 0.04 },
+];
 
 const PIPELINE = [
   {
@@ -40,49 +36,125 @@ const PIPELINE = [
   },
   {
     step: "2. NLP Processing",
-    desc: "Text preprocessing, entity recognition, and sentiment scoring via transformer-based models.",
+    desc: "Text preprocessing, entity recognition, and sentiment scoring via VADER and domain-specific rules.",
     icon: <Cpu className="w-5 h-5 text-[#A78BFA]" />,
   },
   {
     step: "3. Feature Engineering",
-    desc: "Sentiment scores, event types, impact scores, and momentum indicators combined into feature vectors.",
+    desc: "33 engineered features including MACD, RSI, sentiment rolling averages, and calendar seasonality.",
     icon: <Brain className="w-5 h-5 text-[#FBCE07]" />,
   },
   {
     step: "4. Prediction",
-    desc: "Random Forest classifier generates UP/DOWN/NEUTRAL predictions with confidence scores.",
+    desc: "Trained model (train_model.py) generates UP/DOWN predictions with probability-calibrated confidence.",
     icon: <Gauge className="w-5 h-5 text-[#22C55E]" />,
   },
 ];
 
 export default function ModelPage() {
+  const [report, setReport] = useState<ModelReport | null>(null);
+  const [prediction, setPrediction] = useState<ModelPrediction | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .modelReport()
+      .then(setReport)
+      .catch((e) => setError(e.message));
+
+    api
+      .predict("WTI")
+      .then(setPrediction)
+      .catch(() => {
+        /* prediction may fail if DB is empty — non-critical */
+      });
+  }, []);
+
+  /* Derive display values from the report (or show fallback) */
+  const accuracy = report
+    ? (report.test_accuracy * 100).toFixed(1)
+    : "—";
+  const precision = report
+    ? report.classification_metrics.precision.toFixed(2)
+    : "—";
+  const recall = report
+    ? report.classification_metrics.recall.toFixed(2)
+    : "—";
+  const f1 = report
+    ? report.classification_metrics.f1_score.toFixed(2)
+    : "—";
+
+  /* Build feature importance chart data from the report */
+  const featureData = report
+    ? Object.entries(report.feature_importances)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 8)
+        .map(([name, importance]) => ({ name, importance }))
+    : FALLBACK_FEATURES;
+
+  const maxImportance = Math.max(...featureData.map((f) => f.importance), 0.1);
+
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-extrabold text-[#F8FAFC]">
         AI Model — Explainable Intelligence
       </h1>
 
+      {error && (
+        <div className="flex items-center gap-2 text-sm text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-4 py-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>Could not load model report: {error}</span>
+        </div>
+      )}
+
+      {/* Live prediction banner */}
+      {prediction && (
+        <div className="bg-gradient-to-r from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+          <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[#64748B] uppercase mb-2">
+            Live Model Prediction — {prediction.commodity}
+          </p>
+          <div className="flex items-center gap-4">
+            <span
+              className={`text-3xl font-extrabold ${
+                prediction.prediction === "UP"
+                  ? "text-[#22C55E]"
+                  : prediction.prediction === "DOWN"
+                    ? "text-[#EF4444]"
+                    : "text-[#FBCE07]"
+              }`}
+            >
+              {prediction.prediction}
+            </span>
+            <span className="text-sm text-[#94A3B8]">
+              Confidence: {(prediction.confidence * 100).toFixed(1)}% ·
+              P(UP): {(prediction.probability_up * 100).toFixed(1)}% ·
+              Model: {prediction.model_type}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Model metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: "Accuracy",
-            value: `${MODEL.accuracy}%`,
+            value: accuracy !== "—" ? `${accuracy}%` : "—",
             color: "text-[#22C55E]",
           },
           {
             label: "Precision",
-            value: MODEL.precision.toFixed(2),
+            value: precision,
             color: "text-[#38BDF8]",
           },
           {
             label: "Recall",
-            value: MODEL.recall.toFixed(2),
+            value: recall,
             color: "text-[#FBCE07]",
           },
           {
             label: "F1 Score",
-            value: MODEL.f1.toFixed(2),
+            value: f1,
             color: "text-[#A78BFA]",
           },
         ].map((m) => (
@@ -104,23 +176,23 @@ export default function ModelPage() {
           <div className="flex items-center gap-2 mb-4">
             <Brain className="w-4 h-4 text-[#FBCE07]" />
             <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
-              Feature Importance
+              Feature Importance (from trained model)
             </span>
           </div>
           <p className="text-xs text-[#64748B] mb-4">
-            Why is the model making this prediction? These are the top factors
-            driving the classification decision.
+            Top features driving classification decisions — extracted from the
+            trained {report?.model_type ?? "RandomForest"} model.
           </p>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={250}>
             <BarChart
-              data={MODEL.features}
+              data={featureData}
               layout="vertical"
               margin={{ left: 10 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
               <XAxis
                 type="number"
-                domain={[0, 0.5]}
+                domain={[0, Math.ceil(maxImportance * 100) / 100 + 0.01]}
                 stroke="#334155"
                 tick={{ fill: "#64748B", fontSize: 11 }}
               />
@@ -129,7 +201,7 @@ export default function ModelPage() {
                 dataKey="name"
                 stroke="#334155"
                 tick={{ fill: "#94A3B8", fontSize: 11 }}
-                width={110}
+                width={130}
               />
               <Tooltip
                 contentStyle={{
@@ -140,7 +212,7 @@ export default function ModelPage() {
                   fontSize: "12px",
                 }}
                 formatter={(value) => [
-                  `${(Number(value) * 100).toFixed(0)}%`,
+                  `${(Number(value) * 100).toFixed(1)}%`,
                   "Importance",
                 ]}
               />
@@ -153,7 +225,7 @@ export default function ModelPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Confidence Gauge (text-based) */}
+        {/* Model Architecture */}
         <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Gauge className="w-4 h-4 text-[#38BDF8]" />
@@ -163,12 +235,34 @@ export default function ModelPage() {
           </div>
           <div className="space-y-3">
             {[
-              { label: "Algorithm", value: "Random Forest Classifier" },
-              { label: "Features", value: "4 engineered features" },
-              { label: "Training Size", value: "~5,000 labeled samples" },
-              { label: "Validation", value: "Stratified 5-fold CV" },
-              { label: "Target", value: "Crude Oil Price Direction (UP/DOWN/NEUTRAL)" },
-              { label: "Last Trained", value: MODEL.timestamp },
+              {
+                label: "Algorithm",
+                value: report?.model_type ?? "RandomForestClassifier",
+              },
+              {
+                label: "Features",
+                value: report
+                  ? `${report.feature_count} engineered features`
+                  : "33 engineered features",
+              },
+              {
+                label: "Training Size",
+                value: report
+                  ? `${report.training_samples} samples`
+                  : "—",
+              },
+              {
+                label: "Validation",
+                value: "Time-Series 5-fold CV",
+              },
+              {
+                label: "Target",
+                value: "Crude Oil 3-Day Price Direction (UP / DOWN)",
+              },
+              {
+                label: "Confidence Threshold",
+                value: report ? `${(report.threshold * 100).toFixed(0)}%` : "75%",
+              },
             ].map((r) => (
               <div
                 key={r.label}
