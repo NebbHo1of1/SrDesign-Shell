@@ -65,11 +65,11 @@ for i, c in enumerate(commodities):
         pred_color = PRED_COLORS.get(pred, SHELL_MUTED)
         pred_icon = PRED_ICONS.get(pred, "●")
 
-        # Status indicator
-        if abs(avg_sent) > 0.3 or kpis.get("high_impact_count_24h", 0) > 3:
-            status = ("ELEVATED", "status-warning", SHELL_AMBER)
-        elif abs(avg_sent) > 0.5 or kpis.get("high_impact_count_24h", 0) > 5:
+        # Status indicator — check critical first (higher thresholds)
+        if abs(avg_sent) > 0.5 or kpis.get("high_impact_count_24h", 0) > 5:
             status = ("CRITICAL", "status-critical", SHELL_RED_SOFT)
+        elif abs(avg_sent) > 0.3 or kpis.get("high_impact_count_24h", 0) > 3:
+            status = ("ELEVATED", "status-warning", SHELL_AMBER)
         else:
             status = ("STABLE", "status-live", SHELL_GREEN)
 

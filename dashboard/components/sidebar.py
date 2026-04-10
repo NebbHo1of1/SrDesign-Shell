@@ -60,7 +60,7 @@ def render_sidebar() -> dict:
     event_type = st.sidebar.selectbox("Event Type", EVENT_TYPES, index=0)
 
     min_confidence = st.sidebar.slider(
-        "Min Confidence", min_value=0.0, max_value=1.0, value=0.50, step=0.05, format="%.0f%%"
+        "Min Confidence", min_value=0.0, max_value=1.0, value=0.50, step=0.05
     )
     sentiment_filter = st.sidebar.multiselect(
         "Sentiment Bands",
