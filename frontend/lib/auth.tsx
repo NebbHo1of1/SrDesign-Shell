@@ -13,6 +13,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from "react";
 
@@ -68,7 +69,16 @@ function loadStoredUser(): User | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(loadStoredUser);
+  /* Always start with null to match the server render.
+     Load from localStorage in useEffect (client-only) to avoid hydration mismatch. */
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const stored = loadStoredUser();
+    if (stored) {
+      setUser(stored); // eslint-disable-line react-hooks/set-state-in-effect -- loading persisted auth state on mount is the canonical SSR pattern
+    }
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     /* simulate network delay for the immersive loading animation */

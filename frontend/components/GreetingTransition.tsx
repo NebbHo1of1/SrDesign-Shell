@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { User } from "@/lib/auth";
@@ -18,6 +18,13 @@ export default function GreetingTransition({ user }: Props) {
   const router = useRouter();
   const [phase, setPhase] = useState(0); // 0 → name, 1 → status, 2 → redirect
 
+  /* Compute greeting once on mount — safe because this component is only
+     rendered client-side after a successful login action. */
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    return hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  }, []);
+
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 1200);
     const t2 = setTimeout(() => setPhase(2), 3000);
@@ -28,10 +35,6 @@ export default function GreetingTransition({ user }: Props) {
       clearTimeout(t3);
     };
   }, [router]);
-
-  const hour = new Date().getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0A0E17] overflow-hidden">
