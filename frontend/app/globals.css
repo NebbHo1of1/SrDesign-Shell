@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  --shell-red: #DD1D21;
+  --shell-yellow: #FBCE07;
+  --shell-dark: #0A0E17;
+  --shell-panel: #111827;
+  --shell-card: #1A2234;
+  --shell-border: #1E293B;
+  --shell-text: #E2E8F0;
+  --shell-muted: #94A3B8;
+  --shell-accent: #38BDF8;
+  --shell-green: #22C55E;
+  --shell-red-soft: #EF4444;
+  --shell-amber: #F59E0B;
+  --shell-cyan: #06B6D4;
+}
+
+@theme inline {
+  --color-background: var(--shell-dark);
+  --color-foreground: var(--shell-text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ── Global ─────────────────────────────────── */
+html, body {
+  background: var(--shell-dark);
+  color: var(--shell-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--shell-dark); }
+::-webkit-scrollbar-thumb { background: var(--shell-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+/* ── Selection ──────────────────────────────── */
+::selection {
+  background: rgba(56, 189, 248, 0.3);
+  color: #F8FAFC;
+}
+
+/* ── Pulsing dot ────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Glow border ────────────────────────────── */
+@keyframes glow-border {
+  0%, 100% { border-color: rgba(56, 189, 248, 0.3); box-shadow: 0 0 15px rgba(56, 189, 248, 0.05); }
+  50% { border-color: rgba(56, 189, 248, 0.6); box-shadow: 0 0 25px rgba(56, 189, 248, 0.12); }
+}
+.animate-glow-border {
+  animation: glow-border 3s ease-in-out infinite;
+}
+
+/* ── Scan line ──────────────────────────────── */
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+.animate-scan-line {
+  animation: scan-line 4s linear infinite;
+}
+
+/* ── Gradient text shimmer ──────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ── Login background particles ─────────────── */
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(56, 189, 248, 0.4);
+  border-radius: 50%;
+  animation: float-up linear infinite;
+}
+
+/* ── Chart tooltip ──────────────────────────── */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+.recharts-default-tooltip {
+  background: var(--shell-card) !important;
+  border: 1px solid var(--shell-border) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+}
+
+/* ── Focus ring ─────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--shell-accent);
+  outline-offset: 2px;
+}

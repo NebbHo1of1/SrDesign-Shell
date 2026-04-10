@@ -4,6 +4,7 @@ load_dotenv()
 from datetime import datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from backend.db import Base, engine, get_db
@@ -13,7 +14,16 @@ from backend.services.news_service import compute_sentiment_vs_price_change, get
 from backend.services.price_service import get_prices_for_range
 from backend.services.seed import seed_database
 
-app = FastAPI(title="Senior Design Commodity Insight API", version="0.1.0")
+app = FastAPI(title="SIGNAL — Shell Intelligence API", version="2.0.0")
+
+# Allow the Next.js frontend to reach the API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 Base.metadata.create_all(bind=engine)
 
