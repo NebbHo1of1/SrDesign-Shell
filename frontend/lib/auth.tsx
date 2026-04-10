@@ -2,6 +2,8 @@
    Simulated JWT-style auth for the demo.  In production this would
    integrate with Azure AD / OAuth2.  Stores user + role in context
    so every page can gate on permissions.
+
+   Auth state is persisted to localStorage so sessions survive refresh.
    ──────────────────────────────────────────────────────────────────── */
 
 "use client";
@@ -28,6 +30,8 @@ interface AuthCtx {
   logout: () => void;
 }
 
+const STORAGE_KEY = "signal_user";
+
 const AuthContext = createContext<AuthCtx>({
   user: null,
   login: async () => {},
@@ -52,8 +56,19 @@ const DEMO_USERS: Record<string, { password: string; user: User }> = {
   },
 };
 
+function loadStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as User;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(loadStoredUser);
 
   const login = useCallback(async (email: string, password: string) => {
     /* simulate network delay for the immersive loading animation */
@@ -63,10 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!entry || entry.password !== password) {
       throw new Error("Invalid credentials. Access denied.");
     }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entry.user));
     setUser(entry.user);
   }, []);
 
-  const logout = useCallback(() => setUser(null), []);
+  const logout = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+    setUser(null);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

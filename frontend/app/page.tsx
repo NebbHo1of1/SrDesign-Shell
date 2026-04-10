@@ -5,7 +5,7 @@
 
 "use client";
 
-import { AuthProvider, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import LoginScreen from "@/components/LoginScreen";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -23,9 +23,5 @@ function Gate() {
 }
 
 export default function Home() {
-  return (
-    <AuthProvider>
-      <Gate />
-    </AuthProvider>
-  );
+  return <Gate />;
 }

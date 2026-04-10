@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useMemo, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -18,6 +18,23 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showGreeting, setShowGreeting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  /* Generate particle positions once on the client to prevent hydration mismatch */
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 30 }).map((_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        duration: 6 + Math.random() * 10,
+        delay: Math.random() * 8,
+        size: 1 + Math.random() * 2,
+      })),
+    []
+  );
+
+  /* Wait for client mount before rendering particles */
+  useEffect(() => setMounted(true), []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,22 +61,24 @@ export default function LoginScreen() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(221,29,33,0.08)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(56,189,248,0.06)_0%,transparent_50%)]" />
 
-      {/* ── Floating particles ────────────────────────────────── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {Array.from({ length: 30 }).map((_, i) => (
-          <div
-            key={i}
-            className="particle"
-            style={{
-              left: `${Math.random() * 100}%`,
-              animationDuration: `${6 + Math.random() * 10}s`,
-              animationDelay: `${Math.random() * 8}s`,
-              width: `${1 + Math.random() * 2}px`,
-              height: `${1 + Math.random() * 2}px`,
-            }}
-          />
-        ))}
-      </div>
+      {/* ── Floating particles (only rendered after client mount to avoid hydration mismatch) */}
+      {mounted && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {particles.map((p) => (
+            <div
+              key={p.id}
+              className="particle"
+              style={{
+                left: `${p.left}%`,
+                animationDuration: `${p.duration}s`,
+                animationDelay: `${p.delay}s`,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* ── Scan line effect ──────────────────────────────────── */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.03]">

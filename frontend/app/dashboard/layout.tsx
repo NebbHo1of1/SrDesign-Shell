@@ -4,7 +4,7 @@
 
 "use client";
 
-import { AuthProvider, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
@@ -38,9 +38,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AuthProvider>
-      <AuthGate>{children}</AuthGate>
-    </AuthProvider>
-  );
+  return <AuthGate>{children}</AuthGate>;
 }
