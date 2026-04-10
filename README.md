@@ -38,10 +38,9 @@ The frontend starts on **http://localhost:3000**.  Open that URL in your browser
 to see the dashboard.
 
 > **Important:** Both the backend (port 8000) and frontend (port 3000) must be
-> running at the same time.  Make sure the frontend starts on port 3000 — if
-> that port is already in use the dev server may pick a different port and API
-> calls will fail due to CORS.  The backend allows ports 3000–3009 by default;
-> set `CORS_ORIGINS` in `.env` to override.
+> running at the same time.  The backend allows `localhost` ports 3000–3009 by
+> default so the frontend can start on a fallback port if 3000 is busy.  Set
+> `CORS_ORIGINS` in `.env` (comma-separated) to override the allowed origins.
 
 ### 3. (Optional) Reseed the database
 

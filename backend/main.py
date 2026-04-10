@@ -45,10 +45,12 @@ app = FastAPI(title="SIGNAL — Shell Intelligence API", version="2.0.0", lifesp
 # In development the Next.js dev-server may start on a different port
 # (e.g. 3001) if 3000 is already in use, so we allow a small range by default.
 # Set CORS_ORIGINS env-var (comma-separated) to override.
+_DEV_PORT_START = 3000
+_DEV_PORT_END = 3010  # exclusive upper bound
 _default_origins = [
-    f"http://localhost:{p}" for p in range(3000, 3010)
+    f"http://localhost:{p}" for p in range(_DEV_PORT_START, _DEV_PORT_END)
 ] + [
-    f"http://127.0.0.1:{p}" for p in range(3000, 3010)
+    f"http://127.0.0.1:{p}" for p in range(_DEV_PORT_START, _DEV_PORT_END)
 ]
 _cors_origins = os.getenv("CORS_ORIGINS")
 ALLOWED_ORIGINS: list[str] = (
