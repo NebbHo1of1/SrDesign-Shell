@@ -21,6 +21,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { DEV_MODE } from "@/lib/config";
 
 export type Role = "Executive" | "Analyst" | "Viewer";
 
@@ -78,12 +79,6 @@ function loadStoredUser(): User | null {
     return null;
   }
 }
-
-/* ── DEV MODE ─────────────────────────────────────────────────────────
-   Set to `true` to bypass login and auto-load dashboard as Executive.
-   Set back to `false` to restore normal auth flow.
-   ──────────────────────────────────────────────────────────────────── */
-const DEV_MODE = true;
 
 const DEV_USER: User = {
   name: "Dev Mode",
