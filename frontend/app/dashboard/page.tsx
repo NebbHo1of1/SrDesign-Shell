@@ -54,9 +54,20 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
+  /* Compute greeting — safe because this only renders client-side (behind auth gate) */
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+  /* Format current time once (live clock is in TopBar) */
+  const systemTime = new Date().toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
 
   return (
     <motion.div
@@ -86,15 +97,7 @@ export default function DashboardPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse-dot" />
             Systems Operational
             <span className="mx-1">•</span>
-            {new Date().toLocaleString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZone: "UTC",
-            })}{" "}
-            UTC
+            {systemTime} UTC
           </div>
         </div>
       </motion.div>

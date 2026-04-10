@@ -11,14 +11,15 @@ import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isLoaded } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user) router.replace("/");
-  }, [user, router]);
+    if (isLoaded && !user) router.replace("/");
+  }, [user, isLoaded, router]);
 
-  if (!user) return null;
+  /* While auth is still loading from localStorage, render nothing (avoids flash) */
+  if (!isLoaded || !user) return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0A0E17]">

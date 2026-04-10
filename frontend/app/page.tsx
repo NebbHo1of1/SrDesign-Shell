@@ -11,13 +11,15 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 function Gate() {
-  const { user } = useAuth();
+  const { user, isLoaded } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (user) router.replace("/dashboard");
-  }, [user, router]);
+    if (isLoaded && user) router.replace("/dashboard");
+  }, [user, isLoaded, router]);
 
+  /* Show nothing while auth is still loading from localStorage */
+  if (!isLoaded) return null;
   if (user) return null;
   return <LoginScreen />;
 }

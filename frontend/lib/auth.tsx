@@ -27,6 +27,8 @@ export interface User {
 
 interface AuthCtx {
   user: User | null;
+  /** True once the provider has attempted to restore a session from localStorage. */
+  isLoaded: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -35,6 +37,7 @@ const STORAGE_KEY = "signal_user";
 
 const AuthContext = createContext<AuthCtx>({
   user: null,
+  isLoaded: false,
   login: async () => {},
   logout: () => {},
 });
@@ -72,12 +75,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /* Always start with null to match the server render.
      Load from localStorage in useEffect (client-only) to avoid hydration mismatch. */
   const [user, setUser] = useState<User | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const stored = loadStoredUser();
     if (stored) {
-      setUser(stored); // eslint-disable-line react-hooks/set-state-in-effect -- loading persisted auth state on mount is the canonical SSR pattern
+      setUser(stored); // eslint-disable-line react-hooks/set-state-in-effect -- restoring persisted auth on mount
     }
+    setIsLoaded(true);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -98,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoaded, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
