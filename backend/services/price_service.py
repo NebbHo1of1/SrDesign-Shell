@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from io import StringIO
+import random
 
 import pandas as pd
 import requests
@@ -18,6 +19,13 @@ SERIES_MAP = {
     "WTI": "DCOILWTICO",
     "BRENT": "DCOILBRENTEU",
     "NATGAS": "DHHNGSP",
+}
+
+# Approximate base prices for synthetic fallback data
+BASE_PRICES = {
+    "WTI": 68.0,
+    "BRENT": 72.0,
+    "NATGAS": 3.5,
 }
 
 
@@ -51,6 +59,35 @@ def fetch_real_price_points(commodity: str, days: int = 45) -> list[PricePoint]:
                 commodity=commodity,
                 timestamp=row["date"].to_pydatetime(),
                 close=round(float(row["value"]), 2),
+            )
+        )
+
+    return points
+
+
+def generate_price_points(commodity: str, days: int = 45, seed: int = 42) -> list[PricePoint]:
+    """Generate synthetic price data as a fallback when FRED is unavailable."""
+    rng = random.Random(seed)
+    commodity = commodity.upper()
+    base = BASE_PRICES.get(commodity, 70.0)
+    now = datetime.utcnow()
+    points: list[PricePoint] = []
+
+    price = base
+    for day_offset in range(days, 0, -1):
+        # Skip weekends (no trading)
+        dt = now - timedelta(days=day_offset)
+        if dt.weekday() >= 5:
+            continue
+        # Random walk with slight mean-reversion
+        change = rng.gauss(0, base * 0.012)
+        price = price + change
+        price = max(base * 0.8, min(base * 1.2, price))
+        points.append(
+            PricePoint(
+                commodity=commodity,
+                timestamp=dt.replace(hour=16, minute=0, second=0, microsecond=0),
+                close=round(price, 2),
             )
         )
 

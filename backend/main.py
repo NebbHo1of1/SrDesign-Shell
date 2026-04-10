@@ -1,13 +1,15 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import logging
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from backend.db import Base, engine, get_db
+from backend.db import Base, SessionLocal, engine, get_db
 from backend.models import Headline
 from backend.schemas import HeadlineOut, KPIOut, PriceSeriesOut
 from backend.services.news_service import compute_sentiment_vs_price_change, get_headlines
@@ -15,7 +17,28 @@ from backend.services.prediction_service import get_model_report, predict_market
 from backend.services.price_service import get_prices_for_range
 from backend.services.seed import seed_database
 
-app = FastAPI(title="SIGNAL — Shell Intelligence API", version="2.0.0")
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Auto-seed the database on startup when it is empty."""
+    Base.metadata.create_all(bind=engine)
+    db = SessionLocal()
+    try:
+        headline_count = db.query(Headline).count()
+        if headline_count == 0:
+            logger.info("Database is empty — auto-seeding with initial data…")
+            result = seed_database(db)
+            logger.info("Auto-seed complete: %s", result)
+    except Exception as exc:
+        logger.error("Auto-seed failed: %s", exc)
+    finally:
+        db.close()
+    yield
+
+
+app = FastAPI(title="SIGNAL — Shell Intelligence API", version="2.0.0", lifespan=lifespan)
 
 # Allow the Next.js frontend to reach the API
 app.add_middleware(
@@ -25,9 +48,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-Base.metadata.create_all(bind=engine)
-
 
 @app.get("/health")
 def health_check():
