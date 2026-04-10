@@ -25,12 +25,13 @@ function Gate() {
   const router = useRouter();
 
   useEffect(() => {
+    /* In dev mode the user is already set, so this fires immediately */
     if (isLoaded && user) router.replace("/dashboard");
   }, [user, isLoaded, router]);
 
   /* Show nothing while auth is still loading from localStorage */
   if (!isLoaded) return null;
-  if (user) return null;
+  if (user) return null;        // will redirect above
   return <LoginScreen />;
 }
 

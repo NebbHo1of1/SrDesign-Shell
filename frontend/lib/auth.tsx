@@ -79,13 +79,29 @@ function loadStoredUser(): User | null {
   }
 }
 
+/* ── DEV MODE ─────────────────────────────────────────────────────────
+   Set to `true` to bypass login and auto-load dashboard as Executive.
+   Set back to `false` to restore normal auth flow.
+   ──────────────────────────────────────────────────────────────────── */
+const DEV_MODE = true;
+
+const DEV_USER: User = {
+  name: "Dev Mode",
+  email: "admin@shell.com",
+  role: "Executive",
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  /* Start with isLoaded=false to match the server render.
-     Load from localStorage in useEffect (client-only) to avoid hydration mismatch.
-     A SINGLE state object guarantees user+isLoaded update atomically. */
-  const [auth, setAuth] = useState<AuthState>({ user: null, isLoaded: false });
+  /* When DEV_MODE is on, start already authenticated — no useEffect needed.
+     When off, start with isLoaded=false and restore from localStorage. */
+  const [auth, setAuth] = useState<AuthState>(
+    DEV_MODE
+      ? { user: DEV_USER, isLoaded: true }
+      : { user: null, isLoaded: false }
+  );
 
   useEffect(() => {
+    if (DEV_MODE) return; // already loaded above
     const stored = loadStoredUser();
     /* Single setState call — no intermediate render where isLoaded=true but user=null */
     setAuth({ user: stored, isLoaded: true }); // eslint-disable-line react-hooks/set-state-in-effect -- restoring persisted auth on mount
