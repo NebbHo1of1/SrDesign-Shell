@@ -117,6 +117,17 @@ def get_kpis(commodity: str = Query(default="WTI"), db: Session = Depends(get_db
         .all()
     )
 
+    # If no headlines in the last 24h, fall back to the most recent headlines
+    # so the dashboard KPI cards always show meaningful data.
+    if not recent:
+        recent = (
+            db.query(Headline)
+            .filter(Headline.commodity == commodity)
+            .order_by(Headline.published_at.desc())
+            .limit(50)
+            .all()
+        )
+
     avg_sentiment = round(sum(h.sentiment_score for h in recent) / len(recent), 3) if recent else 0
     high_impact = len([h for h in recent if h.impact_score >= 70])
     latest = recent[0] if recent else None
