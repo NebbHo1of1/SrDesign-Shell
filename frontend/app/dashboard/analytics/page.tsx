@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api, type Headline, type ModelReport } from "@/lib/api";
+import RoleGate from "@/components/RoleGate";
 import {
   ResponsiveContainer,
   BarChart,
@@ -95,6 +96,7 @@ export default function AnalyticsPage() {
   };
 
   return (
+    <RoleGate page="/dashboard/analytics">
     <div className="space-y-6">
       <h1 className="text-xl font-extrabold text-[#F8FAFC]">
         Data Analytics
@@ -253,5 +255,6 @@ export default function AnalyticsPage() {
         )}
       </motion.div>
     </div>
+    </RoleGate>
   );
 }

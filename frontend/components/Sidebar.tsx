@@ -18,6 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { accessiblePaths } from "@/lib/permissions";
 
 const API =
   process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
@@ -32,6 +34,9 @@ const NAV = [
 ];
 
 export default function Sidebar() {
+  const { user } = useAuth();
+  const allowed = user ? accessiblePaths(user.role) : new Set<string>();
+  const filteredNav = NAV.filter((item) => allowed.has(item.href));
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [apiOnline, setApiOnline] = useState<boolean | null>(null);
@@ -114,7 +119,7 @@ export default function Sidebar() {
 
       {/* ── Nav Links ────────────────────────────────────── */}
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
-        {NAV.map((item) => {
+        {filteredNav.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
           return (

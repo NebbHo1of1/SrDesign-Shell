@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import { api, type Headline, type KPIs } from "@/lib/api";
+import RoleGate from "@/components/RoleGate";
 import {
   AlertTriangle,
   Zap,
@@ -92,6 +93,7 @@ export default function SignalsPage() {
     .slice(0, 8);
 
   return (
+    <RoleGate page="/dashboard/signals">
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Zap className="w-5 h-5 text-[#FBCE07]" />
@@ -229,5 +231,6 @@ export default function SignalsPage() {
         )}
       </div>
     </div>
+    </RoleGate>
   );
 }

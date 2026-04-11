@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { Brain, Gauge, Cpu, GitBranch, AlertCircle } from "lucide-react";
+import RoleGate from "@/components/RoleGate";
 import {
   ResponsiveContainer,
   BarChart,
@@ -95,6 +96,7 @@ export default function ModelPage() {
   const maxImportance = Math.max(...featureData.map((f) => f.importance), 0.1);
 
   return (
+    <RoleGate page="/dashboard/model">
     <div className="space-y-6">
       <h1 className="text-xl font-extrabold text-[#F8FAFC]">
         AI Model — Explainable Intelligence
@@ -301,5 +303,6 @@ export default function ModelPage() {
         </div>
       </div>
     </div>
+    </RoleGate>
   );
 }
