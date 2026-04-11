@@ -8,19 +8,26 @@ News-driven crude oil market intelligence platform with AI-powered predictions.
 
 ## Quickstart
 
-> **macOS only:** `xgboost` requires OpenMP via Homebrew before installing Python dependencies:
+> **macOS only:** `xgboost` requires OpenMP via Homebrew before installing
+> Python dependencies:
 > ```bash
 > brew install libomp
 > ```
 
 ### 1. Backend (Terminal 1)
 
+Run all four commands from the **project root** (`SrDesign-Shell/`):
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+python3 -m venv venv
+source venv/bin/activate      # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn backend.main:app --reload
 ```
+
+> ⚠️ **Do not skip `pip install -r requirements.txt`** — the backend will crash
+> on startup with an `ImportError` if dependencies like `fastapi`, `pandas`, or
+> `vaderSentiment` are missing.
 
 The backend starts on **http://localhost:8000** and auto-seeds the database on
 first run.  If the NEWS_API_KEY or FRED API is unavailable it falls back to
@@ -47,6 +54,15 @@ to see the dashboard.
 ```bash
 curl -X POST http://localhost:8000/seed
 ```
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `ModuleNotFoundError` / `ImportError` on backend startup | Run `pip install -r requirements.txt` inside the activated venv |
+| Frontend says "Cannot reach API at http://127.0.0.1:8000" | Make sure the backend is running in a separate terminal |
+| `xgboost` install fails on macOS | Run `brew install libomp` first |
+| Backend crash with `uvicorn --reload` on macOS | Make sure you start from the project root, not inside `backend/` |
 
 ## Project structure
 
