@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Power BI Embed Placeholder */}
+      {/* Power BI Embedded Analytics */}
       <motion.div
         initial={{ opacity: 1, y: 0 }}
         animate={{ opacity: 1, y: 0 }}
@@ -231,17 +231,26 @@ export default function AnalyticsPage() {
           Advanced correlation dashboards, historical trend analysis, and
           executive reporting are rendered via embedded Power BI visuals.
         </p>
-        <div className="h-64 bg-[#0A0E17]/80 border border-dashed border-[#334155] rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <BarChart3 className="w-8 h-8 text-[#334155] mx-auto mb-2" />
-            <p className="text-xs text-[#475569]">
-              Power BI Dashboard Embed Area
-            </p>
-            <p className="text-[0.55rem] text-[#334155] mt-1">
-              Configure POWER_BI_EMBED_URL in environment
-            </p>
+        {process.env.NEXT_PUBLIC_POWERBI_EMBED_URL ? (
+          <iframe
+            title="Power BI Report"
+            src={process.env.NEXT_PUBLIC_POWERBI_EMBED_URL}
+            className="h-[500px] w-full rounded-lg border-0"
+            allowFullScreen
+          />
+        ) : (
+          <div className="h-64 bg-[#0A0E17]/80 border border-dashed border-[#334155] rounded-lg flex items-center justify-center">
+            <div className="text-center">
+              <BarChart3 className="w-8 h-8 text-[#334155] mx-auto mb-2" />
+              <p className="text-xs text-[#475569]">
+                Power BI Dashboard Embed Area
+              </p>
+              <p className="text-[0.55rem] text-[#334155] mt-1">
+                Set NEXT_PUBLIC_POWERBI_EMBED_URL in .env.local to activate
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </motion.div>
     </div>
   );
