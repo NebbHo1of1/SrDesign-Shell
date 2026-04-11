@@ -26,7 +26,7 @@ const NAV = [
   { href: "/dashboard", label: "Command Center", icon: LayoutDashboard },
   { href: "/dashboard/feed", label: "Intelligence Feed", icon: Newspaper },
   { href: "/dashboard/commodity", label: "Commodity View", icon: TrendingUp },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/analytics", label: "Data Analytics", icon: BarChart3 },
   { href: "/dashboard/model", label: "AI Model", icon: Brain },
   { href: "/dashboard/signals", label: "Signal Engine", icon: Zap },
 ];

@@ -1,13 +1,13 @@
 /* ── SIGNAL — Analytics Page ──────────────────────────────────────────
-   Model performance metrics, prediction distribution, sentiment vs
-   price scatter, event type breakdown.  Power BI embed placeholder.
+   Data analytics: prediction distribution, event type breakdown,
+   live model KPIs from /model-report, Power BI embed placeholder.
    ──────────────────────────────────────────────────────────────────── */
 
 "use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { api, type Headline } from "@/lib/api";
+import { api, type Headline, type ModelReport } from "@/lib/api";
 import {
   ResponsiveContainer,
   BarChart,
@@ -34,6 +34,7 @@ const EVENT_COLORS: Record<string, string> = {
 
 export default function AnalyticsPage() {
   const [headlines, setHeadlines] = useState<Headline[]>([]);
+  const [report, setReport] = useState<ModelReport | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,7 +43,23 @@ export default function AnalyticsPage() {
       .then(setHeadlines)
       .catch(() => [])
       .finally(() => setLoading(false));
+
+    api.modelReport().then(setReport).catch(() => {});
   }, []);
+
+  /* Derive KPI values from the trained model report */
+  const accuracy = report
+    ? `${(report.test_accuracy * 100).toFixed(1)}%`
+    : "—";
+  const precision = report
+    ? report.classification_metrics.precision.toFixed(2)
+    : "—";
+  const recall = report
+    ? report.classification_metrics.recall.toFixed(2)
+    : "—";
+  const f1 = report
+    ? report.classification_metrics.f1_score.toFixed(2)
+    : "—";
 
   // Prediction distribution
   const predCounts = headlines.reduce(
@@ -80,16 +97,16 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-extrabold text-[#F8FAFC]">
-        Analytics &amp; Model Performance
+        Data Analytics
       </h1>
 
-      {/* Model metrics KPIs */}
+      {/* Model metrics KPIs — live from /model-report */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Model Accuracy", value: "97.06%", color: "text-[#22C55E]" },
-          { label: "Precision", value: "0.95", color: "text-[#38BDF8]" },
-          { label: "Recall", value: "0.93", color: "text-[#FBCE07]" },
-          { label: "F1 Score", value: "0.94", color: "text-[#A78BFA]" },
+          { label: "Model Accuracy", value: accuracy, color: "text-[#22C55E]" },
+          { label: "Precision", value: precision, color: "text-[#38BDF8]" },
+          { label: "Recall", value: recall, color: "text-[#FBCE07]" },
+          { label: "F1 Score", value: f1, color: "text-[#A78BFA]" },
         ].map((m) => (
           <div
             key={m.label}
