@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { api, type Headline, type KPIs, type PriceSeries } from "@/lib/api";
@@ -13,6 +13,7 @@ import SignalPanel from "@/components/SignalPanel";
 import NewsPanel from "@/components/NewsPanel";
 import PriceChart from "@/components/PriceChart";
 import AlertsPanel from "@/components/AlertsPanel";
+import { RefreshCw, AlertTriangle, Database } from "lucide-react";
 
 const stagger = {
   hidden: {},
@@ -31,32 +32,66 @@ export default function DashboardPage() {
   const [headlines, setHeadlines] = useState<Headline[]>([]);
   const [prices, setPrices] = useState<PriceSeries | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [wti, brent, news, priceData] = await Promise.all([
-          api.kpis("WTI").catch((e) => { console.warn("[SIGNAL] KPI WTI fetch failed:", e.message); return null; }),
-          api.kpis("BRENT").catch((e) => { console.warn("[SIGNAL] KPI BRENT fetch failed:", e.message); return null; }),
-          api.headlines("WTI", 30).catch((e) => { console.warn("[SIGNAL] Headlines fetch failed:", e.message); return []; }),
-          api.prices("WTI", "14d").catch((e) => { console.warn("[SIGNAL] Prices fetch failed:", e.message); return null; }),
-        ]);
-        console.log("[SIGNAL] Dashboard data loaded:", {
-          kpiWTI: wti,
-          kpiBrent: brent,
-          headlines: news?.length ?? 0,
-          prices: priceData?.points?.length ?? 0,
-        });
-        setKpiWTI(wti);
-        setKpiBrent(brent);
-        setHeadlines(news);
-        setPrices(priceData);
-      } finally {
-        setLoading(false);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [wti, brent, news, priceData] = await Promise.all([
+        api.kpis("WTI").catch((e) => { console.warn("[SIGNAL] KPI WTI fetch failed:", e.message); return null; }),
+        api.kpis("BRENT").catch((e) => { console.warn("[SIGNAL] KPI BRENT fetch failed:", e.message); return null; }),
+        api.headlines("WTI", 30).catch((e) => {
+          console.warn("[SIGNAL] Headlines fetch failed:", e.message);
+          throw e; // re-throw to trigger error state
+        }),
+        api.prices("WTI", "14d").catch((e) => { console.warn("[SIGNAL] Prices fetch failed:", e.message); return null; }),
+      ]);
+      console.log("[SIGNAL] Dashboard data loaded:", {
+        kpiWTI: wti,
+        kpiBrent: brent,
+        headlines: news?.length ?? 0,
+        prices: priceData?.points?.length ?? 0,
+      });
+      setKpiWTI(wti);
+      setKpiBrent(brent);
+      setHeadlines(news);
+      setPrices(priceData);
+
+      // If API is reachable but returned no headlines, auto-seed
+      if (news.length === 0) {
+        console.log("[SIGNAL] No headlines found — auto-seeding…");
+        setSeeding(true);
+        try {
+          await api.seed();
+          // Re-fetch after seed
+          const [freshNews, freshWti, freshBrent, freshPrices] = await Promise.all([
+            api.headlines("WTI", 30).catch(() => []),
+            api.kpis("WTI").catch(() => null),
+            api.kpis("BRENT").catch(() => null),
+            api.prices("WTI", "14d").catch(() => null),
+          ]);
+          setHeadlines(freshNews);
+          setKpiWTI(freshWti);
+          setKpiBrent(freshBrent);
+          setPrices(freshPrices);
+        } catch (seedErr) {
+          console.warn("[SIGNAL] Auto-seed failed:", seedErr);
+        } finally {
+          setSeeding(false);
+        }
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to load data";
+      setError(msg);
+      setHeadlines([]);
+    } finally {
+      setLoading(false);
     }
-    load();
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   if (!user) return null;
 
@@ -82,6 +117,41 @@ export default function DashboardPage() {
       animate="show"
       className="space-y-6"
     >
+      {/* ── Error Banner ─────────────────────────────────────── */}
+      {error && (
+        <motion.div variants={fadeUp}>
+          <div className="bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-[#EF4444] shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#EF4444]">
+                Unable to load data
+              </p>
+              <p className="text-xs text-[#F87171] mt-0.5">{error}</p>
+            </div>
+            <button
+              onClick={load}
+              disabled={loading}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+              Retry
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Seeding Banner ────────────────────────────────────── */}
+      {seeding && (
+        <motion.div variants={fadeUp}>
+          <div className="bg-[#38BDF8]/10 border border-[#38BDF8]/30 rounded-xl p-4 flex items-center gap-3">
+            <Database className="w-5 h-5 text-[#38BDF8] shrink-0 animate-pulse" />
+            <p className="text-sm text-[#38BDF8]">
+              No data found — seeding database with initial data…
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── Greeting ─────────────────────────────────────────── */}
       <motion.div variants={fadeUp}>
         <div className="relative bg-gradient-to-r from-[#0D1321] via-[#1A2234] to-[#111827] border border-[#1E293B] rounded-2xl p-6 overflow-hidden">

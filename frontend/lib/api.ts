@@ -81,11 +81,38 @@ async function get<T>(path: string, params?: Record<string, string>): Promise<T>
   if (params) {
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
   }
-  const res = await fetch(url.toString(), { cache: "no-store" });
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), { cache: "no-store" });
+  } catch (err) {
+    const msg =
+      err instanceof TypeError
+        ? `Cannot reach API at ${API} — is the backend running?`
+        : `Network error: ${String(err)}`;
+    console.error(`[SIGNAL API] ${msg}`);
+    throw new Error(msg);
+  }
   if (!res.ok) {
     const msg = `API ${res.status}: ${res.statusText}`;
     console.error(`[SIGNAL API] ${msg} — ${url.pathname}`);
     throw new Error(msg);
+  }
+  return res.json();
+}
+
+async function post<T>(path: string): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API}${path}`, { method: "POST", cache: "no-store" });
+  } catch (err) {
+    const msg =
+      err instanceof TypeError
+        ? `Cannot reach API at ${API} — is the backend running?`
+        : `Network error: ${String(err)}`;
+    throw new Error(msg);
+  }
+  if (!res.ok) {
+    throw new Error(`API ${res.status}: ${res.statusText}`);
   }
   return res.json();
 }
@@ -118,4 +145,7 @@ export const api = {
 
   /** Fetch the model training report (accuracy, features, etc.). */
   modelReport: () => get<ModelReport>("/model-report"),
+
+  /** Trigger database seeding (creates synthetic data if real APIs are unavailable). */
+  seed: () => post<{ status: string; headlines: number; price_points: number }>("/seed"),
 };

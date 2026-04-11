@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,6 +19,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+const API =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+
 const NAV = [
   { href: "/dashboard", label: "Command Center", icon: LayoutDashboard },
   { href: "/dashboard/feed", label: "Intelligence Feed", icon: Newspaper },
@@ -31,6 +34,45 @@ const NAV = [
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [apiOnline, setApiOnline] = useState<boolean | null>(null);
+  const [hasData, setHasData] = useState<boolean | null>(null);
+
+  const checkHealth = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/health`, { cache: "no-store" });
+      setApiOnline(res.ok);
+      if (res.ok) {
+        // Also check if there are headlines
+        const headlinesRes = await fetch(
+          `${API}/headlines?commodity=WTI&limit=1`,
+          { cache: "no-store" }
+        );
+        if (headlinesRes.ok) {
+          const data = await headlinesRes.json();
+          setHasData(Array.isArray(data) && data.length > 0);
+        }
+      }
+    } catch {
+      setApiOnline(false);
+      setHasData(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Use setTimeout(0) for initial check to avoid synchronous setState in effect
+    const initial = setTimeout(checkHealth, 0);
+    const interval = setInterval(checkHealth, 30_000);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
+  }, [checkHealth]);
+
+  const statuses = [
+    { label: "API Online", ok: apiOnline },
+    { label: "Model Active", ok: apiOnline },
+    { label: "News Feed Live", ok: hasData },
+  ];
 
   return (
     <motion.aside
@@ -114,15 +156,15 @@ export default function Sidebar() {
           <div className="text-[0.6rem] text-[#475569] tracking-[0.1em] font-bold uppercase mb-2">
             System Status
           </div>
-          {[
-            { label: "API Online", ok: true },
-            { label: "Model Active", ok: true },
-            { label: "News Feed Live", ok: true },
-          ].map((s) => (
+          {statuses.map((s) => (
             <div key={s.label} className="flex items-center gap-2 text-xs text-[#94A3B8]">
               <span
-                className={`w-1.5 h-1.5 rounded-full animate-pulse-dot ${
-                  s.ok ? "bg-[#22C55E]" : "bg-[#EF4444]"
+                className={`w-1.5 h-1.5 rounded-full ${
+                  s.ok === null
+                    ? "bg-[#F59E0B] animate-pulse"
+                    : s.ok
+                      ? "bg-[#22C55E] animate-pulse-dot"
+                      : "bg-[#EF4444]"
                 }`}
               />
               {s.label}

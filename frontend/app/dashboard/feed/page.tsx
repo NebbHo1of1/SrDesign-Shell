@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { api, type Headline } from "@/lib/api";
 import {
@@ -15,6 +15,9 @@ import {
   ExternalLink,
   Search,
   Filter,
+  RefreshCw,
+  AlertTriangle,
+  Database,
 } from "lucide-react";
 
 const EVENT_TYPES = [
@@ -38,16 +41,42 @@ function sentimentColor(score: number) {
 export default function FeedPage() {
   const [headlines, setHeadlines] = useState<Headline[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    api
-      .headlines("WTI", 200)
-      .then(setHeadlines)
-      .catch(() => setHeadlines([]))
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.headlines("WTI", 200);
+      setHeadlines(data);
+
+      // If API is reachable but returned no headlines, auto-seed
+      if (data.length === 0) {
+        console.log("[SIGNAL] No headlines found — auto-seeding…");
+        setSeeding(true);
+        try {
+          await api.seed();
+          const freshData = await api.headlines("WTI", 200);
+          setHeadlines(freshData);
+        } catch (seedErr) {
+          console.warn("[SIGNAL] Auto-seed failed:", seedErr);
+        } finally {
+          setSeeding(false);
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to load headlines";
+      setError(msg);
+      setHeadlines([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const filtered = headlines.filter((h) => {
     if (filter !== "All" && h.event_type !== filter) return false;
@@ -62,11 +91,52 @@ export default function FeedPage() {
         <h1 className="text-xl font-extrabold text-[#F8FAFC]">
           Intelligence Feed
         </h1>
-        <span className="flex items-center gap-1.5 text-[0.6rem] text-[#22C55E]">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse-dot" />
-          Live
-        </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={load}
+            disabled={loading}
+            className="flex items-center gap-1.5 text-xs text-[#94A3B8] hover:text-[#F8FAFC] transition-colors disabled:opacity-50"
+            title="Refresh headlines"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+          </button>
+          <span className="flex items-center gap-1.5 text-[0.6rem] text-[#22C55E]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse-dot" />
+            Live
+          </span>
+        </div>
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl p-4 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-[#EF4444] shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-[#EF4444]">
+              Unable to load headlines
+            </p>
+            <p className="text-xs text-[#F87171] mt-0.5">{error}</p>
+          </div>
+          <button
+            onClick={load}
+            disabled={loading}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Seeding banner */}
+      {seeding && (
+        <div className="bg-[#38BDF8]/10 border border-[#38BDF8]/30 rounded-xl p-4 flex items-center gap-3">
+          <Database className="w-5 h-5 text-[#38BDF8] shrink-0 animate-pulse" />
+          <p className="text-sm text-[#38BDF8]">
+            No data found — seeding database with initial data…
+          </p>
+        </div>
+      )}
 
       {/* Filters row */}
       <div className="flex flex-wrap items-center gap-3">
