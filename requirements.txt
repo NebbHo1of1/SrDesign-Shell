@@ -1,3 +1,17 @@
+# ── Web framework & server ───────────────────────────────────────────────
+fastapi
+uvicorn
+pydantic
+python-dotenv
+
+# ── Database ─────────────────────────────────────────────────────────────
+sqlalchemy
+
+# ── HTTP & NLP ───────────────────────────────────────────────────────────
+requests
+vaderSentiment
+
+# ── Data science & ML ────────────────────────────────────────────────────
 numpy
 pandas
 pyarrow
