@@ -16,9 +16,10 @@ interface Props {
   kpi: KPIs | null;
   headline: Headline | undefined;
   loading: boolean;
+  commodity?: string;
 }
 
-export default function SignalPanel({ kpi, headline, loading }: Props) {
+export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" }: Props) {
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-full animate-pulse">
@@ -73,7 +74,7 @@ export default function SignalPanel({ kpi, headline, loading }: Props) {
       <div className="flex items-center gap-2 mb-5">
         <Zap className="w-4 h-4 text-[#FBCE07]" />
         <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
-          AI Signal — WTI
+          AI Signal — {commodity}
         </span>
       </div>
 
