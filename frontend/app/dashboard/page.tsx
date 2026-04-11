@@ -191,6 +191,7 @@ export default function DashboardPage() {
             <button
               onClick={handleRefresh}
               disabled={refreshing || loading}
+              aria-label="Refresh dashboard data"
               className="inline-flex items-center gap-1 text-[#38BDF8] hover:text-[#7DD3FC] transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
