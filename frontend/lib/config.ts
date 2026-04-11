@@ -5,4 +5,4 @@
               Set to `false` → restore normal auth flow with login screen.
    ──────────────────────────────────────────────────────────────────── */
 
-export const DEV_MODE = true;
+export const DEV_MODE = false;
