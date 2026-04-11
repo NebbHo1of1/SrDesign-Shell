@@ -8,7 +8,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Brain, Gauge, Cpu, GitBranch, AlertCircle } from "lucide-react";
+import { Brain, Gauge, Cpu, GitBranch, AlertCircle, BookOpen } from "lucide-react";
 import RoleGate from "@/components/RoleGate";
 import {
   ResponsiveContainer,
@@ -51,6 +51,36 @@ const PIPELINE = [
     icon: <Gauge className="w-5 h-5 text-[#22C55E]" />,
   },
 ];
+
+/* ── Feature descriptions for non-technical stakeholders ────────────── */
+const FEATURE_GLOSSARY: Record<string, string> = {
+  rsi: "Relative Strength Index — a momentum oscillator (0–100) that measures speed and magnitude of recent price changes. Values above 70 suggest the asset may be overbought; below 30, oversold.",
+  rsi_norm: "Normalized RSI — the RSI value re-centered around zero (RSI − 50) / 50. Negative values indicate bearish momentum, positive values indicate bullish momentum.",
+  rsi_overbought: "RSI Overbought Flag — equals 1 when RSI exceeds 70, signaling the market may be due for a pullback.",
+  rsi_oversold: "RSI Oversold Flag — equals 1 when RSI drops below 30, signaling the market may be due for a rebound.",
+  macd: "Moving Average Convergence/Divergence — the difference between a 12-period and 26-period exponential moving average. Positive values suggest upward momentum.",
+  macd_hist: "MACD Histogram — the gap between the MACD line and its 9-period signal line. Widening bars mean strengthening momentum.",
+  macd_signal: "MACD Signal Line — a 9-period exponential moving average of the MACD. Crossovers between MACD and its signal often precede trend changes.",
+  macd_x_tone: "MACD × Sentiment — multiplies the MACD histogram by average headline sentiment. Captures moments when both technical and news signals align.",
+  macd_x_vol: "MACD × Volatility — multiplies the MACD histogram by 5-day price volatility. Highlights momentum shifts during high-uncertainty periods.",
+  rsi_x_tone: "RSI × Sentiment — combines the normalized RSI with headline sentiment, detecting when technical momentum and news tone reinforce each other.",
+  momentum_3: "3-Day Momentum — the absolute price change over the last three trading days. Positive means prices have risen; negative means they have fallen.",
+  volatility_5: "5-Day Volatility — the standard deviation of daily price changes over the most recent five days. Higher values indicate greater market uncertainty.",
+  volatility_spike: "Volatility Spike Flag — equals 1 when current 5-day volatility exceeds its own 5-day average, flagging unusual market turbulence.",
+  avg_tone: "Average Headline Sentiment — the mean VADER sentiment score across recent oil-related news headlines. Ranges from −1 (very negative) to +1 (very positive).",
+  tone_ma_3: "3-Day Sentiment Moving Average — a smoothed version of headline sentiment over three days, filtering out single-day noise.",
+  tone_x_volatility: "Sentiment × Volatility — multiplies headline sentiment by 5-day volatility. Large absolute values mean strong sentiment during volatile markets.",
+  price_change_1: "1-Day Price Change — the dollar change in price from the previous trading day. Positive means the price rose.",
+  price_vs_ema12: "Price vs. 12-Day EMA — how far the current price sits above or below its 12-day exponential moving average, expressed as a ratio.",
+  ema12_vs_ema26: "EMA-12 vs. EMA-26 — the ratio between the 12-day and 26-day exponential moving averages. Positive means the short-term trend leads the longer trend.",
+  down_momentum: "Down-Day Flag — equals 1 when the most recent close is lower than the prior day's close, capturing consecutive bearish sessions.",
+  return_1: "1-Day Return — the percentage change in price from the previous day.",
+  return_3: "3-Day Return — the cumulative percentage change over the last three trading days.",
+  price_change_2: "2-Day Price Change — the dollar change in price over the last two trading days.",
+  day_of_week: "Day of Week — numeric encoding (0 = Monday … 4 = Friday) capturing weekly seasonality patterns in oil markets.",
+  month: "Month — numeric encoding (1–12) reflecting seasonal supply-demand patterns such as winter heating demand or summer driving season.",
+  headline_count: "Headline Count — the number of oil-related news articles captured for a given day. Spikes often correlate with market-moving events.",
+};
 
 const COMMODITIES = ["WTI", "BRENT"];
 
@@ -298,6 +328,40 @@ export default function ModelPage() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Feature Glossary — plain-language descriptions for executives */}
+      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <BookOpen className="w-4 h-4 text-[#A78BFA]" />
+          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            Feature Glossary
+          </span>
+        </div>
+        <p className="text-xs text-[#64748B] mb-4">
+          What each feature means in plain language — matched to the importance
+          chart above.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {featureData.map((f) => {
+            const key = f.name.toLowerCase().replace(/ /g, "_");
+            const desc = FEATURE_GLOSSARY[key];
+            if (!desc) return null;
+            return (
+              <div
+                key={f.name}
+                className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3"
+              >
+                <span className="text-xs font-bold text-[#F8FAFC]">
+                  {f.name}
+                </span>
+                <p className="text-xs text-[#94A3B8] mt-1 leading-relaxed">
+                  {desc}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
