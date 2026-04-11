@@ -41,10 +41,11 @@ export default function KPICards({ wti, brent, loading }: Props) {
     );
   }
 
-  const pred = wti?.last_prediction ?? "—";
-  const conf = wti?.last_confidence;
+  const pred = wti?.model_prediction ?? wti?.last_prediction ?? "—";
+  const conf = wti?.model_confidence ?? wti?.last_confidence;
   const sentiment = wti?.avg_sentiment_24h ?? 0;
   const highImpact = (wti?.high_impact_count_24h ?? 0) + (brent?.high_impact_count_24h ?? 0);
+  const isModelPred = wti?.model_prediction != null;
 
   // Derived risk level
   const riskScore =
@@ -70,10 +71,12 @@ export default function KPICards({ wti, brent, loading }: Props) {
       value: pred,
       sub:
         pred === "UP"
-          ? "Bullish signal detected"
+          ? isModelPred ? "AI model: Bullish" : "Bullish signal detected"
           : pred === "DOWN"
-            ? "Bearish signal detected"
-            : "Awaiting signal",
+            ? isModelPred ? "AI model: Bearish" : "Bearish signal detected"
+            : pred === "UNCERTAIN"
+              ? "AI model: Uncertain"
+              : "Awaiting signal",
       icon:
         pred === "UP" ? (
           <TrendingUp className="w-5 h-5 text-[#22C55E]" />
@@ -106,7 +109,7 @@ export default function KPICards({ wti, brent, loading }: Props) {
     {
       label: "Prediction Confidence",
       value: conf != null ? `${(conf * 100).toFixed(0)}%` : "—",
-      sub: conf != null && conf >= 0.75 ? "High confidence" : "Moderate confidence",
+      sub: conf != null && conf >= 0.75 ? "High confidence" : conf != null ? "Moderate confidence" : "Model unavailable",
       icon: <Gauge className="w-5 h-5 text-[#38BDF8]" />,
       color: "text-[#38BDF8]",
       border: "border-[#38BDF8]/30",

@@ -32,8 +32,8 @@ export default function SignalPanel({ kpi, headline, loading }: Props) {
     );
   }
 
-  const pred = kpi?.last_prediction ?? "—";
-  const conf = kpi?.last_confidence ?? 0;
+  const pred = kpi?.model_prediction ?? kpi?.last_prediction ?? "—";
+  const conf = kpi?.model_confidence ?? kpi?.last_confidence ?? 0;
   const confPct = Math.round(conf * 100);
 
   const isUp = pred === "UP";

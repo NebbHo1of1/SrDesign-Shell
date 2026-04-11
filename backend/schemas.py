@@ -38,3 +38,7 @@ class KPIOut(BaseModel):
     last_prediction: str | None
     last_confidence: float | None
     total_headlines_24h: int
+    # AI model prediction fields (from the trained model)
+    model_prediction: str | None = None
+    model_confidence: float | None = None
+    model_probability_up: float | None = None

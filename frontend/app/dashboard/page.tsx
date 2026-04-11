@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -110,6 +111,18 @@ export default function DashboardPage() {
     timeZone: "UTC",
   });
 
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await api.seed();
+      await load();
+    } catch (err) {
+      console.warn("[SIGNAL] Refresh failed:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [load]);
+
   return (
     <motion.div
       variants={stagger}
@@ -174,6 +187,15 @@ export default function DashboardPage() {
             Systems Operational
             <span className="mx-1">•</span>
             {systemTime} UTC
+            <span className="mx-1">•</span>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              className="inline-flex items-center gap-1 text-[#38BDF8] hover:text-[#7DD3FC] transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "Refreshing…" : "Refresh Data"}
+            </button>
           </div>
         </div>
       </motion.div>

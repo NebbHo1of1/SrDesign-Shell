@@ -37,6 +37,12 @@ export interface KPIs {
   last_prediction: string | null;
   last_confidence: number | null;
   total_headlines_24h: number;
+  /** AI model prediction: "UP" | "DOWN" | "UNCERTAIN" | null */
+  model_prediction: string | null;
+  /** AI model confidence (0-1) */
+  model_confidence: number | null;
+  /** AI model raw P(UP) */
+  model_probability_up: number | null;
 }
 
 export interface SentimentPricePoint {

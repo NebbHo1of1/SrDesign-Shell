@@ -132,12 +132,27 @@ def get_kpis(commodity: str = Query(default="WTI"), db: Session = Depends(get_db
     high_impact = len([h for h in recent if h.impact_score >= 70])
     latest = recent[0] if recent else None
 
+    # Call the trained AI model for a real prediction
+    model_pred = None
+    model_conf = None
+    model_prob_up = None
+    try:
+        result = predict_market_direction(db, commodity=commodity)
+        model_pred = result["prediction"]
+        model_conf = result["confidence"]
+        model_prob_up = result["probability_up"]
+    except Exception:
+        logger.warning("AI model prediction failed for KPIs — using headline-based fallback", exc_info=True)
+
     return {
         "avg_sentiment_24h": avg_sentiment,
         "high_impact_count_24h": high_impact,
-        "last_prediction": latest.pred_label if latest else None,
-        "last_confidence": latest.pred_confidence if latest else None,
+        "last_prediction": model_pred or (latest.pred_label if latest else None),
+        "last_confidence": model_conf or (latest.pred_confidence if latest else None),
         "total_headlines_24h": len(recent),
+        "model_prediction": model_pred,
+        "model_confidence": model_conf,
+        "model_probability_up": model_prob_up,
     }
 
 
