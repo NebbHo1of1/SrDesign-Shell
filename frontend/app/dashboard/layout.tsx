@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useAuth();
@@ -27,7 +28,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col flex-1 overflow-hidden">
         <TopBar />
         <main className="flex-1 overflow-y-auto p-6">
-          {children}
+          <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
     </div>

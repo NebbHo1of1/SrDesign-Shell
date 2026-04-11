@@ -203,7 +203,7 @@ export default function AnalyticsPage() {
 
       {/* Power BI Embed Placeholder */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 1, y: 0 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-8 text-center"
       >

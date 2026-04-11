@@ -124,7 +124,7 @@ export default function FeedPage() {
               target="_blank"
               rel="noopener noreferrer"
               variants={{
-                hidden: { opacity: 0, y: 8 },
+                hidden: { opacity: 1, y: 0 },
                 show: { opacity: 1, y: 0 },
               }}
               className="block bg-[#1A2234] border border-[#1E293B] rounded-xl p-4 hover:border-[#38BDF8]/40 transition-all group"

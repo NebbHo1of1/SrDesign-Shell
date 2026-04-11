@@ -19,7 +19,7 @@ const stagger = {
   show: { transition: { staggerChildren: 0.08 } },
 };
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 1, y: 0 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
@@ -41,6 +41,12 @@ export default function DashboardPage() {
           api.headlines("WTI", 30).catch((e) => { console.warn("[SIGNAL] Headlines fetch failed:", e.message); return []; }),
           api.prices("WTI", "14d").catch((e) => { console.warn("[SIGNAL] Prices fetch failed:", e.message); return null; }),
         ]);
+        console.log("[SIGNAL] Dashboard data loaded:", {
+          kpiWTI: wti,
+          kpiBrent: brent,
+          headlines: news?.length ?? 0,
+          prices: priceData?.points?.length ?? 0,
+        });
         setKpiWTI(wti);
         setKpiBrent(brent);
         setHeadlines(news);
