@@ -24,9 +24,12 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+const COMMODITIES = ["WTI", "BRENT"];
+
 export default function DashboardPage() {
   const { user } = useAuth();
 
+  const [commodity, setCommodity] = useState("WTI");
   const [kpiWTI, setKpiWTI] = useState<KPIs | null>(null);
   const [kpiBrent, setKpiBrent] = useState<KPIs | null>(null);
   const [headlines, setHeadlines] = useState<Headline[]>([]);
@@ -43,11 +46,11 @@ export default function DashboardPage() {
       const [wti, brent, news, priceData] = await Promise.all([
         api.kpis("WTI").catch((e) => { console.warn("[SIGNAL] KPI WTI fetch failed:", e.message); return null; }),
         api.kpis("BRENT").catch((e) => { console.warn("[SIGNAL] KPI BRENT fetch failed:", e.message); return null; }),
-        api.headlines("WTI", 30).catch((e) => {
+        api.headlines(commodity, 30).catch((e) => {
           console.warn("[SIGNAL] Headlines fetch failed:", e.message);
           throw e; // re-throw to trigger error state
         }),
-        api.prices("WTI", "14d").catch((e) => { console.warn("[SIGNAL] Prices fetch failed:", e.message); return null; }),
+        api.prices(commodity, "14d").catch((e) => { console.warn("[SIGNAL] Prices fetch failed:", e.message); return null; }),
       ]);
       console.log("[SIGNAL] Dashboard data loaded:", {
         kpiWTI: wti,
@@ -68,10 +71,10 @@ export default function DashboardPage() {
           await api.seed();
           // Re-fetch after seed
           const [freshNews, freshWti, freshBrent, freshPrices] = await Promise.all([
-            api.headlines("WTI", 30).catch(() => []),
+            api.headlines(commodity, 30).catch(() => []),
             api.kpis("WTI").catch(() => null),
             api.kpis("BRENT").catch(() => null),
-            api.prices("WTI", "14d").catch(() => null),
+            api.prices(commodity, "14d").catch(() => null),
           ]);
           setHeadlines(freshNews);
           setKpiWTI(freshWti);
@@ -90,7 +93,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [commodity]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -170,18 +173,37 @@ export default function DashboardPage() {
         <div className="relative bg-gradient-to-r from-[#0D1321] via-[#1A2234] to-[#111827] border border-[#1E293B] rounded-2xl p-6 overflow-hidden">
           {/* Top accent */}
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#DD1D21] via-[#FBCE07] to-[#38BDF8]" />
-          <h1 className="text-2xl font-extrabold text-[#F8FAFC]">
-            {greeting},{" "}
-            <span className="bg-gradient-to-r from-[#FBCE07] to-[#38BDF8] bg-clip-text text-transparent">
-              {user.name.split(" ")[0]}
-            </span>
-            .
-          </h1>
-          <p className="text-sm text-[#94A3B8] mt-1">
-            SIGNAL is{" "}
-            <span className="text-[#22C55E] font-semibold">online</span>.
-            Monitoring global oil markets and geopolitical activity.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-extrabold text-[#F8FAFC]">
+                {greeting},{" "}
+                <span className="bg-gradient-to-r from-[#FBCE07] to-[#38BDF8] bg-clip-text text-transparent">
+                  {user.name.split(" ")[0]}
+                </span>
+                .
+              </h1>
+              <p className="text-sm text-[#94A3B8] mt-1">
+                SIGNAL is{" "}
+                <span className="text-[#22C55E] font-semibold">online</span>.
+                Monitoring global oil markets and geopolitical activity.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {COMMODITIES.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => { setCommodity(c); setLoading(true); }}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-semibold ${
+                    commodity === c
+                      ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
+                      : "text-[#64748B] border-[#1E293B] hover:border-[#334155]"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-2 mt-3 text-xs text-[#64748B]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse-dot" />
             Systems Operational
@@ -209,7 +231,7 @@ export default function DashboardPage() {
       {/* ── Two-column: Signal + News ────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div variants={fadeUp} className="lg:col-span-1">
-          <SignalPanel kpi={kpiWTI} headline={headlines[0]} loading={loading} />
+          <SignalPanel kpi={commodity === "WTI" ? kpiWTI : kpiBrent} headline={headlines[0]} loading={loading} commodity={commodity} />
         </motion.div>
         <motion.div variants={fadeUp} className="lg:col-span-2">
           <NewsPanel headlines={headlines} loading={loading} />

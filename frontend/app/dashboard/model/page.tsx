@@ -52,7 +52,10 @@ const PIPELINE = [
   },
 ];
 
+const COMMODITIES = ["WTI", "BRENT"];
+
 export default function ModelPage() {
+  const [commodity, setCommodity] = useState("WTI");
   const [report, setReport] = useState<ModelReport | null>(null);
   const [prediction, setPrediction] = useState<ModelPrediction | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,14 +65,17 @@ export default function ModelPage() {
       .modelReport()
       .then(setReport)
       .catch((e) => setError(e.message));
+  }, []);
 
+  useEffect(() => {
+    setPrediction(null);
     api
-      .predict("WTI")
+      .predict(commodity)
       .then(setPrediction)
       .catch(() => {
         /* prediction may fail if DB is empty — non-critical */
       });
-  }, []);
+  }, [commodity]);
 
   /* Derive display values from the report (or show fallback) */
   const accuracy = report
@@ -98,9 +104,26 @@ export default function ModelPage() {
   return (
     <RoleGate page="/dashboard/model">
     <div className="space-y-6">
-      <h1 className="text-xl font-extrabold text-[#F8FAFC]">
-        AI Model — Explainable Intelligence
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-xl font-extrabold text-[#F8FAFC]">
+          AI Model — Explainable Intelligence
+        </h1>
+        <div className="flex items-center gap-2">
+          {COMMODITIES.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCommodity(c)}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-semibold ${
+                commodity === c
+                  ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
+                  : "text-[#64748B] border-[#1E293B] hover:border-[#334155]"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {error && (
         <div className="flex items-center gap-2 text-sm text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-lg px-4 py-2">

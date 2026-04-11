@@ -57,22 +57,26 @@ function RiskMeter({ score }: { score: number }) {
   );
 }
 
+const COMMODITIES = ["WTI", "BRENT"];
+
 export default function SignalsPage() {
+  const [commodity, setCommodity] = useState("WTI");
   const [kpi, setKpi] = useState<KPIs | null>(null);
   const [headlines, setHeadlines] = useState<Headline[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     Promise.all([
-      api.kpis("WTI").catch(() => null),
-      api.headlines("WTI", 50).catch(() => []),
+      api.kpis(commodity).catch(() => null),
+      api.headlines(commodity, 50).catch(() => []),
     ])
       .then(([k, h]) => {
         setKpi(k);
         setHeadlines(h);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [commodity]);
 
   const sentiment = kpi?.avg_sentiment_24h ?? 0;
   const highImpact = kpi?.high_impact_count_24h ?? 0;
@@ -95,11 +99,28 @@ export default function SignalsPage() {
   return (
     <RoleGate page="/dashboard/signals">
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Zap className="w-5 h-5 text-[#FBCE07]" />
-        <h1 className="text-xl font-extrabold text-[#F8FAFC]">
-          Signal Engine
-        </h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <Zap className="w-5 h-5 text-[#FBCE07]" />
+          <h1 className="text-xl font-extrabold text-[#F8FAFC]">
+            Signal Engine
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          {COMMODITIES.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCommodity(c)}
+              className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-semibold ${
+                commodity === c
+                  ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
+                  : "text-[#64748B] border-[#1E293B] hover:border-[#334155]"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Top row: Risk + Market Status + Volatility */}
@@ -111,7 +132,7 @@ export default function SignalsPage() {
           <div className="flex items-center gap-2 mb-3">
             <Activity className="w-4 h-4 text-[#38BDF8]" />
             <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
-              Market Status — WTI
+              Market Status — {commodity}
             </span>
           </div>
           <div className={`flex items-center gap-2 ${marketStatus.color}`}>
