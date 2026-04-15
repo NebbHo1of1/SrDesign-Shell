@@ -17,6 +17,7 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { accessiblePaths } from "@/lib/permissions";
@@ -116,6 +117,38 @@ export default function Sidebar() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ── Executive Badge ──────────────────────────────── */}
+      {user?.role === "Executive" && (
+        <div className="px-3 py-2 border-b border-[#1E293B]">
+          <AnimatePresence mode="wait">
+            {!collapsed ? (
+              <motion.div
+                key="exec-badge-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-[#FFD700]/30 bg-[#FFD700]/5"
+              >
+                <Crown className="w-3.5 h-3.5 text-[#FFD700] shrink-0" />
+                <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#FFD700] uppercase">
+                  Exec
+                </span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="exec-badge-icon"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex justify-center"
+              >
+                <Crown className="w-4 h-4 text-[#FFD700]" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* ── Nav Links ────────────────────────────────────── */}
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">

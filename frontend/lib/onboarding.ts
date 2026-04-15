@@ -10,6 +10,8 @@ export interface AlertsConfig {
   brentDecreaseThreshold: number;
   notificationsEnabled: boolean;
   priorityAlertsOnly: boolean; // Executive-only
+  briefingCadence: "daily" | "weekly" | "realtime"; // Executive-only
+  escalationLevel: "all" | "high" | "critical"; // Executive-only
   email: string;
 }
 
@@ -28,6 +30,8 @@ const DEFAULT_ALERTS: AlertsConfig = {
   brentDecreaseThreshold: 5,
   notificationsEnabled: true,
   priorityAlertsOnly: false,
+  briefingCadence: "daily",
+  escalationLevel: "high",
   email: "",
 };
 
