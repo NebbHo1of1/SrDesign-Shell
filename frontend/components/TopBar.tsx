@@ -1,22 +1,27 @@
 /* ── SIGNAL — Top Bar ─────────────────────────────────────────────────
    User info, role badge, notifications bell, system clock.
+   Executive users get a gold "Executive Mode" indicator.
    ──────────────────────────────────────────────────────────────────── */
 
 "use client";
 
 import { useAuth } from "@/lib/auth";
-import { Bell, LogOut, Shield } from "lucide-react";
+import { useAlerts } from "@/lib/alerts";
+import { Bell, LogOut, Shield, Crown } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const ROLE_COLORS: Record<string, string> = {
-  Executive: "bg-[#FBCE07]/10 text-[#FBCE07] border-[#FBCE07]/30",
+  Executive: "bg-[#FFD700]/10 text-[#FFD700] border-[#FFD700]/30",
   Analyst: "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/30",
   Viewer: "bg-[#94A3B8]/10 text-[#94A3B8] border-[#94A3B8]/30",
 };
 
 export default function TopBar() {
   const { user, logout } = useAuth();
+  const { alerts } = useAlerts();
   const [time, setTime] = useState("");
+
+  const unreadCount = alerts.filter((a) => !a.read).length;
 
   useEffect(() => {
     const tick = () =>
@@ -39,16 +44,27 @@ export default function TopBar() {
 
   if (!user) return null;
 
+  const isExec = user.role === "Executive";
+
   return (
-    <header className="flex items-center justify-between px-6 py-3 border-b border-[#1E293B] bg-[#0D1321]/80 backdrop-blur-lg shrink-0">
+    <header className={`flex items-center justify-between px-6 py-3 border-b bg-[#0D1321]/80 backdrop-blur-lg shrink-0 ${
+      isExec ? "border-[#FFD700]/10" : "border-[#1E293B]"
+    }`}>
       {/* Left — SIGNAL wordmark */}
       <div className="flex items-center gap-3">
-        <span className="text-sm font-extrabold tracking-[0.15em] text-[#FBCE07]">
+        <span className={`text-sm font-extrabold tracking-[0.15em] ${isExec ? "text-[#FFD700]" : "text-[#FBCE07]"}`}>
           SIGNAL
         </span>
         <span className="text-[0.6rem] text-[#475569] tracking-[0.08em] hidden sm:inline">
           CRUDE OIL INTELLIGENCE
         </span>
+        {/* Executive Mode indicator */}
+        {isExec && (
+          <span className="hidden md:inline-flex items-center gap-1 text-[0.55rem] font-bold tracking-[0.1em] uppercase px-2 py-0.5 rounded-full bg-[#FFD700]/5 text-[#FFD700] border border-[#FFD700]/20">
+            <Crown className="w-3 h-3" />
+            Executive Mode
+          </span>
+        )}
       </div>
 
       {/* Right — user / notifications / clock */}
@@ -64,7 +80,13 @@ export default function TopBar() {
           aria-label="Notifications — new alerts available"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#DD1D21] rounded-full animate-pulse-dot" aria-hidden="true" />
+          {unreadCount > 0 ? (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] bg-[#DD1D21] rounded-full text-[0.5rem] text-white font-bold flex items-center justify-center px-0.5 animate-pulse-dot" aria-hidden="true">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          ) : (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#DD1D21] rounded-full animate-pulse-dot" aria-hidden="true" />
+          )}
         </button>
 
         {/* Role badge */}
@@ -73,7 +95,11 @@ export default function TopBar() {
             ROLE_COLORS[user.role] ?? ROLE_COLORS.Viewer
           }`}
         >
-          <Shield className="w-3 h-3 inline mr-1" />
+          {isExec ? (
+            <Crown className="w-3 h-3 inline mr-1" />
+          ) : (
+            <Shield className="w-3 h-3 inline mr-1" />
+          )}
           {user.role}
         </span>
 

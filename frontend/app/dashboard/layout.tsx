@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AlertSimulator from "@/components/AlertSimulator";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useAuth();
@@ -31,6 +32,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
+      <AlertSimulator />
     </div>
   );
 }

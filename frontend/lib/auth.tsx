@@ -39,6 +39,7 @@ interface AuthState {
 
 interface AuthCtx extends AuthState {
   login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, accessCode: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -48,8 +49,20 @@ const AuthContext = createContext<AuthCtx>({
   user: null,
   isLoaded: false,
   login: async () => {},
+  register: async () => ({ name: "", email: "", role: "Viewer" }),
   logout: () => {},
 });
+
+/* ── Access-code → role mapping ──────────────────────────────────── */
+const ACCESS_CODES: Record<string, Role> = {
+  "SIGNAL-EXEC-01": "Executive",
+  "SIGNAL-ANL-01": "Analyst",
+};
+
+/** Determine role from access code. No valid code → Viewer. */
+export function roleFromCode(code: string): Role {
+  return ACCESS_CODES[code.trim().toUpperCase()] ?? "Viewer";
+}
 
 /* ⚠️ DEMO ONLY — In production, replace with Azure AD / OAuth2 / JWT.
    These hardcoded credentials exist solely for demo presentations.
@@ -114,13 +127,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuth({ user: entry.user, isLoaded: true });
   }, []);
 
+  const register = useCallback(async (name: string, email: string, _password: string, accessCode: string): Promise<User> => {
+    /* simulate network delay */
+    await new Promise((r) => setTimeout(r, 1200));
+
+    const role = roleFromCode(accessCode);
+    const newUser: User = { name, email, role };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+    setAuth({ user: newUser, isLoaded: true });
+    return newUser;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("signal_onboarding");
+    localStorage.removeItem("signal_alerts_config");
     setAuth({ user: null, isLoaded: true });
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user: auth.user, isLoaded: auth.isLoaded, login, logout }}>
+    <AuthContext.Provider value={{ user: auth.user, isLoaded: auth.isLoaded, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

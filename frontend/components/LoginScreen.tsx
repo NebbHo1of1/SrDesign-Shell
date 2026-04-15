@@ -197,9 +197,15 @@ export default function LoginScreen() {
           </form>
 
           {/* ── Footer info ──────────────────────────────── */}
-          <div className="mt-6 pt-5 border-t border-[#1E293B]">
+          <div className="mt-6 pt-5 border-t border-[#1E293B] space-y-2">
             <p className="text-[0.6rem] text-[#475569] text-center tracking-wide">
               Demo credentials: admin@shell.com / analyst@shell.com / viewer@shell.com — password: signal
+            </p>
+            <p className="text-xs text-[#64748B] text-center">
+              New to SIGNAL?{" "}
+              <a href="/register" className="text-[#38BDF8] hover:text-[#7DD3FC] font-medium transition-colors">
+                Create Account
+              </a>
             </p>
           </div>
         </div>
