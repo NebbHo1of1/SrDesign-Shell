@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
+import { isOnboardingComplete } from "@/lib/onboarding";
 
 /* SSR disabled — LoginScreen uses Math.random() for particles and
    framer-motion animations that can produce hydration mismatches. */
@@ -21,7 +22,16 @@ export default function LoginGate() {
   const router = useRouter();
 
   useEffect(() => {
-    if (isLoaded && user) router.replace("/dashboard");
+    if (isLoaded && user) {
+      /* Viewers always go to dashboard; Analyst/Executive may need onboarding */
+      if (user.role === "Viewer" || isOnboardingComplete()) {
+        router.replace("/dashboard");
+      } else if (user.role === "Executive") {
+        router.replace("/onboarding?exec=1");
+      } else {
+        router.replace("/onboarding");
+      }
+    }
   }, [user, isLoaded, router]);
 
   /* Show nothing while auth is still loading from localStorage */

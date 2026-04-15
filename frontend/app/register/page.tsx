@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield,
@@ -44,9 +44,14 @@ export default function RegisterPage() {
     label: string;
   } | null>(null);
 
-  /* Redirect if already logged in */
+  /* Track whether we're in the middle of registration so the redirect
+     useEffect doesn't race with the role-based routing in handleSubmit. */
+  const isRegistering = useRef(false);
+
+  /* Redirect if already logged in (but NOT if we just registered — handleSubmit
+     does its own role-based redirect in that case). */
   useEffect(() => {
-    if (user) router.replace("/dashboard");
+    if (user && !isRegistering.current) router.replace("/dashboard");
   }, [user, router]);
 
   /* Real-time access code validation */
@@ -104,6 +109,7 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
+      isRegistering.current = true;
       const newUser = await register(name.trim(), email.trim(), password, accessCode.trim());
 
       if (newUser.role === "Viewer") {

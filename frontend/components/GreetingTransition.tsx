@@ -9,6 +9,7 @@ import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { User } from "@/lib/auth";
+import { isOnboardingComplete } from "@/lib/onboarding";
 
 interface Props {
   user: User;
@@ -25,16 +26,25 @@ export default function GreetingTransition({ user }: Props) {
     return hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   }, []);
 
+  /* Determine where to redirect based on role + onboarding status */
+  const destination = useMemo(() => {
+    if (user.role === "Viewer") return "/dashboard";
+    if (isOnboardingComplete()) return "/dashboard";
+    // Analyst or Executive who hasn't completed onboarding
+    if (user.role === "Executive") return "/onboarding?exec=1";
+    return "/onboarding";
+  }, [user]);
+
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 1200);
     const t2 = setTimeout(() => setPhase(2), 3000);
-    const t3 = setTimeout(() => router.replace("/dashboard"), 4200);
+    const t3 = setTimeout(() => router.replace(destination), 4200);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [router]);
+  }, [router, destination]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0A0E17] overflow-hidden">
