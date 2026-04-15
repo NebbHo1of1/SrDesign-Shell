@@ -134,6 +134,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const role = roleFromCode(accessCode);
     const newUser: User = { name, email, role };
 
+    /* Clear any stale onboarding data so the new user always gets a
+       fresh onboarding experience (even if a previous session completed it). */
+    localStorage.removeItem("signal_onboarding");
+    localStorage.removeItem("signal_alerts_config");
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
     setAuth({ user: newUser, isLoaded: true });
     return newUser;

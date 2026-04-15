@@ -673,7 +673,7 @@ function StepIndicator({
 
 /* ── Main Onboarding Component ───────────────────────────────────── */
 function OnboardingContent() {
-  const { user } = useAuth();
+  const { user, isLoaded } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isExecEntry = searchParams.get("exec") === "1";
@@ -693,12 +693,14 @@ function OnboardingContent() {
     router.replace("/dashboard");
   }, [alertConfig, router]);
 
-  /* Redirect if no user */
+  /* Redirect if no user — but only after auth has loaded from localStorage
+     to avoid a race condition where auth state hasn't propagated yet during
+     client-side navigation from the register page. */
   useEffect(() => {
-    if (!user) router.replace("/");
-  }, [user, router]);
+    if (isLoaded && !user) router.replace("/");
+  }, [user, isLoaded, router]);
 
-  if (!user) return null;
+  if (!isLoaded || !user) return null;
 
   /* Executive experience overlay */
   if (showExecExperience) {
