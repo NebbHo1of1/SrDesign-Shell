@@ -12,8 +12,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import {
   Shield,
-  Zap,
-  Globe,
   Bell,
   CheckCircle2,
   ChevronRight,
@@ -38,6 +36,22 @@ function ExecutiveExperience({
 }) {
   const [phase, setPhase] = useState(0);
 
+  /* Pre-compute particle positions on client to avoid impure render calls */
+  const [particles, setParticles] = useState<
+    Array<{ id: number; duration: number; delay: number; left: number }>
+  >([]);
+
+  useEffect(() => {
+    setTimeout(() => setParticles(
+      Array.from({ length: 20 }).map((_, i) => ({
+        id: i,
+        duration: 4 + Math.random() * 3,
+        delay: Math.random() * 2,
+        left: Math.random() * 100,
+      }))
+    ), 0);
+  }, []);
+
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 800);
     const t2 = setTimeout(() => setPhase(2), 2200);
@@ -59,18 +73,18 @@ function ExecutiveExperience({
 
       {/* Gold particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {particles.map((p) => (
           <motion.div
-            key={i}
+            key={p.id}
             initial={{ opacity: 0, y: "100vh" }}
             animate={{ opacity: [0, 0.6, 0], y: "-10vh" }}
             transition={{
-              duration: 4 + Math.random() * 3,
-              delay: Math.random() * 2,
+              duration: p.duration,
+              delay: p.delay,
               repeat: Infinity,
             }}
             className="absolute w-1 h-1 rounded-full bg-[#FFD700]"
-            style={{ left: `${Math.random() * 100}%` }}
+            style={{ left: `${p.left}%` }}
           />
         ))}
       </div>
@@ -312,28 +326,23 @@ function StepCommodity({
   );
 }
 
-function StepAlerts({
+/* ── Threshold Slider ─────────────────────────────────────────────── */
+function ThresholdSlider({
+  label,
+  value,
+  field,
+  accentColor,
   config,
   onChange,
-  onNext,
-  isExec,
 }: {
+  label: string;
+  value: number;
+  field: keyof AlertsConfig;
+  accentColor: string;
   config: AlertsConfig;
   onChange: (c: AlertsConfig) => void;
-  onNext: () => void;
-  isExec: boolean;
 }) {
-  const accentColor = isExec ? "#FFD700" : "#38BDF8";
-
-  const Slider = ({
-    label,
-    value,
-    field,
-  }: {
-    label: string;
-    value: number;
-    field: keyof AlertsConfig;
-  }) => (
+  return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
         <span className="text-[#94A3B8]">{label}</span>
@@ -356,6 +365,20 @@ function StepAlerts({
       />
     </div>
   );
+}
+
+function StepAlerts({
+  config,
+  onChange,
+  onNext,
+  isExec,
+}: {
+  config: AlertsConfig;
+  onChange: (c: AlertsConfig) => void;
+  onNext: () => void;
+  isExec: boolean;
+}) {
+  const accentColor = isExec ? "#FFD700" : "#38BDF8";
 
   return (
     <motion.div
@@ -380,15 +403,21 @@ function StepAlerts({
             <h3 className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase">
               WTI Crude
             </h3>
-            <Slider
+            <ThresholdSlider
               label="Price increase threshold"
               value={config.wtiIncreaseThreshold}
               field="wtiIncreaseThreshold"
+              accentColor={accentColor}
+              config={config}
+              onChange={onChange}
             />
-            <Slider
+            <ThresholdSlider
               label="Price decrease threshold"
               value={config.wtiDecreaseThreshold}
               field="wtiDecreaseThreshold"
+              accentColor={accentColor}
+              config={config}
+              onChange={onChange}
             />
           </div>
         )}
@@ -397,15 +426,21 @@ function StepAlerts({
             <h3 className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase">
               Brent Crude
             </h3>
-            <Slider
+            <ThresholdSlider
               label="Price increase threshold"
               value={config.brentIncreaseThreshold}
               field="brentIncreaseThreshold"
+              accentColor={accentColor}
+              config={config}
+              onChange={onChange}
             />
-            <Slider
+            <ThresholdSlider
               label="Price decrease threshold"
               value={config.brentDecreaseThreshold}
               field="brentDecreaseThreshold"
+              accentColor={accentColor}
+              config={config}
+              onChange={onChange}
             />
           </div>
         )}

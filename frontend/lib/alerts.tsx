@@ -59,7 +59,7 @@ export function AlertProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const data = loadOnboarding();
     if (data?.alerts) {
-      setAlertConfig(data.alerts);
+      setTimeout(() => setAlertConfig(data.alerts), 0);
     }
   }, []);
 

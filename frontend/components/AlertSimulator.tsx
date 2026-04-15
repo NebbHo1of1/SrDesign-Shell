@@ -19,7 +19,7 @@ import { loadOnboarding } from "@/lib/onboarding";
 export default function AlertSimulator() {
   const { user } = useAuth();
   const { addAlert, showToast, alertConfig } = useAlerts();
-  const lastCheck = useRef<number>(Date.now());
+  const lastCheck = useRef<number>(0);
 
   useEffect(() => {
     /* Only run for Analyst and Executive */
@@ -31,11 +31,11 @@ export default function AlertSimulator() {
     const config = onboarding.alerts;
     if (!config.notificationsEnabled) return;
 
+    lastCheck.current = Date.now();
+
     /* Simulate price monitoring every 30s */
     const interval = setInterval(() => {
-      const now = Date.now();
-      const elapsed = (now - lastCheck.current) / 1000;
-      lastCheck.current = now;
+      lastCheck.current = Date.now();
 
       /* Simulate random price changes */
       if (config.commodities.includes("WTI")) {
