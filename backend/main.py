@@ -196,13 +196,16 @@ def prediction_history(
     """Return aggregated daily prediction history — the average confidence
     and dominant prediction direction for each day, useful for charting
     model performance over time."""
-    from sqlalchemy import func, case
+    from sqlalchemy import String as SAString, func, case
 
     commodity = commodity.upper()
     # Use func.date() instead of cast(..., Date) — SQLite has no native
     # DATE type and cast produces values that trip up SQLAlchemy's
     # type processor (TypeError: fromisoformat: argument must be str).
-    day = func.date(Headline.published_at)
+    # Explicitly set type_=SAString so SQLAlchemy does NOT try to run
+    # the DateTime result processor on the plain date string returned
+    # by SQLite's date() function.
+    day = func.date(Headline.published_at, type_=SAString)
     rows = (
         db.query(
             day.label("date"),
