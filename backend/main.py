@@ -196,12 +196,16 @@ def prediction_history(
     """Return aggregated daily prediction history — the average confidence
     and dominant prediction direction for each day, useful for charting
     model performance over time."""
-    from sqlalchemy import func, cast, Date, case
+    from sqlalchemy import func, case
 
     commodity = commodity.upper()
+    # Use func.date() instead of cast(..., Date) — SQLite has no native
+    # DATE type and cast produces values that trip up SQLAlchemy's
+    # type processor (TypeError: fromisoformat: argument must be str).
+    day = func.date(Headline.published_at)
     rows = (
         db.query(
-            cast(Headline.published_at, Date).label("date"),
+            day.label("date"),
             func.avg(Headline.pred_confidence).label("avg_confidence"),
             func.avg(Headline.sentiment_score).label("avg_sentiment"),
             func.count(Headline.id).label("count"),
@@ -210,8 +214,8 @@ def prediction_history(
             func.sum(case((Headline.pred_label == "DOWN", 1), else_=0)).label("down_count"),
         )
         .filter(Headline.commodity == commodity)
-        .group_by(cast(Headline.published_at, Date))
-        .order_by(cast(Headline.published_at, Date).desc())
+        .group_by(day)
+        .order_by(day.desc())
         .limit(limit)
         .all()
     )
