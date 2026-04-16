@@ -44,7 +44,7 @@ export default function TopBar() {
   const isExec = user.role === "Executive";
 
   return (
-    <header className={`flex items-center justify-between px-6 py-3 border-b bg-[#0D1321]/80 backdrop-blur-lg shrink-0 ${
+    <header className={`relative z-50 flex items-center justify-between px-6 py-3 border-b bg-[#0D1321]/80 backdrop-blur-lg shrink-0 ${
       isExec ? "border-[#FFD700]/10" : "border-[#1E293B]"
     }`}>
       {/* Left — SIGNAL wordmark */}
