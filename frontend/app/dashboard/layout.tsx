@@ -31,7 +31,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col flex-1 overflow-hidden">
         <TopBar />
         <BackendOfflineBanner />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="relative z-0 flex-1 overflow-y-auto p-6">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>
       </div>
