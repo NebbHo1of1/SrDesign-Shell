@@ -21,6 +21,8 @@ import {
   DollarSign,
   Gauge,
   Minus,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 
 const COMMODITIES = ["WTI", "BRENT"];
@@ -81,6 +83,7 @@ export default function CommodityPage() {
   const [kpi, setKpi] = useState<KPIs | null>(null);
   const [headlines, setHeadlines] = useState<Headline[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   /* Track request generation to detect stale responses */
   const [reqId, setReqId] = useState(0);
 
@@ -98,16 +101,21 @@ export default function CommodityPage() {
 
   useEffect(() => {
     let cancelled = false;
+    setError(null);
     Promise.all([
       api.prices(commodity, range).catch(() => null),
       api.kpis(commodity).catch(() => null),
-      api.headlines(commodity, 50).catch(() => []),
+      api.headlines(commodity, 50),
     ])
       .then(([p, k, h]) => {
         if (cancelled) return;
         setPrices(p);
         setKpi(k);
         setHeadlines(h);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to load data");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -131,6 +139,27 @@ export default function CommodityPage() {
       animate="show"
       className="space-y-6"
     >
+      {/* ── Error Banner ─────────────────────────────────────── */}
+      {error && (
+        <motion.div variants={fadeUp}>
+          <div className="bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl p-4 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-[#EF4444] shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#EF4444]">Unable to load data</p>
+              <p className="text-xs text-[#F87171] mt-0.5">{error}</p>
+            </div>
+            <button
+              onClick={() => setReqId((n) => n + 1)}
+              disabled={loading}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+              Retry
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── Header + Controls ─────────────────────────────────── */}
       <motion.div variants={fadeUp}>
         <div className="relative bg-gradient-to-r from-[#0D1321] via-[#1A2234] to-[#111827] border border-[#1E293B] rounded-2xl p-6 overflow-hidden">

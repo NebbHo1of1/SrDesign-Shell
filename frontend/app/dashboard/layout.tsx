@@ -12,6 +12,7 @@ import TopBar from "@/components/TopBar";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AlertSimulator from "@/components/AlertSimulator";
 import CommandPalette from "@/components/CommandPalette";
+import BackendOfflineBanner from "@/components/BackendOfflineBanner";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useAuth();
@@ -29,6 +30,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <TopBar />
+        <BackendOfflineBanner />
         <main className="flex-1 overflow-y-auto p-6">
           <ErrorBoundary>{children}</ErrorBoundary>
         </main>

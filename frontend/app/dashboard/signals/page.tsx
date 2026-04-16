@@ -15,6 +15,7 @@ import {
   Globe,
   TrendingUp,
   TrendingDown,
+  RefreshCw,
 } from "lucide-react";
 
 function RiskMeter({ score }: { score: number }) {
@@ -64,19 +65,26 @@ export default function SignalsPage() {
   const [kpi, setKpi] = useState<KPIs | null>(null);
   const [headlines, setHeadlines] = useState<Headline[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     Promise.all([
       api.kpis(commodity).catch(() => null),
-      api.headlines(commodity, 50).catch(() => []),
+      api.headlines(commodity, 50),
     ])
       .then(([k, h]) => {
         setKpi(k);
         setHeadlines(h);
       })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to load data");
+        setHeadlines([]);
+      })
       .finally(() => setLoading(false));
-  }, [commodity]);
+  }, [commodity, retryKey]);
 
   const sentiment = kpi?.avg_sentiment_24h ?? 0;
   const highImpact = kpi?.high_impact_count_24h ?? 0;
@@ -99,6 +107,25 @@ export default function SignalsPage() {
   return (
     <RoleGate page="/dashboard/signals">
     <div className="space-y-6">
+      {/* ── Error Banner ─────────────────────────────────────── */}
+      {error && (
+        <div className="bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl p-4 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-[#EF4444] shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-[#EF4444]">Unable to load data</p>
+            <p className="text-xs text-[#F87171] mt-0.5">{error}</p>
+          </div>
+          <button
+            onClick={() => setRetryKey((n) => n + 1)}
+            disabled={loading}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+            Retry
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Zap className="w-5 h-5 text-[#FBCE07]" />

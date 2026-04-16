@@ -21,7 +21,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { BarChart3, PieChart as PieIcon } from "lucide-react";
+import { BarChart3, PieChart as PieIcon, AlertTriangle, RefreshCw } from "lucide-react";
 
 const EVENT_COLORS: Record<string, string> = {
   Geopolitics: "#EF4444",
@@ -37,16 +37,22 @@ export default function AnalyticsPage() {
   const [headlines, setHeadlines] = useState<Headline[]>([]);
   const [report, setReport] = useState<ModelReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
+    setError(null);
     api
       .headlines("WTI", 200)
       .then(setHeadlines)
-      .catch(() => [])
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "Failed to load data");
+      })
       .finally(() => setLoading(false));
 
     api.modelReport().then(setReport).catch(() => {});
-  }, []);
+  }, [retryKey]);
 
   /* Derive KPI values from the trained model report */
   const accuracy = report
@@ -98,6 +104,25 @@ export default function AnalyticsPage() {
   return (
     <RoleGate page="/dashboard/analytics">
     <div className="space-y-6">
+      {/* ── Error Banner ─────────────────────────────────────── */}
+      {error && (
+        <div className="bg-[#EF4444]/10 border border-[#EF4444]/30 rounded-xl p-4 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-[#EF4444] shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-[#EF4444]">Unable to load data</p>
+            <p className="text-xs text-[#F87171] mt-0.5">{error}</p>
+          </div>
+          <button
+            onClick={() => setRetryKey((n) => n + 1)}
+            disabled={loading}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
+            Retry
+          </button>
+        </div>
+      )}
+
       <h1 className="text-xl font-extrabold text-[#F8FAFC]">
         Data Analytics
       </h1>
