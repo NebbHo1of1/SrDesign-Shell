@@ -86,6 +86,20 @@ export default function NotificationCenter() {
         )}
       </button>
 
+      {/* Backdrop overlay */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
+            onClick={() => setOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Dropdown panel */}
       <AnimatePresence>
         {open && (
@@ -94,7 +108,7 @@ export default function NotificationCenter() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-8 w-80 sm:w-96 bg-[#0D1321] border border-[#1E293B] rounded-xl shadow-2xl z-50 overflow-hidden"
+            className="absolute right-0 top-8 w-80 sm:w-96 bg-[#0D1321] border border-[#1E293B]/80 rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] ring-1 ring-[#1E293B] z-50 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#1E293B]">
