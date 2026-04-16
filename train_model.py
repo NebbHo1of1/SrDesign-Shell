@@ -35,7 +35,7 @@ def main():
         choices=["gradient", "logistic", "forest", "tabpfn", "xgboost"],
     )
     parser.add_argument(
-        "--threshold", type=float, default=0.75,
+        "--threshold", type=float, default=0.55,
         help=(
             "Confidence threshold (0.50–0.95). Predictions with p > threshold are "
             "classified as UP; predictions with p < (1 - threshold) are classified "
