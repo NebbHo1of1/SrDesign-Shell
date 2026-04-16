@@ -1,7 +1,7 @@
 {
   "model_type": "RandomForestClassifier",
   "n_estimators": 500,
-  "threshold": 0.75,
+  "threshold": 0.55,
   "test_accuracy": 0.8148,
   "classification_metrics": {
     "precision": 0.8078,
