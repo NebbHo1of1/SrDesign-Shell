@@ -249,7 +249,7 @@ def _build_feature_df_from_db(db: Session, commodity: str = "WTI") -> pd.DataFra
 def predict_market_direction(
     db: Session,
     commodity: str = "WTI",
-    threshold: float = 0.55,
+    threshold: float = 0.75,
 ) -> dict[str, Any]:
     """Run the trained model on live DB data and return a prediction.
 
