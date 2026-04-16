@@ -80,6 +80,16 @@ export interface ModelReport {
   all_features: string[];
 }
 
+export interface PredictionHistoryPoint {
+  date: string;
+  dominant_prediction: "UP" | "DOWN";
+  avg_confidence: number;
+  avg_sentiment: number;
+  headline_count: number;
+  up_count: number;
+  down_count: number;
+}
+
 /* ── Fetcher ─────────────────────────────────────────────────────────── */
 
 async function get<T>(path: string, params?: Record<string, string>): Promise<T> {
@@ -151,6 +161,10 @@ export const api = {
 
   /** Fetch the model training report (accuracy, features, etc.). */
   modelReport: () => get<ModelReport>("/model-report"),
+
+  /** Fetch daily prediction history for charting model performance over time. */
+  predictionHistory: (commodity = "WTI", limit = 30) =>
+    get<PredictionHistoryPoint[]>("/prediction-history", { commodity, limit: String(limit) }),
 
   /** Trigger database seeding (creates synthetic data if real APIs are unavailable). */
   seed: () => post<{ status: string; headlines: number; price_points: number }>("/seed"),

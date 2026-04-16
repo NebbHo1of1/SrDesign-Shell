@@ -58,3 +58,18 @@ export function isOnboardingComplete(): boolean {
   const data = loadOnboarding();
   return data?.completed ?? false;
 }
+
+/** Retrieve just the alerts config (or null if onboarding hasn't been completed). */
+export function getAlertsConfig(): AlertsConfig | null {
+  const data = loadOnboarding();
+  return data?.alerts ?? null;
+}
+
+/** Persist an updated alerts config back to localStorage. */
+export function saveAlertsConfig(config: AlertsConfig): void {
+  const data = loadOnboarding();
+  if (data) {
+    data.alerts = config;
+    saveOnboarding(data);
+  }
+}

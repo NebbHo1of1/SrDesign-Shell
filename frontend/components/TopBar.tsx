@@ -6,9 +6,9 @@
 "use client";
 
 import { useAuth } from "@/lib/auth";
-import { useAlerts } from "@/lib/alerts";
-import { Bell, LogOut, Shield, Crown } from "lucide-react";
+import { LogOut, Shield, Crown, Command } from "lucide-react";
 import { useEffect, useState } from "react";
+import NotificationCenter from "@/components/NotificationCenter";
 
 const ROLE_COLORS: Record<string, string> = {
   Executive: "bg-[#FFD700]/10 text-[#FFD700] border-[#FFD700]/30",
@@ -18,10 +18,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 export default function TopBar() {
   const { user, logout } = useAuth();
-  const { alerts } = useAlerts();
   const [time, setTime] = useState("");
-
-  const unreadCount = alerts.filter((a) => !a.read).length;
 
   useEffect(() => {
     const tick = () =>
@@ -74,20 +71,20 @@ export default function TopBar() {
           {time}
         </span>
 
-        {/* Notification bell */}
+        {/* Cmd+K hint */}
         <button
-          className="relative text-[#64748B] hover:text-[#F8FAFC] transition-colors"
-          aria-label="Notifications — new alerts available"
+          onClick={() => {
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
+          }}
+          className="hidden sm:flex items-center gap-1.5 text-[0.6rem] text-[#475569] hover:text-[#94A3B8] bg-[#1A2234] border border-[#1E293B] rounded-lg px-2 py-1 transition-colors"
+          title="Search (⌘K)"
         >
-          <Bell className="w-4 h-4" />
-          {unreadCount > 0 ? (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] bg-[#DD1D21] rounded-full text-[0.5rem] text-white font-bold flex items-center justify-center px-0.5 animate-pulse-dot" aria-hidden="true">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          ) : (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#DD1D21] rounded-full animate-pulse-dot" aria-hidden="true" />
-          )}
+          <Command className="w-3 h-3" />
+          <span>K</span>
         </button>
+
+        {/* Notification Center */}
+        <NotificationCenter />
 
         {/* Role badge */}
         <span

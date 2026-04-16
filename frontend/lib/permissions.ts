@@ -18,6 +18,7 @@ const ALL_PAGES = [
   "/dashboard/analytics",
   "/dashboard/model",
   "/dashboard/signals",
+  "/dashboard/settings",
 ] as const;
 
 export type DashboardPath = (typeof ALL_PAGES)[number];
@@ -36,11 +37,13 @@ const ROLE_ACCESS: Record<Role, ReadonlySet<string>> = {
     "/dashboard/commodity",
     "/dashboard/analytics",
     "/dashboard/model",
+    "/dashboard/settings",
   ]),
   Viewer: new Set([
     "/dashboard",
     "/dashboard/feed",
     "/dashboard/commodity",
+    "/dashboard/settings",
   ]),
 };
 

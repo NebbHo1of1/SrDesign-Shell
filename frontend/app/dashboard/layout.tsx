@@ -11,6 +11,7 @@ import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AlertSimulator from "@/components/AlertSimulator";
+import CommandPalette from "@/components/CommandPalette";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useAuth();
@@ -33,6 +34,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <AlertSimulator />
+      <CommandPalette />
     </div>
   );
 }

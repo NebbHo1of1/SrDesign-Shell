@@ -18,6 +18,7 @@ import {
   RefreshCw,
   AlertTriangle,
   Database,
+  Download,
 } from "lucide-react";
 
 const EVENT_TYPES = [
@@ -85,6 +86,39 @@ export default function FeedPage() {
     return true;
   });
 
+  const exportCSV = () => {
+    const rows = filtered.map((h) => ({
+      Title: h.title,
+      Source: h.source,
+      Published: h.published_at,
+      Commodity: h.commodity,
+      Event_Type: h.event_type,
+      Sentiment: h.sentiment_score,
+      Impact: h.impact_score,
+      Prediction: h.pred_label,
+      Confidence: h.pred_confidence,
+    }));
+    const headers = Object.keys(rows[0] ?? {});
+    const csv = [
+      headers.join(","),
+      ...rows.map((r) =>
+        headers
+          .map((h) => {
+            const val = String(r[h as keyof typeof r] ?? "");
+            return val.includes(",") ? `"${val}"` : val;
+          })
+          .join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `signal-headlines-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -92,6 +126,15 @@ export default function FeedPage() {
           Intelligence Feed
         </h1>
         <div className="flex items-center gap-3">
+          <button
+            onClick={exportCSV}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-1.5 text-xs text-[#94A3B8] hover:text-[#FBCE07] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            title="Export filtered headlines as CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Export</span>
+          </button>
           <button
             onClick={load}
             disabled={loading}

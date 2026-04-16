@@ -185,3 +185,48 @@ def model_report():
         return get_model_report()
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
+
+
+@app.get("/prediction-history")
+def prediction_history(
+    commodity: str = Query(default="WTI"),
+    limit: int = Query(default=30, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    """Return aggregated daily prediction history — the average confidence
+    and dominant prediction direction for each day, useful for charting
+    model performance over time."""
+    from sqlalchemy import func, cast, Date, case
+
+    commodity = commodity.upper()
+    rows = (
+        db.query(
+            cast(Headline.published_at, Date).label("date"),
+            func.avg(Headline.pred_confidence).label("avg_confidence"),
+            func.avg(Headline.sentiment_score).label("avg_sentiment"),
+            func.count(Headline.id).label("count"),
+            # Count UP/DOWN predictions per day
+            func.sum(case((Headline.pred_label == "UP", 1), else_=0)).label("up_count"),
+            func.sum(case((Headline.pred_label == "DOWN", 1), else_=0)).label("down_count"),
+        )
+        .filter(Headline.commodity == commodity)
+        .group_by(cast(Headline.published_at, Date))
+        .order_by(cast(Headline.published_at, Date).desc())
+        .limit(limit)
+        .all()
+    )
+
+    result = []
+    for row in reversed(rows):
+        dominant = "UP" if (row.up_count or 0) >= (row.down_count or 0) else "DOWN"
+        result.append({
+            "date": str(row.date),
+            "dominant_prediction": dominant,
+            "avg_confidence": round(float(row.avg_confidence or 0), 3),
+            "avg_sentiment": round(float(row.avg_sentiment or 0), 3),
+            "headline_count": int(row.count or 0),
+            "up_count": int(row.up_count or 0),
+            "down_count": int(row.down_count or 0),
+        })
+
+    return result

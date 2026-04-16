@@ -13,7 +13,7 @@ import SignalPanel from "@/components/SignalPanel";
 import NewsPanel from "@/components/NewsPanel";
 import PriceChart from "@/components/PriceChart";
 import AlertsPanel from "@/components/AlertsPanel";
-import { RefreshCw, AlertTriangle, Database } from "lucide-react";
+import { RefreshCw, AlertTriangle, Database, Clock } from "lucide-react";
 
 const stagger = {
   hidden: {},
@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -92,6 +93,7 @@ export default function DashboardPage() {
       setHeadlines([]);
     } finally {
       setLoading(false);
+      setLastUpdated(new Date().toISOString());
     }
   }, [commodity]);
 
@@ -209,6 +211,15 @@ export default function DashboardPage() {
             Systems Operational
             <span className="mx-1">•</span>
             {systemTime} UTC
+            {lastUpdated && (
+              <>
+                <span className="mx-1">•</span>
+                <span className="inline-flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Updated {new Date(lastUpdated).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "UTC" })} UTC
+                </span>
+              </>
+            )}
             <span className="mx-1">•</span>
             <button
               onClick={handleRefresh}

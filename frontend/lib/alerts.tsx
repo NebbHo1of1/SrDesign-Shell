@@ -37,6 +37,7 @@ interface AlertCtx {
   addAlert: (alert: Omit<AlertItem, "id" | "timestamp" | "read">) => void;
   showToast: (toast: Omit<ToastItem, "id">) => void;
   dismissToast: (id: string) => void;
+  markRead: (id: string) => void;
   clearAlerts: () => void;
   alertConfig: AlertsConfig | null;
 }
@@ -47,6 +48,7 @@ const AlertContext = createContext<AlertCtx>({
   addAlert: () => {},
   showToast: () => {},
   dismissToast: () => {},
+  markRead: () => {},
   clearAlerts: () => {},
   alertConfig: null,
 });
@@ -97,9 +99,15 @@ export function AlertProvider({ children }: { children: ReactNode }) {
     setAlerts([]);
   }, []);
 
+  const markRead = useCallback((id: string) => {
+    setAlerts((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, read: true } : a))
+    );
+  }, []);
+
   return (
     <AlertContext.Provider
-      value={{ alerts, toasts, addAlert, showToast, dismissToast, clearAlerts, alertConfig }}
+      value={{ alerts, toasts, addAlert, showToast, dismissToast, markRead, clearAlerts, alertConfig }}
     >
       {children}
     </AlertContext.Provider>

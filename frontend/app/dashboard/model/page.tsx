@@ -8,7 +8,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Brain, Gauge, Cpu, GitBranch, AlertCircle, BookOpen } from "lucide-react";
+import { Brain, Gauge, Cpu, GitBranch, AlertCircle, BookOpen, History } from "lucide-react";
 import RoleGate from "@/components/RoleGate";
 import {
   ResponsiveContainer,
@@ -18,8 +18,11 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  LineChart,
+  Line,
+  Legend,
 } from "recharts";
-import { api, ModelReport, ModelPrediction } from "@/lib/api";
+import { api, ModelReport, ModelPrediction, PredictionHistoryPoint } from "@/lib/api";
 
 /* ── Static fallback (only shown while loading / on error) ──────────── */
 const FALLBACK_FEATURES = [
@@ -88,6 +91,7 @@ export default function ModelPage() {
   const [commodity, setCommodity] = useState("WTI");
   const [report, setReport] = useState<ModelReport | null>(null);
   const [prediction, setPrediction] = useState<ModelPrediction | null>(null);
+  const [predHistory, setPredHistory] = useState<PredictionHistoryPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -105,6 +109,10 @@ export default function ModelPage() {
       .catch(() => {
         /* prediction may fail if DB is empty — non-critical */
       });
+    api
+      .predictionHistory(commodity, 30)
+      .then(setPredHistory)
+      .catch(() => {});
   }, [commodity]);
 
   /* Derive display values from the report (or show fallback) */
@@ -364,6 +372,110 @@ export default function ModelPage() {
           })}
         </div>
       </div>
+
+      {/* Prediction History Timeline */}
+      {predHistory.length > 0 && (
+        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <History className="w-4 h-4 text-[#06B6D4]" />
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+              Prediction History — {commodity}
+            </span>
+          </div>
+          <p className="text-xs text-[#64748B] mb-4">
+            Daily aggregated model confidence and sentiment over time. Green bars
+            = UP prediction days, red bars = DOWN prediction days.
+          </p>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={predHistory}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+              <XAxis
+                dataKey="date"
+                stroke="#334155"
+                tick={{ fill: "#64748B", fontSize: 10 }}
+                tickFormatter={(d: string) => d.slice(5)}
+              />
+              <YAxis
+                stroke="#334155"
+                tick={{ fill: "#64748B", fontSize: 10 }}
+                domain={[0, 1]}
+              />
+              <Tooltip
+                contentStyle={{
+                  background: "#1A2234",
+                  border: "1px solid #1E293B",
+                  borderRadius: "8px",
+                  color: "#E2E8F0",
+                  fontSize: "12px",
+                }}
+                formatter={(value, name) => [
+                  name === "avg_confidence"
+                    ? `${(Number(value) * 100).toFixed(1)}%`
+                    : Number(value).toFixed(3),
+                  name === "avg_confidence" ? "Confidence" : "Sentiment",
+                ]}
+                labelFormatter={(label) => `Date: ${String(label)}`}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: "11px", color: "#94A3B8" }}
+                formatter={(value: string) =>
+                  value === "avg_confidence" ? "Avg Confidence" : "Avg Sentiment"
+                }
+              />
+              <Line
+                type="monotone"
+                dataKey="avg_confidence"
+                stroke="#FBCE07"
+                strokeWidth={2}
+                dot={(props) => {
+                  const { cx, cy, payload } = props as { cx?: number; cy?: number; payload?: PredictionHistoryPoint };
+                  if (cx == null || cy == null || !payload) return <circle r={0} />;
+                  const color = payload.dominant_prediction === "UP" ? "#22C55E" : "#EF4444";
+                  return (
+                    <circle
+                      key={`dot-conf-${payload.date}`}
+                      cx={cx}
+                      cy={cy}
+                      r={4}
+                      fill={color}
+                      stroke={color}
+                      strokeWidth={1}
+                    />
+                  );
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="avg_sentiment"
+                stroke="#38BDF8"
+                strokeWidth={1.5}
+                strokeDasharray="4 4"
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+
+          {/* Daily summary cards */}
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <div className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3 text-center">
+              <p className="text-[0.55rem] text-[#475569] uppercase tracking-wider">Days Tracked</p>
+              <p className="text-lg font-extrabold text-[#F8FAFC]">{predHistory.length}</p>
+            </div>
+            <div className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3 text-center">
+              <p className="text-[0.55rem] text-[#475569] uppercase tracking-wider">UP Days</p>
+              <p className="text-lg font-extrabold text-[#22C55E]">
+                {predHistory.filter((p) => p.dominant_prediction === "UP").length}
+              </p>
+            </div>
+            <div className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3 text-center">
+              <p className="text-[0.55rem] text-[#475569] uppercase tracking-wider">DOWN Days</p>
+              <p className="text-lg font-extrabold text-[#EF4444]">
+                {predHistory.filter((p) => p.dominant_prediction === "DOWN").length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pipeline explainer */}
       <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">

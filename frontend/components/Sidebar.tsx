@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  Settings,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { accessiblePaths } from "@/lib/permissions";
@@ -32,6 +33,7 @@ const NAV = [
   { href: "/dashboard/analytics", label: "Data Analytics", icon: BarChart3 },
   { href: "/dashboard/model", label: "AI Model", icon: Brain },
   { href: "/dashboard/signals", label: "Signal Engine", icon: Zap },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar() {
