@@ -105,12 +105,12 @@ async function get<T>(path: string, params?: Record<string, string>): Promise<T>
       err instanceof TypeError
         ? `Cannot reach API at ${API} — is the backend running?`
         : `Network error: ${String(err)}`;
-    console.warn(`[SIGNAL API] ${msg}`);
+    console.debug(`[SIGNAL API] ${msg}`);
     throw new Error(msg);
   }
   if (!res.ok) {
     const msg = `API ${res.status}: ${res.statusText}`;
-    console.error(`[SIGNAL API] ${msg} — ${url.pathname}`);
+    console.warn(`[SIGNAL API] ${msg} — ${url.pathname}`);
     throw new Error(msg);
   }
   return res.json();

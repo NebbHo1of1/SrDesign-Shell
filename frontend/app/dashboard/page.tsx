@@ -45,17 +45,12 @@ export default function DashboardPage() {
     setError(null);
     try {
       const [wti, brent, news, priceData] = await Promise.all([
-        api.kpis("WTI").catch((e) => { console.warn("[SIGNAL] KPI WTI fetch failed:", e.message); return null; }),
-        api.kpis("BRENT").catch((e) => { console.warn("[SIGNAL] KPI BRENT fetch failed:", e.message); return null; }),
-        api.headlines(commodity, 30).catch((e) => {
-          console.warn("[SIGNAL] Headlines fetch failed:", e.message);
-          throw e; // re-throw to trigger error state
-        }),
-        api.prices(commodity, "14d").catch((e) => { console.warn("[SIGNAL] Prices fetch failed:", e.message); return null; }),
+        api.kpis("WTI").catch(() => null),
+        api.kpis("BRENT").catch(() => null),
+        api.headlines(commodity, 30),
+        api.prices(commodity, "14d").catch(() => null),
       ]);
-      console.log("[SIGNAL] Dashboard data loaded:", {
-        kpiWTI: wti,
-        kpiBrent: brent,
+      console.debug("[SIGNAL] Dashboard data loaded:", {
         headlines: news?.length ?? 0,
         prices: priceData?.points?.length ?? 0,
       });
