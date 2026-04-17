@@ -6,13 +6,20 @@ News-driven crude oil market intelligence platform with AI-powered predictions.
 - **Next.js frontend** — real-time dashboard with KPIs, price charts, and news feed.
 - **XGBoost model** — trained on sentiment + price features for market direction.
 
-## Quickstart
+## Prerequisites
 
-> **macOS only:** `xgboost` requires OpenMP via Homebrew before installing
-> Python dependencies:
-> ```bash
-> brew install libomp
-> ```
+- **Python 3.10+** — macOS no longer ships Python by default.  Install via
+  Homebrew or from [python.org](https://www.python.org/downloads/):
+  ```bash
+  brew install python3
+  ```
+- **Node.js 18+** — required for the frontend.
+- **macOS only:** `xgboost` requires OpenMP via Homebrew:
+  ```bash
+  brew install libomp
+  ```
+
+## Quickstart
 
 ### 1. Backend (Terminal 1)
 
@@ -59,6 +66,7 @@ curl -X POST http://localhost:8000/seed
 
 | Symptom | Fix |
 |---------|-----|
+| `command not found: python` or `pip` | Install Python 3: `brew install python3`, then use `python3`/`pip3` or activate a venv |
 | `ModuleNotFoundError` / `ImportError` on backend startup | Run `pip install -r requirements.txt` inside the activated venv |
 | Frontend says "Cannot reach API at http://127.0.0.1:8000" | Make sure the backend is running in a separate terminal |
 | `xgboost` install fails on macOS | Run `brew install libomp` first |
@@ -104,3 +112,27 @@ KPI fields:
 
 ### Extra analytics endpoint used by dashboard
 - `GET /analytics/sentiment-price?commodity=WTI`
+
+## Exporting data for Power BI
+
+To load SIGNAL data into Power BI, first export the SQLite tables to CSV:
+
+```bash
+source venv/bin/activate   # if not already active
+python3 -c "
+import sqlite3, csv
+conn = sqlite3.connect('backend/data.db')
+for table in ['headlines', 'price_points']:
+    cur = conn.execute(f'SELECT * FROM {table}')
+    cols = [d[0] for d in cur.description]
+    with open(f'{table}_export.csv', 'w', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(cols)
+        w.writerows(cur.fetchall())
+conn.close()
+print('Exported headlines_export.csv and price_points_export.csv')
+"
+```
+
+Then in Power BI → **Get Data** → **Text/CSV** → select **Upload file** →
+browse to the exported CSV → **Next** → **Create**.  Repeat for each CSV.
