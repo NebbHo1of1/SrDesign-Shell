@@ -86,7 +86,7 @@ export default function Sidebar() {
     <motion.aside
       animate={{ width: collapsed ? 64 : 240 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="relative z-10 flex flex-col h-full bg-gradient-to-b from-[#0D1321] to-[#111827] border-r border-[#1E293B] shrink-0 overflow-visible"
+      className="relative z-10 flex flex-col h-full bg-gradient-to-b from-[#0D1321] to-[#111827] border-r border-[#1E293B]/60 shrink-0 overflow-visible"
     >
       {/* ── Brand ────────────────────────────────────────── */}
       <div className="px-4 py-5 border-b border-[#1E293B]">
@@ -216,7 +216,7 @@ export default function Sidebar() {
       {/* ── Collapse Toggle ──────────────────────────────── */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-4 top-7 w-8 h-8 bg-[#0D1321] border border-[#334155] rounded-full flex items-center justify-center text-[#94A3B8] hover:text-[#FBCE07] hover:border-[#FBCE07]/40 transition-all duration-200 z-50 shadow-lg shadow-black/40"
+        className="absolute -right-3.5 top-7 w-7 h-7 bg-[#1A2234] border border-[#334155]/80 rounded-full flex items-center justify-center text-[#94A3B8] hover:text-[#FBCE07] hover:border-[#FBCE07]/40 transition-all duration-200 z-50 shadow-md shadow-black/30"
       >
         {collapsed ? (
           <ChevronRight className="w-3.5 h-3.5" />

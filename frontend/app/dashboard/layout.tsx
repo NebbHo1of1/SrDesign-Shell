@@ -28,7 +28,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-[#0A0E17]">
       <Sidebar />
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden pl-3">
         <TopBar />
         <BackendOfflineBanner />
         <main className="relative z-0 flex-1 overflow-y-auto p-6">
