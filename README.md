@@ -32,6 +32,12 @@ pip install -r requirements.txt
 uvicorn backend.main:app --reload
 ```
 
+> ⚠️ **You must create and activate the virtual environment first** (steps 1–2
+> above).  macOS does not ship `python` or `pip` — only `python3` / `pip3`.
+> Inside an activated venv the short names (`python`, `pip`) work automatically.
+> If you see `command not found: pip` or `command not found: python`, run
+> `source venv/bin/activate` (or create the venv if you haven't yet).
+
 > ⚠️ **Do not skip `pip install -r requirements.txt`** — the backend will crash
 > on startup with an `ImportError` if dependencies like `fastapi`, `pandas`, or
 > `vaderSentiment` are missing.
@@ -66,7 +72,7 @@ curl -X POST http://localhost:8000/seed
 
 | Symptom | Fix |
 |---------|-----|
-| `command not found: python` or `pip` | Install Python 3: `brew install python3`, then use `python3`/`pip3` or activate a venv |
+| `command not found: python` or `pip` | You haven't activated the virtual environment. Run `source venv/bin/activate` first (create it with `python3 -m venv venv` if needed). Inside the venv, `python` and `pip` work. Outside, use `python3` / `pip3`. |
 | `ModuleNotFoundError` / `ImportError` on backend startup | Run `pip install -r requirements.txt` inside the activated venv |
 | Frontend says "Cannot reach API at http://127.0.0.1:8000" | Make sure the backend is running in a separate terminal |
 | `xgboost` install fails on macOS | Run `brew install libomp` first |
@@ -115,7 +121,16 @@ KPI fields:
 
 ## Exporting data for Power BI
 
-To load SIGNAL data into Power BI, first export the SQLite tables to CSV:
+To load SIGNAL data into Power BI, first export the SQLite tables to CSV.
+Run from the **project root** (`SrDesign-Shell/`) — the CSV files will be
+created **in that same directory** (next to `requirements.txt`).
+
+```bash
+source venv/bin/activate   # if not already active
+python3 scripts/export_csv.py
+```
+
+Or inline:
 
 ```bash
 source venv/bin/activate   # if not already active
@@ -132,6 +147,13 @@ for table in ['headlines', 'price_points']:
 conn.close()
 print('Exported headlines_export.csv and price_points_export.csv')
 "
+```
+
+After running, you should see `headlines_export.csv` and
+`price_points_export.csv` in the project root.  On macOS you can verify with:
+
+```bash
+ls -la *_export.csv
 ```
 
 Then in Power BI → **Get Data** → **Text/CSV** → select **Upload file** →
