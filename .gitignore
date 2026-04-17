@@ -1,8 +1,12 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
 .env
 .DS_Store
+*.swp
+*.swo
+*~
 
 # local data
 data/raw
@@ -12,5 +16,10 @@ data/raw
 eval*
 *.pub
 
-# optional (if large models)
-models/
+# optional (if large models — currently committed for live serving)
+# models/
+
+# Next.js frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
