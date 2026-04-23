@@ -31,6 +31,7 @@ import {
   getDefaultAlerts,
   type AlertsConfig,
 } from "@/lib/onboarding";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 
@@ -1579,10 +1580,13 @@ function OnboardingContent() {
   /* ── Executive verification overlay ─────────────────────────── */
   if (showVerification && isExec) {
     return (
-      <ExecVerification
-        name={user.name}
-        onComplete={handleVerificationComplete}
-      />
+      <>
+        <ThemeToggle />
+        <ExecVerification
+          name={user.name}
+          onComplete={handleVerificationComplete}
+        />
+      </>
     );
   }
 
@@ -1593,6 +1597,7 @@ function OnboardingContent() {
 
     return (
       <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[var(--shell-bg)] overflow-hidden px-4">
+        <ThemeToggle />
         <div
           className="absolute inset-0 transition-all duration-1000"
           style={{
@@ -1678,6 +1683,7 @@ function OnboardingContent() {
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[var(--shell-bg)] overflow-hidden px-4">
+      <ThemeToggle />
       <div
         className="absolute inset-0 transition-all duration-1000"
         style={{

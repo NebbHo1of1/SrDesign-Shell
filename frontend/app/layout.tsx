@@ -19,17 +19,29 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        {/* Inline script — runs synchronously before first paint to prevent
+            a flash of the wrong theme when the user has a non-default theme
+            stored in localStorage. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('signal_theme');if(t==='dark'||t==='black'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-[var(--shell-bg)] text-[var(--shell-text)] font-sans" suppressHydrationWarning>
-        <ClientOnly>
-          <ThemeProvider>
+        {/* ThemeProvider is intentionally OUTSIDE ClientOnly so it mounts
+            immediately and applies the persisted theme without a flash. */}
+        <ThemeProvider>
+          <ClientOnly>
             <AuthProvider>
               <AlertProvider>
                 {children}
                 <ToastContainer />
               </AlertProvider>
             </AuthProvider>
-          </ThemeProvider>
-        </ClientOnly>
+          </ClientOnly>
+        </ThemeProvider>
       </body>
     </html>
   );

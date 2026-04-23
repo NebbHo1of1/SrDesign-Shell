@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import GreetingTransition from "./GreetingTransition";
+import ThemeToggle from "./ThemeToggle";
 
 export default function LoginScreen() {
   const { user, login } = useAuth();
@@ -59,6 +60,7 @@ export default function LoginScreen() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[var(--shell-bg)]">
+      <ThemeToggle />
       {/* ── Background gradient layers ─────────────────────────── */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(221,29,33,0.08)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(56,189,248,0.06)_0%,transparent_50%)]" />

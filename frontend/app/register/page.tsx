@@ -21,6 +21,7 @@ import {
 import { useAuth, type Role } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const ACCESS_CODE_MAP: Record<string, { role: Role; label: string }> = {
   "SIGNAL-EXEC-01": { role: "Executive", label: "Executive Access" },
@@ -131,6 +132,7 @@ export default function RegisterPage() {
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[var(--shell-bg)]">
+      <ThemeToggle />
       {/* Background gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(221,29,33,0.08)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(56,189,248,0.06)_0%,transparent_50%)]" />
