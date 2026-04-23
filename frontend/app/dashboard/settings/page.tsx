@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
+import { useTheme, type Theme } from "@/lib/theme";
 import { getAlertsConfig, saveAlertsConfig, type AlertsConfig } from "@/lib/onboarding";
 import {
   User,
@@ -19,6 +20,10 @@ import {
   Monitor,
   Clock,
   Settings,
+  Palette,
+  Moon,
+  Sun,
+  Circle,
 } from "lucide-react";
 
 const stagger = {
@@ -42,11 +47,12 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const ROLE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Executive: { bg: "bg-[#FFD700]/10", text: "text-[#FFD700]", border: "border-[#FFD700]/30" },
   Analyst: { bg: "bg-[#38BDF8]/10", text: "text-[#38BDF8]", border: "border-[#38BDF8]/30" },
-  Viewer: { bg: "bg-[#94A3B8]/10", text: "text-[#94A3B8]", border: "border-[#94A3B8]/30" },
+  Viewer: { bg: "bg-[var(--shell-muted)]/10", text: "text-[var(--shell-muted)]", border: "border-[var(--shell-muted)]/30" },
 };
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [config, setConfig] = useState<AlertsConfig | null>(null);
   const [saved, setSaved] = useState(false);
   const [sessionStart] = useState(() => new Date().toISOString());
@@ -79,7 +85,7 @@ export default function SettingsPage() {
       <motion.div variants={fadeUp}>
         <div className="flex items-center gap-3">
           <Settings className="w-5 h-5 text-[#FBCE07]" />
-          <h1 className="text-xl font-extrabold text-[#F8FAFC]">
+          <h1 className="text-xl font-extrabold text-[var(--shell-text-bright)]">
             Settings & Profile
           </h1>
         </div>
@@ -87,7 +93,7 @@ export default function SettingsPage() {
 
       {/* Profile Card */}
       <motion.div variants={fadeUp}>
-        <div className="relative bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-2xl p-6 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-2xl p-6 overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#DD1D21] via-[#FBCE07] to-[#38BDF8]" />
           <div className="flex items-start gap-5">
             {/* Avatar */}
@@ -100,10 +106,10 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-extrabold text-[#F8FAFC]">
+              <h2 className="text-lg font-extrabold text-[var(--shell-text-bright)]">
                 {user.name}
               </h2>
-              <p className="text-sm text-[#94A3B8] mt-0.5">{user.email}</p>
+              <p className="text-sm text-[var(--shell-muted)] mt-0.5">{user.email}</p>
 
               <div className="flex items-center gap-3 mt-3">
                 <span
@@ -118,7 +124,7 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              <p className="text-xs text-[#64748B] mt-3 leading-relaxed">
+              <p className="text-xs text-[var(--shell-muted-2)] mt-3 leading-relaxed">
                 {ROLE_DESCRIPTIONS[user.role]}
               </p>
             </div>
@@ -126,12 +132,42 @@ export default function SettingsPage() {
         </div>
       </motion.div>
 
+      {/* Appearance */}
+      <motion.div variants={fadeUp}>
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-2xl p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Palette className="w-4 h-4 text-[#A78BFA]" />
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
+              Appearance
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {(["dark", "black", "light"] as Theme[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTheme(t)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-semibold transition-all capitalize ${
+                  theme === t
+                    ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
+                    : "text-[var(--shell-muted)] border-[var(--shell-border)] hover:border-[var(--shell-border-2)] hover:text-[var(--shell-text)]"
+                }`}
+              >
+                {t === "dark" && <Moon className="w-4 h-4" />}
+                {t === "black" && <Circle className="w-4 h-4 fill-current" />}
+                {t === "light" && <Sun className="w-4 h-4" />}
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
       {/* Alert Configuration */}
       <motion.div variants={fadeUp}>
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-2xl p-6">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <Bell className="w-4 h-4 text-[#FBCE07]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Alert Preferences
             </span>
           </div>
@@ -141,7 +177,7 @@ export default function SettingsPage() {
               {/* WTI Price Thresholds */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-[#94A3B8] font-medium block mb-2">
+                  <label className="text-xs text-[var(--shell-muted)] font-medium block mb-2">
                     WTI Increase Threshold (%)
                   </label>
                   <div className="flex items-center gap-3">
@@ -162,7 +198,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-[#94A3B8] font-medium block mb-2">
+                  <label className="text-xs text-[var(--shell-muted)] font-medium block mb-2">
                     WTI Decrease Threshold (%)
                   </label>
                   <div className="flex items-center gap-3">
@@ -187,7 +223,7 @@ export default function SettingsPage() {
               {/* Brent Price Thresholds */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-[#94A3B8] font-medium block mb-2">
+                  <label className="text-xs text-[var(--shell-muted)] font-medium block mb-2">
                     Brent Increase Threshold (%)
                   </label>
                   <div className="flex items-center gap-3">
@@ -208,7 +244,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-[#94A3B8] font-medium block mb-2">
+                  <label className="text-xs text-[var(--shell-muted)] font-medium block mb-2">
                     Brent Decrease Threshold (%)
                   </label>
                   <div className="flex items-center gap-3">
@@ -242,10 +278,10 @@ export default function SettingsPage() {
                     className="w-4 h-4 accent-[#22C55E] rounded"
                   />
                   <div>
-                    <span className="text-sm text-[#F8FAFC] group-hover:text-[#38BDF8] transition-colors">
+                    <span className="text-sm text-[var(--shell-text-bright)] group-hover:text-[#38BDF8] transition-colors">
                       Notifications
                     </span>
-                    <p className="text-[0.6rem] text-[#475569]">
+                    <p className="text-[0.6rem] text-[var(--shell-muted-3)]">
                       Enable toast and alert notifications
                     </p>
                   </div>
@@ -262,10 +298,10 @@ export default function SettingsPage() {
                       className="w-4 h-4 accent-[#FFD700] rounded"
                     />
                     <div>
-                      <span className="text-sm text-[#F8FAFC] group-hover:text-[#38BDF8] transition-colors">
+                      <span className="text-sm text-[var(--shell-text-bright)] group-hover:text-[#38BDF8] transition-colors">
                         Priority Only
                       </span>
-                      <p className="text-[0.6rem] text-[#475569]">
+                      <p className="text-[0.6rem] text-[var(--shell-muted-3)]">
                         Only show high-priority alerts
                       </p>
                     </div>
@@ -277,7 +313,7 @@ export default function SettingsPage() {
               {user.role === "Executive" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-[#94A3B8] font-medium block mb-2">
+                    <label className="text-xs text-[var(--shell-muted)] font-medium block mb-2">
                       Briefing Cadence
                     </label>
                     <select
@@ -285,7 +321,7 @@ export default function SettingsPage() {
                       onChange={(e) =>
                         setConfig({ ...config, briefingCadence: e.target.value as AlertsConfig["briefingCadence"] })
                       }
-                      className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-[#38BDF8] transition-colors"
+                      className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-3 py-2 text-sm text-[var(--shell-text-bright)] focus:outline-none focus:border-[#38BDF8] transition-colors"
                     >
                       <option value="realtime">Real-time</option>
                       <option value="daily">Daily Digest</option>
@@ -293,7 +329,7 @@ export default function SettingsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs text-[#94A3B8] font-medium block mb-2">
+                    <label className="text-xs text-[var(--shell-muted)] font-medium block mb-2">
                       Escalation Level
                     </label>
                     <select
@@ -301,7 +337,7 @@ export default function SettingsPage() {
                       onChange={(e) =>
                         setConfig({ ...config, escalationLevel: e.target.value as AlertsConfig["escalationLevel"] })
                       }
-                      className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-3 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-[#38BDF8] transition-colors"
+                      className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-3 py-2 text-sm text-[var(--shell-text-bright)] focus:outline-none focus:border-[#38BDF8] transition-colors"
                     >
                       <option value="all">All Events</option>
                       <option value="high">High Priority</option>
@@ -334,7 +370,7 @@ export default function SettingsPage() {
               </button>
             </div>
           ) : (
-            <p className="text-sm text-[#64748B]">
+            <p className="text-sm text-[var(--shell-muted-2)]">
               Complete onboarding to configure alert preferences.
             </p>
           )}
@@ -343,10 +379,10 @@ export default function SettingsPage() {
 
       {/* Session Info */}
       <motion.div variants={fadeUp}>
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-2xl p-6">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <Monitor className="w-4 h-4 text-[#38BDF8]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Session Information
             </span>
           </div>
@@ -359,10 +395,10 @@ export default function SettingsPage() {
             ].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center justify-between text-sm border-b border-[#1E293B] pb-2"
+                className="flex items-center justify-between text-sm border-b border-[var(--shell-border)] pb-2"
               >
-                <span className="text-[#94A3B8]">{item.label}</span>
-                <span className="text-[#F8FAFC] font-medium text-right max-w-[60%] truncate">
+                <span className="text-[var(--shell-muted)]">{item.label}</span>
+                <span className="text-[var(--shell-text-bright)] font-medium text-right max-w-[60%] truncate">
                   {item.value}
                 </span>
               </div>
@@ -373,10 +409,10 @@ export default function SettingsPage() {
 
       {/* About */}
       <motion.div variants={fadeUp}>
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-2xl p-6">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <Info className="w-4 h-4 text-[#A78BFA]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               About SIGNAL
             </span>
           </div>
@@ -391,17 +427,17 @@ export default function SettingsPage() {
             ].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center justify-between text-sm border-b border-[#1E293B] pb-2"
+                className="flex items-center justify-between text-sm border-b border-[var(--shell-border)] pb-2"
               >
-                <span className="text-[#94A3B8]">{item.label}</span>
-                <span className="text-[#F8FAFC] font-medium text-right max-w-[60%]">
+                <span className="text-[var(--shell-muted)]">{item.label}</span>
+                <span className="text-[var(--shell-text-bright)] font-medium text-right max-w-[60%]">
                   {item.value}
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-[0.6rem] text-[#475569]">
+          <div className="mt-4 flex items-center gap-2 text-[0.6rem] text-[var(--shell-muted-3)]">
             <Clock className="w-3 h-3" />
             Senior Design Project — Enterprise Oil Market Intelligence
           </div>

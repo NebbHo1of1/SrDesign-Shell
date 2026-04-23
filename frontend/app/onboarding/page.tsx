@@ -93,7 +93,7 @@ function ExecVerification({
   }, [phase]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0A0E17] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--shell-bg)] overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,215,0,0.06)_0%,transparent_60%)]" />
 
       <AnimatePresence mode="wait">
@@ -131,7 +131,7 @@ function ExecVerification({
                   cy="48"
                   r="40"
                   fill="none"
-                  stroke="#1E293B"
+                  stroke="var(--shell-border)"
                   strokeWidth="3"
                 />
                 <motion.circle
@@ -156,7 +156,7 @@ function ExecVerification({
               </div>
             </div>
 
-            <p className="text-xs text-[#94A3B8] tracking-wide">
+            <p className="text-xs text-[var(--shell-muted)] tracking-wide">
               Biometric Scan:{" "}
               <span className="text-[#FFD700]">Processing…</span>
             </p>
@@ -172,7 +172,7 @@ function ExecVerification({
             exit={{ opacity: 0 }}
             className="flex flex-col items-center gap-4"
           >
-            <p className="text-[0.7rem] font-bold tracking-[0.2em] text-[#94A3B8] uppercase mb-4">
+            <p className="text-[0.7rem] font-bold tracking-[0.2em] text-[var(--shell-muted)] uppercase mb-4">
               Security Clearance Verification
             </p>
             {[
@@ -195,14 +195,14 @@ function ExecVerification({
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${
                     tiers >= t.tier
                       ? "border-[#FFD700] text-[#FFD700] bg-[#FFD700]/10"
-                      : "border-[#334155] text-[#475569]"
+                      : "border-[var(--shell-border-2)] text-[var(--shell-muted-3)]"
                   }`}
                 >
                   {t.tier}
                 </div>
                 <span
                   className={`text-sm font-semibold flex-1 ${
-                    tiers >= t.tier ? "text-[#F8FAFC]" : "text-[#475569]"
+                    tiers >= t.tier ? "text-[var(--shell-text-bright)]" : "text-[var(--shell-muted-3)]"
                   }`}
                 >
                   Tier {t.tier}: {t.label}
@@ -239,7 +239,7 @@ function ExecVerification({
                   clipPath:
                     "polygon(50% 0%, 100% 15%, 100% 70%, 50% 100%, 0% 70%, 0% 15%)",
                   background:
-                    "linear-gradient(135deg, #0D1321 0%, #1E293B 100%)",
+                    "linear-gradient(135deg, var(--shell-panel) 0%, var(--shell-border) 100%)",
                   border: "none",
                 }}
               >
@@ -282,7 +282,7 @@ function ExecVerification({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="text-sm text-[#94A3B8]"
+              className="text-sm text-[var(--shell-muted)]"
             >
               {name}
             </motion.p>
@@ -301,7 +301,7 @@ function ExecVerification({
               initial={{ opacity: 0 }}
               animate={{ opacity: [0, 1, 1, 0.8] }}
               transition={{ duration: 1.5 }}
-              className="text-sm text-[#94A3B8] tracking-wide"
+              className="text-sm text-[var(--shell-muted)] tracking-wide"
             >
               Activating executive intelligence layer…
             </motion.div>
@@ -402,10 +402,10 @@ function ExecStepBriefing({ onNext }: { onNext: () => void }) {
     >
       <div className="text-center mb-8">
         <Shield className="w-10 h-10 mx-auto mb-3 text-[#FFD700]" />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">
           Strategic Intelligence Briefing
         </h2>
-        <p className="text-sm text-[#94A3B8]">
+        <p className="text-sm text-[var(--shell-muted)]">
           Here&apos;s what your intelligence system has been tracking
         </p>
       </div>
@@ -417,7 +417,7 @@ function ExecStepBriefing({ onNext }: { onNext: () => void }) {
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             className="w-8 h-8 border-2 border-[#FFD700] border-t-transparent rounded-full mx-auto"
           />
-          <p className="text-xs text-[#64748B] mt-3">
+          <p className="text-xs text-[var(--shell-muted-2)] mt-3">
             Loading intelligence data…
           </p>
         </div>
@@ -431,19 +431,19 @@ function ExecStepBriefing({ onNext }: { onNext: () => void }) {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.15 }}
-                className="bg-[#111827] border border-[#FFD700]/20 rounded-xl p-4"
+                className="bg-[var(--shell-card-2)] border border-[#FFD700]/20 rounded-xl p-4"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Icon className="w-4 h-4 text-[#FFD700]" />
-                  <span className="text-[0.65rem] font-bold tracking-[0.08em] text-[#64748B] uppercase">
+                  <span className="text-[0.65rem] font-bold tracking-[0.08em] text-[var(--shell-muted-2)] uppercase">
                     {card.label}
                   </span>
                 </div>
-                <p className="text-xl font-extrabold text-[#F8FAFC]">
+                <p className="text-xl font-extrabold text-[var(--shell-text-bright)]">
                   {card.value}
                 </p>
                 {card.sub && (
-                  <p className="text-[0.6rem] text-[#475569] mt-0.5">
+                  <p className="text-[0.6rem] text-[var(--shell-muted-3)] mt-0.5">
                     {card.sub}
                   </p>
                 )}
@@ -508,10 +508,10 @@ function ExecStepFocus({
     >
       <div className="text-center mb-8">
         <TrendingUp className="w-10 h-10 mx-auto mb-3 text-[#FFD700]" />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">
           Strategic Focus Areas
         </h2>
-        <p className="text-sm text-[#94A3B8]">
+        <p className="text-sm text-[var(--shell-muted)]">
           Select the markets under your strategic oversight
         </p>
       </div>
@@ -524,13 +524,13 @@ function ExecStepFocus({
             className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ${
               selected.includes(opt.id)
                 ? "border-[#FFD700]/50 bg-[#FFD700]/5 shadow-[0_0_10px_rgba(255,215,0,0.1)]"
-                : "border-[#1E293B] bg-[#111827] hover:border-[#334155]"
+                : "border-[var(--shell-border)] bg-[var(--shell-card-2)] hover:border-[var(--shell-border-2)]"
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-[#F8FAFC]">{opt.label}</p>
-                <p className="text-xs text-[#64748B] mt-0.5">{opt.desc}</p>
+                <p className="font-bold text-[var(--shell-text-bright)]">{opt.label}</p>
+                <p className="text-xs text-[var(--shell-muted-2)] mt-0.5">{opt.desc}</p>
               </div>
               {selected.includes(opt.id) && (
                 <CheckCircle2 className="w-5 h-5 text-[#FFD700]" />
@@ -544,13 +544,13 @@ function ExecStepFocus({
           className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ${
             selected.length === 2
               ? "border-[#FFD700]/50 bg-[#FFD700]/5"
-              : "border-[#1E293B] bg-[#111827] hover:border-[#334155]"
+              : "border-[var(--shell-border)] bg-[var(--shell-card-2)] hover:border-[var(--shell-border-2)]"
           }`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-bold text-[#F8FAFC]">Both Benchmarks</p>
-              <p className="text-xs text-[#64748B] mt-0.5">
+              <p className="font-bold text-[var(--shell-text-bright)]">Both Benchmarks</p>
+              <p className="text-xs text-[var(--shell-muted-2)] mt-0.5">
                 Full strategic coverage — complete market oversight
               </p>
             </div>
@@ -615,17 +615,17 @@ function ExecStepEscalation({
     >
       <div className="text-center mb-6">
         <BarChart3 className="w-10 h-10 mx-auto mb-3 text-[#FFD700]" />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">
           Escalation Protocols
         </h2>
-        <p className="text-sm text-[#94A3B8]">
+        <p className="text-sm text-[var(--shell-muted)]">
           Configure intelligence escalation parameters
         </p>
       </div>
 
       {/* Briefing Cadence */}
       <div className="mb-5">
-        <p className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase mb-2">
+        <p className="text-xs font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
           Briefing Cadence
         </p>
         <div className="grid grid-cols-3 gap-2">
@@ -638,19 +638,19 @@ function ExecStepEscalation({
               className={`p-3 rounded-xl border text-center transition-all duration-300 ${
                 config.briefingCadence === opt.value
                   ? "border-[#FFD700]/50 bg-[#FFD700]/5 shadow-[0_0_8px_rgba(255,215,0,0.1)]"
-                  : "border-[#1E293B] bg-[#111827] hover:border-[#334155]"
+                  : "border-[var(--shell-border)] bg-[var(--shell-card-2)] hover:border-[var(--shell-border-2)]"
               }`}
             >
               <p
                 className={`text-xs font-bold ${
                   config.briefingCadence === opt.value
                     ? "text-[#FFD700]"
-                    : "text-[#F8FAFC]"
+                    : "text-[var(--shell-text-bright)]"
                 }`}
               >
                 {opt.label}
               </p>
-              <p className="text-[0.6rem] text-[#475569] mt-0.5">
+              <p className="text-[0.6rem] text-[var(--shell-muted-3)] mt-0.5">
                 {opt.desc}
               </p>
             </button>
@@ -660,7 +660,7 @@ function ExecStepEscalation({
 
       {/* Escalation Level */}
       <div className="mb-5">
-        <p className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase mb-2">
+        <p className="text-xs font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
           Escalation Level
         </p>
         <div className="grid grid-cols-3 gap-2">
@@ -673,19 +673,19 @@ function ExecStepEscalation({
               className={`p-3 rounded-xl border text-center transition-all duration-300 ${
                 config.escalationLevel === opt.value
                   ? "border-[#FFD700]/50 bg-[#FFD700]/5 shadow-[0_0_8px_rgba(255,215,0,0.1)]"
-                  : "border-[#1E293B] bg-[#111827] hover:border-[#334155]"
+                  : "border-[var(--shell-border)] bg-[var(--shell-card-2)] hover:border-[var(--shell-border-2)]"
               }`}
             >
               <p
                 className={`text-xs font-bold ${
                   config.escalationLevel === opt.value
                     ? "text-[#FFD700]"
-                    : "text-[#F8FAFC]"
+                    : "text-[var(--shell-text-bright)]"
                 }`}
               >
                 {opt.label}
               </p>
-              <p className="text-[0.6rem] text-[#475569] mt-0.5">
+              <p className="text-[0.6rem] text-[var(--shell-muted-3)] mt-0.5">
                 {opt.desc}
               </p>
             </button>
@@ -694,10 +694,10 @@ function ExecStepEscalation({
       </div>
 
       {/* Threshold sliders */}
-      <div className="bg-[#111827] border border-[#1E293B] rounded-xl p-5 space-y-5 mb-5">
+      <div className="bg-[var(--shell-card-2)] border border-[var(--shell-border)] rounded-xl p-5 space-y-5 mb-5">
         {config.commodities.includes("WTI") && (
           <div className="space-y-3">
-            <h3 className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <h3 className="text-xs font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               WTI Crude
             </h3>
             <ThresholdSlider
@@ -720,7 +720,7 @@ function ExecStepEscalation({
         )}
         {config.commodities.includes("Brent") && (
           <div className="space-y-3">
-            <h3 className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <h3 className="text-xs font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Brent Crude
             </h3>
             <ThresholdSlider
@@ -744,15 +744,15 @@ function ExecStepEscalation({
       </div>
 
       {/* Priority Alerts toggle */}
-      <div className="bg-[#111827] border border-[#FFD700]/20 rounded-xl p-4 mb-6">
+      <div className="bg-[var(--shell-card-2)] border border-[#FFD700]/20 rounded-xl p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Crown className="w-4 h-4 text-[#FFD700]" />
             <div>
-              <p className="text-sm font-bold text-[#F8FAFC]">
+              <p className="text-sm font-bold text-[var(--shell-text-bright)]">
                 Priority Alerts Only
               </p>
-              <p className="text-[0.65rem] text-[#64748B]">
+              <p className="text-[0.65rem] text-[var(--shell-muted-2)]">
                 Only receive HIGH-IMPACT events — strategic intelligence only
               </p>
             </div>
@@ -765,7 +765,7 @@ function ExecStepEscalation({
               })
             }
             className={`w-11 h-6 rounded-full transition-all duration-300 ${
-              config.priorityAlertsOnly ? "bg-[#FFD700]" : "bg-[#334155]"
+              config.priorityAlertsOnly ? "bg-[#FFD700]" : "bg-[var(--shell-border-2)]"
             }`}
           >
             <div
@@ -813,16 +813,16 @@ function ExecStepDashboardPreview({ onNext }: { onNext: () => void }) {
     >
       <div className="text-center mb-6">
         <Eye className="w-10 h-10 mx-auto mb-3 text-[#FFD700]" />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">
           Executive Dashboard Preview
         </h2>
-        <p className="text-sm text-[#94A3B8]">
+        <p className="text-sm text-[var(--shell-muted)]">
           Your complete intelligence environment
         </p>
       </div>
 
       {/* Dashboard mockup with frosted glass */}
-      <div className="relative bg-[#111827]/80 backdrop-blur-md border border-[#FFD700]/20 rounded-xl p-5 mb-5 overflow-hidden">
+      <div className="relative bg-[var(--shell-card-2)]/80 backdrop-blur-md border border-[#FFD700]/20 rounded-xl p-5 mb-5 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700]/[0.03] to-transparent" />
         <div className="relative z-10 space-y-2.5">
           {modules.map((mod, i) => {
@@ -836,18 +836,18 @@ function ExecStepDashboardPreview({ onNext }: { onNext: () => void }) {
                 className={`flex items-center gap-3 p-2.5 rounded-lg ${
                   mod.special
                     ? "bg-[#FFD700]/10 border border-[#FFD700]/30"
-                    : "bg-[#0A0E17]/50"
+                    : "bg-[var(--shell-bg)]/50"
                 }`}
               >
                 <CheckCircle2 className="w-4 h-4 text-[#22C55E] shrink-0" />
                 <Icon
                   className={`w-4 h-4 shrink-0 ${
-                    mod.special ? "text-[#FFD700]" : "text-[#64748B]"
+                    mod.special ? "text-[#FFD700]" : "text-[var(--shell-muted-2)]"
                   }`}
                 />
                 <span
                   className={`text-sm font-medium flex-1 ${
-                    mod.special ? "text-[#FFD700]" : "text-[#F8FAFC]"
+                    mod.special ? "text-[#FFD700]" : "text-[var(--shell-text-bright)]"
                   }`}
                 >
                   {mod.label}
@@ -864,14 +864,14 @@ function ExecStepDashboardPreview({ onNext }: { onNext: () => void }) {
       </div>
 
       {/* Signal Engine highlight */}
-      <div className="bg-[#111827] border border-[#FFD700]/20 rounded-xl p-4 mb-5">
+      <div className="bg-[var(--shell-card-2)] border border-[#FFD700]/20 rounded-xl p-4 mb-5">
         <div className="flex items-center gap-2 mb-1">
           <Zap className="w-4 h-4 text-[#FFD700]" />
           <span className="text-xs font-bold text-[#FFD700]">
             Signal Engine
           </span>
         </div>
-        <p className="text-[0.65rem] text-[#94A3B8]">
+        <p className="text-[0.65rem] text-[var(--shell-muted)]">
           Strategic forecasting reserved for executive clearance
         </p>
       </div>
@@ -888,21 +888,21 @@ function ExecStepDashboardPreview({ onNext }: { onNext: () => void }) {
             className={`text-center p-3 rounded-xl border ${
               item.highlight
                 ? "border-[#FFD700]/40 bg-[#FFD700]/5"
-                : "border-[#1E293B] bg-[#111827]"
+                : "border-[var(--shell-border)] bg-[var(--shell-card-2)]"
             }`}
           >
             <p
               className={`text-lg font-extrabold ${
-                item.highlight ? "text-[#FFD700]" : "text-[#F8FAFC]"
+                item.highlight ? "text-[#FFD700]" : "text-[var(--shell-text-bright)]"
               }`}
             >
               {item.count}
             </p>
-            <p className="text-[0.6rem] text-[#64748B]">
+            <p className="text-[0.6rem] text-[var(--shell-muted-2)]">
               {item.role}
               {!item.highlight && " access"}
             </p>
-            <p className="text-[0.55rem] text-[#475569]">modules</p>
+            <p className="text-[0.55rem] text-[var(--shell-muted-3)]">modules</p>
           </div>
         ))}
       </div>
@@ -942,33 +942,33 @@ function ExecStepNotifications({
     >
       <div className="text-center mb-6">
         <Bell className="w-10 h-10 mx-auto mb-3 text-[#FFD700]" />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">
           Executive Notifications
         </h2>
-        <p className="text-sm text-[#94A3B8]">
+        <p className="text-sm text-[var(--shell-muted)]">
           Configure your executive notification channel
         </p>
       </div>
 
-      <div className="bg-[#111827] border border-[#1E293B] rounded-xl p-5 space-y-4 mb-6">
+      <div className="bg-[var(--shell-card-2)] border border-[var(--shell-border)] rounded-xl p-5 space-y-4 mb-6">
         <div>
-          <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+          <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
             Executive Notification Email
           </label>
           <input
             type="email"
             value={config.email || email}
             onChange={(e) => onChange({ ...config, email: e.target.value })}
-            className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-2.5 text-sm text-[#F8FAFC] focus:outline-none focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-all"
+            className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--shell-text-bright)] focus:outline-none focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/30 transition-all"
           />
         </div>
 
         <div className="flex items-center justify-between pt-2">
           <div>
-            <p className="text-sm font-bold text-[#F8FAFC]">
+            <p className="text-sm font-bold text-[var(--shell-text-bright)]">
               Enable Strategic Notifications
             </p>
-            <p className="text-[0.65rem] text-[#64748B]">
+            <p className="text-[0.65rem] text-[var(--shell-muted-2)]">
               Receive intelligence alerts per escalation protocol
             </p>
           </div>
@@ -980,7 +980,7 @@ function ExecStepNotifications({
               })
             }
             className={`w-11 h-6 rounded-full transition-all duration-300 ${
-              config.notificationsEnabled ? "bg-[#22C55E]" : "bg-[#334155]"
+              config.notificationsEnabled ? "bg-[#22C55E]" : "bg-[var(--shell-border-2)]"
             }`}
           >
             <div
@@ -1053,7 +1053,7 @@ function ExecStepActivation({ onFinish }: { onFinish: () => void }) {
         />
       </motion.div>
 
-      <h2 className="text-2xl font-extrabold tracking-tight text-[#F8FAFC] mb-6">
+      <h2 className="text-2xl font-extrabold tracking-tight text-[var(--shell-text-bright)] mb-6">
         <span className="bg-gradient-to-r from-[#FFD700] via-[#FFA500] to-[#FFD700] bg-clip-text text-transparent">
           EXECUTIVE ENVIRONMENT ACTIVATED
         </span>
@@ -1073,7 +1073,7 @@ function ExecStepActivation({ onFinish }: { onFinish: () => void }) {
             className={`flex items-center gap-3 p-3 rounded-lg border ${
               tile.gold
                 ? "border-[#FFD700]/30 bg-[#FFD700]/5"
-                : "border-[#1E293B] bg-[#111827]"
+                : "border-[var(--shell-border)] bg-[var(--shell-card-2)]"
             }`}
           >
             <span
@@ -1086,7 +1086,7 @@ function ExecStepActivation({ onFinish }: { onFinish: () => void }) {
                   : "0 0 8px rgba(34,197,94,0.4)",
               }}
             />
-            <span className="text-sm text-[#F8FAFC] flex-1 text-left">
+            <span className="text-sm text-[var(--shell-text-bright)] flex-1 text-left">
               {tile.label}
             </span>
             <span
@@ -1106,11 +1106,11 @@ function ExecStepActivation({ onFinish }: { onFinish: () => void }) {
           animate={{ opacity: 1 }}
           className="space-y-2"
         >
-          <p className="text-sm text-[#94A3B8]">
+          <p className="text-sm text-[var(--shell-muted)]">
             Entering Command Center…
           </p>
           <div className="w-64 mx-auto">
-            <div className="h-[2px] bg-[#1E293B] rounded-full overflow-hidden">
+            <div className="h-[2px] bg-[var(--shell-border)] rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: "0%" }}
                 animate={{ width: "100%" }}
@@ -1147,13 +1147,13 @@ function StepGreeting({
       className="text-center max-w-lg mx-auto"
     >
       <Shield className="w-12 h-12 mx-auto mb-4 text-[#38BDF8]" />
-      <h2 className="text-3xl font-extrabold text-[#F8FAFC] mb-3">
+      <h2 className="text-3xl font-extrabold text-[var(--shell-text-bright)] mb-3">
         Welcome, <span className="text-[#38BDF8]">{name}</span>
       </h2>
-      <p className="text-[#94A3B8] text-sm leading-relaxed mb-2">
+      <p className="text-[var(--shell-muted)] text-sm leading-relaxed mb-2">
         SIGNAL is configuring your intelligence environment.
       </p>
-      <p className="text-[#64748B] text-xs">
+      <p className="text-[var(--shell-muted-2)] text-xs">
         Set up your commodity monitoring preferences and alert thresholds.
       </p>
       <button
@@ -1197,8 +1197,8 @@ function StepCommodity({
     >
       <div className="text-center mb-8">
         <TrendingUp className="w-10 h-10 mx-auto mb-3 text-[#38BDF8]" />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">Commodity Selection</h2>
-        <p className="text-sm text-[#94A3B8]">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">Commodity Selection</h2>
+        <p className="text-sm text-[var(--shell-muted)]">
           Choose which crude oil benchmarks to monitor.
         </p>
       </div>
@@ -1211,13 +1211,13 @@ function StepCommodity({
             className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ${
               selected.includes(opt.id)
                 ? "border-[#38BDF8]/50 bg-[#38BDF8]/5"
-                : "border-[#1E293B] bg-[#111827] hover:border-[#334155]"
+                : "border-[var(--shell-border)] bg-[var(--shell-card-2)] hover:border-[var(--shell-border-2)]"
             }`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-[#F8FAFC]">{opt.label}</p>
-                <p className="text-xs text-[#64748B] mt-0.5">{opt.desc}</p>
+                <p className="font-bold text-[var(--shell-text-bright)]">{opt.label}</p>
+                <p className="text-xs text-[var(--shell-muted-2)] mt-0.5">{opt.desc}</p>
               </div>
               {selected.includes(opt.id) && (
                 <CheckCircle2 className="w-5 h-5 text-[#38BDF8]" />
@@ -1231,13 +1231,13 @@ function StepCommodity({
           className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ${
             selected.length === 2
               ? "border-[#38BDF8]/50 bg-[#38BDF8]/5"
-              : "border-[#1E293B] bg-[#111827] hover:border-[#334155]"
+              : "border-[var(--shell-border)] bg-[var(--shell-card-2)] hover:border-[var(--shell-border-2)]"
           }`}
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-bold text-[#F8FAFC]">Both Benchmarks</p>
-              <p className="text-xs text-[#64748B] mt-0.5">Complete market coverage — WTI + Brent</p>
+              <p className="font-bold text-[var(--shell-text-bright)]">Both Benchmarks</p>
+              <p className="text-xs text-[var(--shell-muted-2)] mt-0.5">Complete market coverage — WTI + Brent</p>
             </div>
             {selected.length === 2 && (
               <CheckCircle2 className="w-5 h-5 text-[#38BDF8]" />
@@ -1278,7 +1278,7 @@ function ThresholdSlider({
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
-        <span className="text-[#94A3B8]">{label}</span>
+        <span className="text-[var(--shell-muted)]">{label}</span>
         <span className="font-bold" style={{ color: accentColor }}>
           {value}%
         </span>
@@ -1293,7 +1293,7 @@ function ThresholdSlider({
         }
         className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
         style={{
-          background: `linear-gradient(to right, ${accentColor} ${(value / 20) * 100}%, #1E293B ${(value / 20) * 100}%)`,
+          background: `linear-gradient(to right, ${accentColor} ${(value / 20) * 100}%, var(--shell-border) ${(value / 20) * 100}%)`,
         }}
       />
     </div>
@@ -1320,16 +1320,16 @@ function StepAlerts({
     >
       <div className="text-center mb-6">
         <BarChart3 className="w-10 h-10 mx-auto mb-3" style={{ color: accentColor }} />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">Alert Thresholds</h2>
-        <p className="text-sm text-[#94A3B8]">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">Alert Thresholds</h2>
+        <p className="text-sm text-[var(--shell-muted)]">
           Set price change thresholds that trigger alerts.
         </p>
       </div>
 
-      <div className="bg-[#111827] border border-[#1E293B] rounded-xl p-5 space-y-5 mb-6">
+      <div className="bg-[var(--shell-card-2)] border border-[var(--shell-border)] rounded-xl p-5 space-y-5 mb-6">
         {config.commodities.includes("WTI") && (
           <div className="space-y-3">
-            <h3 className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <h3 className="text-xs font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               WTI Crude
             </h3>
             <ThresholdSlider
@@ -1352,7 +1352,7 @@ function StepAlerts({
         )}
         {config.commodities.includes("Brent") && (
           <div className="space-y-3">
-            <h3 className="text-xs font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <h3 className="text-xs font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Brent Crude
             </h3>
             <ThresholdSlider
@@ -1407,36 +1407,36 @@ function StepNotifications({
     >
       <div className="text-center mb-6">
         <Bell className="w-10 h-10 mx-auto mb-3 text-[#38BDF8]" />
-        <h2 className="text-2xl font-extrabold text-[#F8FAFC] mb-1">Notification Setup</h2>
-        <p className="text-sm text-[#94A3B8]">
+        <h2 className="text-2xl font-extrabold text-[var(--shell-text-bright)] mb-1">Notification Setup</h2>
+        <p className="text-sm text-[var(--shell-muted)]">
           Choose how you want to receive alerts.
         </p>
       </div>
 
-      <div className="bg-[#111827] border border-[#1E293B] rounded-xl p-5 space-y-4 mb-6">
+      <div className="bg-[var(--shell-card-2)] border border-[var(--shell-border)] rounded-xl p-5 space-y-4 mb-6">
         <div>
-          <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+          <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
             Notification Email
           </label>
           <input
             type="email"
             value={config.email || email}
             onChange={(e) => onChange({ ...config, email: e.target.value })}
-            className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-2.5 text-sm text-[#F8FAFC] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all"
+            className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--shell-text-bright)] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all"
           />
         </div>
 
         <div className="flex items-center justify-between pt-2">
           <div>
-            <p className="text-sm font-bold text-[#F8FAFC]">Enable Notifications</p>
-            <p className="text-[0.65rem] text-[#64748B]">Receive alerts when thresholds are met</p>
+            <p className="text-sm font-bold text-[var(--shell-text-bright)]">Enable Notifications</p>
+            <p className="text-[0.65rem] text-[var(--shell-muted-2)]">Receive alerts when thresholds are met</p>
           </div>
           <button
             onClick={() =>
               onChange({ ...config, notificationsEnabled: !config.notificationsEnabled })
             }
             className={`w-11 h-6 rounded-full transition-all duration-300 ${
-              config.notificationsEnabled ? "bg-[#22C55E]" : "bg-[#334155]"
+              config.notificationsEnabled ? "bg-[#22C55E]" : "bg-[var(--shell-border-2)]"
             }`}
           >
             <div
@@ -1485,18 +1485,18 @@ function StepComplete({ onFinish }: { onFinish: () => void }) {
           style={{ color: accentColor, filter: `drop-shadow(0 0 15px ${accentColor}40)` }}
         />
       </motion.div>
-      <h2 className="text-3xl font-extrabold text-[#F8FAFC] mb-3">
+      <h2 className="text-3xl font-extrabold text-[var(--shell-text-bright)] mb-3">
         Your SIGNAL Environment is Configured
       </h2>
-      <p className="text-[#94A3B8] text-sm mb-2">
+      <p className="text-[var(--shell-muted)] text-sm mb-2">
         Real-time monitoring is now active.
       </p>
-      <p className="text-[#64748B] text-xs">
+      <p className="text-[var(--shell-muted-2)] text-xs">
         Redirecting to Command Center…
       </p>
 
       <div className="mt-8 w-64 mx-auto">
-        <div className="h-[2px] bg-[#1E293B] rounded-full overflow-hidden">
+        <div className="h-[2px] bg-[var(--shell-border)] rounded-full overflow-hidden">
           <motion.div
             initial={{ width: "0%" }}
             animate={{ width: "100%" }}
@@ -1531,7 +1531,7 @@ function StepIndicator({
           key={i}
           className="h-1 flex-1 rounded-full transition-all duration-500"
           style={{
-            background: i <= current ? accentColor : "#1E293B",
+            background: i <= current ? accentColor : "var(--shell-border)",
             boxShadow: i <= current ? `0 0 8px ${accentColor}40` : "none",
           }}
         />
@@ -1592,7 +1592,7 @@ function OnboardingContent() {
     const stepIndex = step - 1; // 0-based for indicator (steps 1-6 → indices 0-5)
 
     return (
-      <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#0A0E17] overflow-hidden px-4">
+      <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[var(--shell-bg)] overflow-hidden px-4">
         <div
           className="absolute inset-0 transition-all duration-1000"
           style={{
@@ -1610,8 +1610,8 @@ function OnboardingContent() {
                 isExec
               />
               <div className="flex items-center gap-2 mb-6">
-                <Settings className="w-3.5 h-3.5 text-[#64748B]" />
-                <span className="text-[0.65rem] font-bold tracking-[0.15em] text-[#64748B] uppercase">
+                <Settings className="w-3.5 h-3.5 text-[var(--shell-muted-2)]" />
+                <span className="text-[0.65rem] font-bold tracking-[0.15em] text-[var(--shell-muted-2)] uppercase">
                   Step {step} of {EXEC_TOTAL}
                 </span>
                 <span className="text-[0.6rem] font-bold tracking-[0.08em] uppercase px-2 py-0.5 rounded-full border border-[#FFD700]/30 bg-[#FFD700]/10 text-[#FFD700] ml-auto">
@@ -1677,7 +1677,7 @@ function OnboardingContent() {
   const ANALYST_TOTAL = 5;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#0A0E17] overflow-hidden px-4">
+    <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[var(--shell-bg)] overflow-hidden px-4">
       <div
         className="absolute inset-0 transition-all duration-1000"
         style={{
@@ -1697,8 +1697,8 @@ function OnboardingContent() {
 
         {step < 4 && (
           <div className="flex items-center gap-2 mb-6">
-            <Settings className="w-3.5 h-3.5 text-[#64748B]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.15em] text-[#64748B] uppercase">
+            <Settings className="w-3.5 h-3.5 text-[var(--shell-muted-2)]" />
+            <span className="text-[0.65rem] font-bold tracking-[0.15em] text-[var(--shell-muted-2)] uppercase">
               Step {step + 1} of {ANALYST_TOTAL - 1}
             </span>
           </div>

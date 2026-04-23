@@ -47,7 +47,7 @@ export default function GreetingTransition({ user }: Props) {
   }, [router, destination]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0A0E17] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--shell-bg)] overflow-hidden">
       {/* Background subtle glow */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(56,189,248,0.04)_0%,transparent_70%)]" />
 
@@ -58,7 +58,7 @@ export default function GreetingTransition({ user }: Props) {
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="text-center z-10"
       >
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#F8FAFC]">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--shell-text-bright)]">
           {greeting},{" "}
           <span className="bg-gradient-to-r from-[#FBCE07] to-[#38BDF8] bg-clip-text text-transparent">
             {user.name.split(" ")[0]}
@@ -75,11 +75,11 @@ export default function GreetingTransition({ user }: Props) {
           transition={{ duration: 0.6 }}
           className="mt-6 text-center z-10"
         >
-          <p className="text-[#94A3B8] text-lg">
+          <p className="text-[var(--shell-muted)] text-lg">
             SIGNAL is{" "}
             <span className="text-[#22C55E] font-semibold">online</span>.
           </p>
-          <p className="text-[#64748B] text-sm mt-1">
+          <p className="text-[var(--shell-muted-2)] text-sm mt-1">
             Monitoring global oil markets and geopolitical activity.
           </p>
         </motion.div>
@@ -93,7 +93,7 @@ export default function GreetingTransition({ user }: Props) {
           transition={{ delay: 0.3 }}
           className="mt-10 w-64 z-10"
         >
-          <div className="h-[2px] bg-[#1E293B] rounded-full overflow-hidden">
+          <div className="h-[2px] bg-[var(--shell-border)] rounded-full overflow-hidden">
             <motion.div
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
@@ -101,7 +101,7 @@ export default function GreetingTransition({ user }: Props) {
               className="h-full bg-gradient-to-r from-[#DD1D21] via-[#FBCE07] to-[#38BDF8]"
             />
           </div>
-          <p className="text-[0.6rem] text-[#475569] text-center mt-2 tracking-[0.15em] uppercase">
+          <p className="text-[0.6rem] text-[var(--shell-muted-3)] text-center mt-2 tracking-[0.15em] uppercase">
             Initializing Command Center…
           </p>
         </motion.div>
@@ -113,7 +113,7 @@ export default function GreetingTransition({ user }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2 }}
-          className="fixed inset-0 bg-[#0A0E17] z-50"
+          className="fixed inset-0 bg-[var(--shell-bg)] z-50"
         />
       )}
     </div>

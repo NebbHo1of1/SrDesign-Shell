@@ -86,10 +86,10 @@ export default function Sidebar() {
     <motion.aside
       animate={{ width: collapsed ? 64 : 240 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="relative z-10 flex flex-col h-full bg-gradient-to-b from-[#0D1321] to-[#111827] border-r border-[#1E293B]/60 shrink-0 overflow-visible"
+      className="relative z-10 flex flex-col h-full bg-gradient-to-b from-[var(--shell-panel)] to-[var(--shell-card-2)] border-r border-[var(--shell-border)]/60 shrink-0 overflow-visible"
     >
       {/* ── Brand ────────────────────────────────────────── */}
-      <div className="px-4 py-5 border-b border-[#1E293B]">
+      <div className="px-4 py-5 border-b border-[var(--shell-border)]">
         <AnimatePresence mode="wait">
           {!collapsed ? (
             <motion.div
@@ -102,7 +102,7 @@ export default function Sidebar() {
               <div className="text-lg font-extrabold tracking-[0.2em] text-[#FBCE07]">
                 S.I.G.N.A.L.
               </div>
-              <div className="text-[0.5rem] text-[#475569] tracking-[0.1em] mt-0.5">
+              <div className="text-[0.5rem] text-[var(--shell-muted-3)] tracking-[0.1em] mt-0.5">
                 SHELL INTELLIGENCE SYSTEM
               </div>
             </motion.div>
@@ -122,7 +122,7 @@ export default function Sidebar() {
 
       {/* ── Executive Badge ──────────────────────────────── */}
       {user?.role === "Executive" && (
-        <div className="px-3 py-2 border-b border-[#1E293B]">
+        <div className="px-3 py-2 border-b border-[var(--shell-border)]">
           <AnimatePresence mode="wait">
             {!collapsed ? (
               <motion.div
@@ -163,14 +163,14 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
                 active
-                  ? "bg-[#1E293B] text-[#F8FAFC] border border-[#38BDF8]/30"
-                  : "text-[#94A3B8] hover:bg-[#1E293B]/50 hover:text-[#E2E8F0]"
+                  ? "bg-[var(--shell-border)] text-[var(--shell-text-bright)] border border-[#38BDF8]/30"
+                  : "text-[var(--shell-muted)] hover:bg-[var(--shell-border)]/50 hover:text-[var(--shell-text)]"
               }`}
               title={collapsed ? item.label : undefined}
             >
               <Icon
                 className={`w-4 h-4 shrink-0 ${
-                  active ? "text-[#38BDF8]" : "text-[#64748B] group-hover:text-[#94A3B8]"
+                  active ? "text-[#38BDF8]" : "text-[var(--shell-muted-2)] group-hover:text-[var(--shell-muted)]"
                 }`}
               />
               <AnimatePresence>
@@ -192,12 +192,12 @@ export default function Sidebar() {
 
       {/* ── System Status ────────────────────────────────── */}
       {!collapsed && (
-        <div className="px-4 py-3 border-t border-[#1E293B] space-y-1.5">
-          <div className="text-[0.6rem] text-[#475569] tracking-[0.1em] font-bold uppercase mb-2">
+        <div className="px-4 py-3 border-t border-[var(--shell-border)] space-y-1.5">
+          <div className="text-[0.6rem] text-[var(--shell-muted-3)] tracking-[0.1em] font-bold uppercase mb-2">
             System Status
           </div>
           {statuses.map((s) => (
-            <div key={s.label} className="flex items-center gap-2 text-xs text-[#94A3B8]">
+            <div key={s.label} className="flex items-center gap-2 text-xs text-[var(--shell-muted)]">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
                   s.ok === null
@@ -216,7 +216,7 @@ export default function Sidebar() {
       {/* ── Collapse Toggle ──────────────────────────────── */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3.5 top-7 w-7 h-7 bg-[#1A2234] border border-[#334155]/80 rounded-full flex items-center justify-center text-[#94A3B8] hover:text-[#FBCE07] hover:border-[#FBCE07]/40 transition-all duration-200 z-50 shadow-md shadow-black/30"
+        className="absolute -right-3.5 top-7 w-7 h-7 bg-[var(--shell-card)] border border-[var(--shell-border-2)]/80 rounded-full flex items-center justify-center text-[var(--shell-muted)] hover:text-[#FBCE07] hover:border-[#FBCE07]/40 transition-all duration-200 z-50 shadow-md shadow-black/30"
       >
         {collapsed ? (
           <ChevronRight className="w-3.5 h-3.5" />
@@ -227,8 +227,8 @@ export default function Sidebar() {
 
       {/* ── Footer ───────────────────────────────────────── */}
       {!collapsed && (
-        <div className="px-4 py-3 border-t border-[#1E293B] text-center">
-          <p className="text-[0.5rem] text-[#334155] tracking-wide">
+        <div className="px-4 py-3 border-t border-[var(--shell-border)] text-center">
+          <p className="text-[0.5rem] text-[var(--shell-border-2)] tracking-wide">
             Shell S.I.G.N.A.L. v2.0
           </p>
         </div>

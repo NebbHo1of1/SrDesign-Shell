@@ -144,7 +144,7 @@ export default function DashboardPage() {
             <button
               onClick={load}
               disabled={loading}
-              className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 text-xs font-semibold text-[var(--shell-text-bright)] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
               Retry
@@ -167,19 +167,19 @@ export default function DashboardPage() {
 
       {/* ── Greeting ─────────────────────────────────────────── */}
       <motion.div variants={fadeUp}>
-        <div className="relative bg-gradient-to-r from-[#0D1321] via-[#1A2234] to-[#111827] border border-[#1E293B] rounded-2xl p-6 overflow-hidden">
+        <div className="relative bg-gradient-to-r from-[var(--shell-panel)] via-[var(--shell-card)] to-[var(--shell-card-2)] border border-[var(--shell-border)] rounded-2xl p-6 overflow-hidden">
           {/* Top accent */}
           <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#DD1D21] via-[#FBCE07] to-[#38BDF8]" />
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-extrabold text-[#F8FAFC]">
+              <h1 className="text-2xl font-extrabold text-[var(--shell-text-bright)]">
                 {greeting},{" "}
                 <span className="bg-gradient-to-r from-[#FBCE07] to-[#38BDF8] bg-clip-text text-transparent">
                   {user.name.split(" ")[0]}
                 </span>
                 .
               </h1>
-              <p className="text-sm text-[#94A3B8] mt-1">
+              <p className="text-sm text-[var(--shell-muted)] mt-1">
                 SIGNAL is{" "}
                 <span className="text-[#22C55E] font-semibold">online</span>.
                 Monitoring global oil markets and geopolitical activity.
@@ -193,7 +193,7 @@ export default function DashboardPage() {
                   className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-semibold ${
                     commodity === c
                       ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
-                      : "text-[#64748B] border-[#1E293B] hover:border-[#334155]"
+                      : "text-[var(--shell-muted-2)] border-[var(--shell-border)] hover:border-[var(--shell-border-2)]"
                   }`}
                 >
                   {c}
@@ -201,7 +201,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-          <div className="flex items-center gap-2 mt-3 text-xs text-[#64748B]">
+          <div className="flex items-center gap-2 mt-3 text-xs text-[var(--shell-muted-2)]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse-dot" />
             Systems Operational
             <span className="mx-1">•</span>

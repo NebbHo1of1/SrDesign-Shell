@@ -26,7 +26,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   if (!isLoaded || !user) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0A0E17]">
+    <div className="flex h-screen overflow-hidden bg-[var(--shell-bg)]">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden pl-3">
         <TopBar />

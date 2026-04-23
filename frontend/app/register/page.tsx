@@ -130,7 +130,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0A0E17]">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[var(--shell-bg)]">
       {/* Background gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(221,29,33,0.08)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(56,189,248,0.06)_0%,transparent_50%)]" />
@@ -178,7 +178,7 @@ export default function RegisterPage() {
           }`}
         />
 
-        <div className="bg-gradient-to-b from-[#111827] to-[#0D1321] border border-[#1E293B] rounded-b-2xl p-8 sm:p-10 backdrop-blur-xl">
+        <div className="bg-gradient-to-b from-[var(--shell-card-2)] to-[var(--shell-panel)] border border-[var(--shell-border)] rounded-b-2xl p-8 sm:p-10 backdrop-blur-xl">
           {/* Branding */}
           <div className="text-center mb-6">
             <motion.div
@@ -188,17 +188,17 @@ export default function RegisterPage() {
             >
               <div className="inline-flex items-center gap-2 mb-3">
                 <Shield className="w-5 h-5 text-[#FBCE07]" />
-                <span className="text-xs font-bold tracking-[0.3em] text-[#64748B] uppercase">
+                <span className="text-xs font-bold tracking-[0.3em] text-[var(--shell-muted-2)] uppercase">
                   Create Account
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#F8FAFC] mb-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--shell-text-bright)] mb-1">
                 Join{" "}
                 <span className="bg-gradient-to-r from-[#DD1D21] via-[#FBCE07] to-[#38BDF8] bg-clip-text text-transparent animate-shimmer">
                   SIGNAL
                 </span>
               </h1>
-              <p className="text-[0.65rem] text-[#475569] tracking-[0.12em] uppercase">
+              <p className="text-[0.65rem] text-[var(--shell-muted-3)] tracking-[0.12em] uppercase">
                 Shell Intelligence System Registration
               </p>
             </motion.div>
@@ -208,7 +208,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div>
-              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
                 Full Name
               </label>
               <div className="relative">
@@ -218,15 +218,15 @@ export default function RegisterPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Alexandra Chen"
                   required
-                  className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
+                  className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
                 />
-                <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-muted-3)]" />
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
                 Shell Email
               </label>
               <div className="relative">
@@ -236,16 +236,16 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@shell.com"
                   required
-                  className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
+                  className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
                 />
-                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-muted-3)]" />
               </div>
             </div>
 
             {/* Password */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+                <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
                   Password
                 </label>
                 <div className="relative">
@@ -255,13 +255,13 @@ export default function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
+                    className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
                   />
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-muted-3)]" />
                 </div>
               </div>
               <div>
-                <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+                <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
                   Confirm
                 </label>
                 <input
@@ -270,15 +270,15 @@ export default function RegisterPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all"
+                  className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-2.5 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all"
                 />
               </div>
             </div>
 
             {/* Access Code */}
             <div>
-              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
-                Access Code <span className="text-[#475569]">(optional)</span>
+              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
+                Access Code <span className="text-[var(--shell-muted-3)]">(optional)</span>
               </label>
               <div className="relative">
                 <input
@@ -286,16 +286,16 @@ export default function RegisterPage() {
                   value={accessCode}
                   onChange={(e) => setAccessCode(e.target.value)}
                   placeholder="Enter access code for elevated privileges"
-                  className={`w-full bg-[#0A0E17] border rounded-lg px-4 py-2.5 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none transition-all duration-500 pr-10 ${
+                  className={`w-full bg-[var(--shell-bg)] border rounded-lg px-4 py-2.5 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none transition-all duration-500 pr-10 ${
                     isExecCode
                       ? "border-[#FFD700]/60 ring-2 ring-[#FFD700]/20 shadow-[0_0_15px_rgba(255,215,0,0.15)]"
                       : codeValidation?.valid
                         ? "border-[#22C55E]/60 ring-1 ring-[#22C55E]/20"
-                        : "border-[#1E293B] focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30"
+                        : "border-[var(--shell-border)] focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30"
                   }`}
                 />
                 <Key className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors duration-300 ${
-                  isExecCode ? "text-[#FFD700]" : codeValidation?.valid ? "text-[#22C55E]" : "text-[#475569]"
+                  isExecCode ? "text-[#FFD700]" : codeValidation?.valid ? "text-[#22C55E]" : "text-[var(--shell-muted-3)]"
                 }`} />
               </div>
 
@@ -362,8 +362,8 @@ export default function RegisterPage() {
           </form>
 
           {/* Footer */}
-          <div className="mt-5 pt-4 border-t border-[#1E293B] text-center">
-            <p className="text-xs text-[#64748B]">
+          <div className="mt-5 pt-4 border-t border-[var(--shell-border)] text-center">
+            <p className="text-xs text-[var(--shell-muted-2)]">
               Already have an account?{" "}
               <Link href="/" className="text-[#38BDF8] hover:text-[#7DD3FC] font-medium transition-colors">
                 Sign in
@@ -378,7 +378,7 @@ export default function RegisterPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 0.8 }}
-        className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-6 text-[0.6rem] text-[#475569] tracking-wide"
+        className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-6 text-[0.6rem] text-[var(--shell-muted-3)] tracking-wide"
       >
         <span className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse-dot" />

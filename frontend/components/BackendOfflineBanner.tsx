@@ -44,11 +44,11 @@ export default function BackendOfflineBanner() {
             Backend API is not reachable
           </p>
           <p className="text-xs text-[#F87171] mt-1">
-            The frontend cannot connect to <code className="bg-[#1E293B] px-1.5 py-0.5 rounded text-[#F8FAFC] font-mono">{API}</code>.
+            The frontend cannot connect to <code className="bg-[var(--shell-border)] px-1.5 py-0.5 rounded text-[var(--shell-text-bright)] font-mono">{API}</code>.
             Start the backend in a separate terminal:
           </p>
-          <div className="mt-2 bg-[#0A0E17] border border-[#1E293B] rounded-lg p-3 font-mono text-xs text-[#94A3B8] space-y-0.5">
-            <div className="flex items-center gap-2 text-[#64748B] mb-1">
+          <div className="mt-2 bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg p-3 font-mono text-xs text-[var(--shell-muted)] space-y-0.5">
+            <div className="flex items-center gap-2 text-[var(--shell-muted-2)] mb-1">
               <Terminal className="w-3.5 h-3.5" />
               <span className="text-[0.65rem] uppercase tracking-wider font-semibold">
                 Run from project root
@@ -61,7 +61,7 @@ export default function BackendOfflineBanner() {
         <button
           onClick={checkHealth}
           disabled={checking}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50 shrink-0"
+          className="flex items-center gap-1.5 text-xs font-semibold text-[var(--shell-text-bright)] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50 shrink-0"
         >
           <RefreshCw className={`w-3 h-3 ${checking ? "animate-spin" : ""}`} />
           Retry

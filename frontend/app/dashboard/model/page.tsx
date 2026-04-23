@@ -143,7 +143,7 @@ export default function ModelPage() {
     <RoleGate page="/dashboard/model">
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-extrabold text-[#F8FAFC]">
+        <h1 className="text-xl font-extrabold text-[var(--shell-text-bright)]">
           AI Model — Explainable Intelligence
         </h1>
         <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function ModelPage() {
               className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-semibold ${
                 commodity === c
                   ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
-                  : "text-[#64748B] border-[#1E293B] hover:border-[#334155]"
+                  : "text-[var(--shell-muted-2)] border-[var(--shell-border)] hover:border-[var(--shell-border-2)]"
               }`}
             >
               {c}
@@ -172,8 +172,8 @@ export default function ModelPage() {
 
       {/* Live prediction banner */}
       {prediction && (
-        <div className="bg-gradient-to-r from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
-          <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[#64748B] uppercase mb-2">
+        <div className="bg-gradient-to-r from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
+          <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
             Live Model Prediction — {prediction.commodity}
           </p>
           <div className="flex items-center gap-4">
@@ -188,7 +188,7 @@ export default function ModelPage() {
             >
               {prediction.prediction}
             </span>
-            <span className="text-sm text-[#94A3B8]">
+            <span className="text-sm text-[var(--shell-muted)]">
               Confidence: {(prediction.confidence * 100).toFixed(1)}% ·
               P(UP): {(prediction.probability_up * 100).toFixed(1)}% ·
               Model: {prediction.model_type}
@@ -223,9 +223,9 @@ export default function ModelPage() {
         ].map((m) => (
           <div
             key={m.label}
-            className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5"
+            className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5"
           >
-            <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[#64748B] uppercase mb-2">
+            <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
               {m.label}
             </p>
             <p className={`text-2xl font-extrabold ${m.color}`}>{m.value}</p>
@@ -235,14 +235,14 @@ export default function ModelPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Feature Importance */}
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Brain className="w-4 h-4 text-[#FBCE07]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Feature Importance (from trained model)
             </span>
           </div>
-          <p className="text-xs text-[#64748B] mb-4">
+          <p className="text-xs text-[var(--shell-muted-2)] mb-4">
             Top features driving classification decisions — extracted from the
             trained {report?.model_type ?? "RandomForest"} model.
           </p>
@@ -252,26 +252,26 @@ export default function ModelPage() {
               layout="vertical"
               margin={{ left: 10 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--shell-border)" />
               <XAxis
                 type="number"
                 domain={[0, Math.ceil(maxImportance * 100) / 100 + 0.01]}
-                stroke="#334155"
-                tick={{ fill: "#64748B", fontSize: 11 }}
+                stroke="var(--shell-border-2)"
+                tick={{ fill: "var(--shell-muted-2)", fontSize: 11 }}
               />
               <YAxis
                 type="category"
                 dataKey="name"
-                stroke="#334155"
-                tick={{ fill: "#94A3B8", fontSize: 11 }}
+                stroke="var(--shell-border-2)"
+                tick={{ fill: "var(--shell-muted)", fontSize: 11 }}
                 width={130}
               />
               <Tooltip
                 contentStyle={{
-                  background: "#1A2234",
-                  border: "1px solid #1E293B",
+                  background: "var(--shell-card)",
+                  border: "1px solid var(--shell-border)",
                   borderRadius: "8px",
-                  color: "#E2E8F0",
+                  color: "var(--shell-text)",
                   fontSize: "12px",
                 }}
                 formatter={(value) => [
@@ -289,10 +289,10 @@ export default function ModelPage() {
         </div>
 
         {/* Model Architecture */}
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Gauge className="w-4 h-4 text-[#38BDF8]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Model Architecture
             </span>
           </div>
@@ -329,10 +329,10 @@ export default function ModelPage() {
             ].map((r) => (
               <div
                 key={r.label}
-                className="flex items-center justify-between text-sm border-b border-[#1E293B] pb-2"
+                className="flex items-center justify-between text-sm border-b border-[var(--shell-border)] pb-2"
               >
-                <span className="text-[#94A3B8]">{r.label}</span>
-                <span className="text-[#F8FAFC] font-medium">{r.value}</span>
+                <span className="text-[var(--shell-muted)]">{r.label}</span>
+                <span className="text-[var(--shell-text-bright)] font-medium">{r.value}</span>
               </div>
             ))}
           </div>
@@ -340,14 +340,14 @@ export default function ModelPage() {
       </div>
 
       {/* Feature Glossary — plain-language descriptions for executives */}
-      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+      <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
         <div className="flex items-center gap-2 mb-2">
           <BookOpen className="w-4 h-4 text-[#A78BFA]" />
-          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
             Feature Glossary
           </span>
         </div>
-        <p className="text-xs text-[#64748B] mb-4">
+        <p className="text-xs text-[var(--shell-muted-2)] mb-4">
           What each feature means in plain language — matched to the importance
           chart above.
         </p>
@@ -359,12 +359,12 @@ export default function ModelPage() {
             return (
               <div
                 key={f.name}
-                className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3"
+                className="bg-[var(--shell-bg)]/50 border border-[var(--shell-border)] rounded-lg p-3"
               >
-                <span className="text-xs font-bold text-[#F8FAFC]">
+                <span className="text-xs font-bold text-[var(--shell-text-bright)]">
                   {f.name}
                 </span>
-                <p className="text-xs text-[#94A3B8] mt-1 leading-relaxed">
+                <p className="text-xs text-[var(--shell-muted)] mt-1 leading-relaxed">
                   {desc}
                 </p>
               </div>
@@ -375,37 +375,37 @@ export default function ModelPage() {
 
       {/* Prediction History Timeline */}
       {predHistory.length > 0 && (
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <History className="w-4 h-4 text-[#06B6D4]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Prediction History — {commodity}
             </span>
           </div>
-          <p className="text-xs text-[#64748B] mb-4">
+          <p className="text-xs text-[var(--shell-muted-2)] mb-4">
             Daily aggregated model confidence and sentiment over time. Green bars
             = UP prediction days, red bars = DOWN prediction days.
           </p>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={predHistory}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--shell-border)" />
               <XAxis
                 dataKey="date"
-                stroke="#334155"
-                tick={{ fill: "#64748B", fontSize: 10 }}
+                stroke="var(--shell-border-2)"
+                tick={{ fill: "var(--shell-muted-2)", fontSize: 10 }}
                 tickFormatter={(d: string) => d.slice(5)}
               />
               <YAxis
-                stroke="#334155"
-                tick={{ fill: "#64748B", fontSize: 10 }}
+                stroke="var(--shell-border-2)"
+                tick={{ fill: "var(--shell-muted-2)", fontSize: 10 }}
                 domain={[0, 1]}
               />
               <Tooltip
                 contentStyle={{
-                  background: "#1A2234",
-                  border: "1px solid #1E293B",
+                  background: "var(--shell-card)",
+                  border: "1px solid var(--shell-border)",
                   borderRadius: "8px",
-                  color: "#E2E8F0",
+                  color: "var(--shell-text)",
                   fontSize: "12px",
                 }}
                 formatter={(value, name) => [
@@ -417,7 +417,7 @@ export default function ModelPage() {
                 labelFormatter={(label) => `Date: ${String(label)}`}
               />
               <Legend
-                wrapperStyle={{ fontSize: "11px", color: "#94A3B8" }}
+                wrapperStyle={{ fontSize: "11px", color: "var(--shell-muted)" }}
                 formatter={(value: string) =>
                   value === "avg_confidence" ? "Avg Confidence" : "Avg Sentiment"
                 }
@@ -457,18 +457,18 @@ export default function ModelPage() {
 
           {/* Daily summary cards */}
           <div className="grid grid-cols-3 gap-3 mt-4">
-            <div className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3 text-center">
-              <p className="text-[0.55rem] text-[#475569] uppercase tracking-wider">Days Tracked</p>
-              <p className="text-lg font-extrabold text-[#F8FAFC]">{predHistory.length}</p>
+            <div className="bg-[var(--shell-bg)]/50 border border-[var(--shell-border)] rounded-lg p-3 text-center">
+              <p className="text-[0.55rem] text-[var(--shell-muted-3)] uppercase tracking-wider">Days Tracked</p>
+              <p className="text-lg font-extrabold text-[var(--shell-text-bright)]">{predHistory.length}</p>
             </div>
-            <div className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3 text-center">
-              <p className="text-[0.55rem] text-[#475569] uppercase tracking-wider">UP Days</p>
+            <div className="bg-[var(--shell-bg)]/50 border border-[var(--shell-border)] rounded-lg p-3 text-center">
+              <p className="text-[0.55rem] text-[var(--shell-muted-3)] uppercase tracking-wider">UP Days</p>
               <p className="text-lg font-extrabold text-[#22C55E]">
                 {predHistory.filter((p) => p.dominant_prediction === "UP").length}
               </p>
             </div>
-            <div className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3 text-center">
-              <p className="text-[0.55rem] text-[#475569] uppercase tracking-wider">DOWN Days</p>
+            <div className="bg-[var(--shell-bg)]/50 border border-[var(--shell-border)] rounded-lg p-3 text-center">
+              <p className="text-[0.55rem] text-[var(--shell-muted-3)] uppercase tracking-wider">DOWN Days</p>
               <p className="text-lg font-extrabold text-[#EF4444]">
                 {predHistory.filter((p) => p.dominant_prediction === "DOWN").length}
               </p>
@@ -478,23 +478,23 @@ export default function ModelPage() {
       )}
 
       {/* Pipeline explainer */}
-      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
-        <div className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase mb-5">
+      <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
+        <div className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-5">
           Intelligence Pipeline
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {PIPELINE.map((p) => (
             <div
               key={p.step}
-              className="bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-4"
+              className="bg-[var(--shell-bg)]/50 border border-[var(--shell-border)] rounded-lg p-4"
             >
               <div className="flex items-center gap-2 mb-2">
                 {p.icon}
-                <span className="text-xs font-bold text-[#F8FAFC]">
+                <span className="text-xs font-bold text-[var(--shell-text-bright)]">
                   {p.step}
                 </span>
               </div>
-              <p className="text-xs text-[#64748B] leading-relaxed">
+              <p className="text-xs text-[var(--shell-muted-2)] leading-relaxed">
                 {p.desc}
               </p>
             </div>
