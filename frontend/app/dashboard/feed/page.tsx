@@ -122,14 +122,14 @@ export default function FeedPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-extrabold text-[#F8FAFC]">
+        <h1 className="text-xl font-extrabold text-[var(--shell-text-bright)]">
           Intelligence Feed
         </h1>
         <div className="flex items-center gap-3">
           <button
             onClick={exportCSV}
             disabled={filtered.length === 0}
-            className="flex items-center gap-1.5 text-xs text-[#94A3B8] hover:text-[#FBCE07] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 text-xs text-[var(--shell-muted)] hover:text-[#FBCE07] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title="Export filtered headlines as CSV"
           >
             <Download className="w-3.5 h-3.5" />
@@ -138,7 +138,7 @@ export default function FeedPage() {
           <button
             onClick={load}
             disabled={loading}
-            className="flex items-center gap-1.5 text-xs text-[#94A3B8] hover:text-[#F8FAFC] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs text-[var(--shell-muted)] hover:text-[var(--shell-text-bright)] transition-colors disabled:opacity-50"
             title="Refresh headlines"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -163,7 +163,7 @@ export default function FeedPage() {
           <button
             onClick={load}
             disabled={loading}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[var(--shell-text-bright)] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
             Retry
@@ -185,19 +185,19 @@ export default function FeedPage() {
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-muted-3)]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search headlines…"
-            className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg pl-9 pr-4 py-2 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none focus:border-[#38BDF8] transition-colors"
+            className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg pl-9 pr-4 py-2 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none focus:border-[#38BDF8] transition-colors"
           />
         </div>
 
         {/* Event type filter */}
         <div className="flex items-center gap-1.5">
-          <Filter className="w-4 h-4 text-[#475569]" />
+          <Filter className="w-4 h-4 text-[var(--shell-muted-3)]" />
           {EVENT_TYPES.map((t) => (
             <button
               key={t}
@@ -205,7 +205,7 @@ export default function FeedPage() {
               className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
                 filter === t
                   ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
-                  : "text-[#64748B] border-[#1E293B] hover:border-[#334155]"
+                  : "text-[var(--shell-muted-2)] border-[var(--shell-border)] hover:border-[var(--shell-border-2)]"
               }`}
             >
               {t}
@@ -218,11 +218,11 @@ export default function FeedPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-20 bg-[#1A2234] rounded-xl animate-pulse" />
+            <div key={i} className="h-20 bg-[var(--shell-card)] rounded-xl animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <p className="text-center text-[#64748B] py-10">No headlines match your filters.</p>
+        <p className="text-center text-[var(--shell-muted-2)] py-10">No headlines match your filters.</p>
       ) : (
         <motion.div
           initial="hidden"
@@ -240,14 +240,14 @@ export default function FeedPage() {
                 hidden: { opacity: 1, y: 0 },
                 show: { opacity: 1, y: 0 },
               }}
-              className="block bg-[#1A2234] border border-[#1E293B] rounded-xl p-4 hover:border-[#38BDF8]/40 transition-all group"
+              className="block bg-[var(--shell-card)] border border-[var(--shell-border)] rounded-xl p-4 hover:border-[#38BDF8]/40 transition-all group"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#F8FAFC] group-hover:text-[#38BDF8] transition-colors line-clamp-2">
+                  <p className="text-sm font-semibold text-[var(--shell-text-bright)] group-hover:text-[#38BDF8] transition-colors line-clamp-2">
                     {h.title}
                   </p>
-                  <div className="flex items-center gap-3 mt-2 text-[0.65rem] text-[#475569]">
+                  <div className="flex items-center gap-3 mt-2 text-[0.65rem] text-[var(--shell-muted-3)]">
                     <span>{h.source}</span>
                     <span>{h.event_type}</span>
                     <span
@@ -287,10 +287,10 @@ export default function FeedPage() {
                     )}
                     {h.pred_label}
                   </span>
-                  <span className="text-[0.55rem] text-[#475569]">
+                  <span className="text-[0.55rem] text-[var(--shell-muted-3)]">
                     {(h.pred_confidence * 100).toFixed(0)}% conf
                   </span>
-                  <ExternalLink className="w-3 h-3 text-[#334155] group-hover:text-[#38BDF8] transition-colors" />
+                  <ExternalLink className="w-3 h-3 text-[var(--shell-border-2)] group-hover:text-[#38BDF8] transition-colors" />
                 </div>
               </div>
             </motion.a>

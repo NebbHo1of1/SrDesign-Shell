@@ -27,9 +27,9 @@ interface Props {
 export default function PriceChart({ prices, headlines, loading }: Props) {
   if (loading || !prices) {
     return (
-      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-80 animate-pulse">
-        <div className="h-4 w-40 bg-[#334155] rounded mb-4" />
-        <div className="h-56 bg-[#0A0E17]/50 rounded-lg" />
+      <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 h-80 animate-pulse">
+        <div className="h-4 w-40 bg-[var(--shell-border-2)] rounded mb-4" />
+        <div className="h-56 bg-[var(--shell-bg)]/50 rounded-lg" />
       </div>
     );
   }
@@ -66,16 +66,16 @@ export default function PriceChart({ prices, headlines, loading }: Props) {
     .filter((m) => m.close != null);
 
   return (
-    <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+    <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[#38BDF8]" />
-          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
             {prices.commodity} — Price &amp; Events
           </span>
         </div>
-        <span className="text-xs text-[#475569]">
+        <span className="text-xs text-[var(--shell-muted-3)]">
           {data.length} data points
         </span>
       </div>
@@ -89,27 +89,27 @@ export default function PriceChart({ prices, headlines, loading }: Props) {
               <stop offset="100%" stopColor="#38BDF8" stopOpacity={0.0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--shell-border)" />
           <XAxis
             dataKey="date"
-            stroke="#334155"
-            tick={{ fill: "#64748B", fontSize: 11 }}
+            stroke="var(--shell-border-2)"
+            tick={{ fill: "var(--shell-muted-2)", fontSize: 11 }}
             tickLine={false}
           />
           <YAxis
-            stroke="#334155"
-            tick={{ fill: "#64748B", fontSize: 11 }}
+            stroke="var(--shell-border-2)"
+            tick={{ fill: "var(--shell-muted-2)", fontSize: 11 }}
             tickLine={false}
             domain={["auto", "auto"]}
             width={50}
           />
           <Tooltip
             contentStyle={{
-              background: "#1A2234",
-              border: "1px solid #1E293B",
+              background: "var(--shell-card)",
+              border: "1px solid var(--shell-border)",
               borderRadius: "8px",
               fontSize: "12px",
-              color: "#E2E8F0",
+              color: "var(--shell-text)",
             }}
           />
           <Area
@@ -133,7 +133,7 @@ export default function PriceChart({ prices, headlines, loading }: Props) {
                     ? "#EF4444"
                     : "#F59E0B"
               }
-              stroke="#0A0E17"
+              stroke="var(--shell-bg)"
               strokeWidth={2}
             />
           ))}
@@ -146,7 +146,7 @@ export default function PriceChart({ prices, headlines, loading }: Props) {
           {markers.map((m, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 text-[0.65rem] text-[#94A3B8]"
+              className="flex items-center gap-2 text-[0.65rem] text-[var(--shell-muted)]"
             >
               <span
                 className="w-2 h-2 rounded-full shrink-0"

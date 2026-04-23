@@ -1,14 +1,21 @@
 @import "tailwindcss";
 
 :root {
+  /* Dark theme (default) */
+  --shell-bg: #0A0E17;
+  --shell-panel: #0D1321;
+  --shell-card: #1A2234;
+  --shell-card-2: #111827;
+  --shell-border: #1E293B;
+  --shell-border-2: #334155;
+  --shell-muted-3: #475569;
+  --shell-muted-2: #64748B;
+  --shell-muted: #94A3B8;
+  --shell-text: #E2E8F0;
+  --shell-text-bright: #F8FAFC;
+  /* Brand/accent colors — same across themes */
   --shell-red: #DD1D21;
   --shell-yellow: #FBCE07;
-  --shell-dark: #0A0E17;
-  --shell-panel: #111827;
-  --shell-card: #1A2234;
-  --shell-border: #1E293B;
-  --shell-text: #E2E8F0;
-  --shell-muted: #94A3B8;
   --shell-accent: #38BDF8;
   --shell-green: #22C55E;
   --shell-red-soft: #EF4444;
@@ -16,8 +23,36 @@
   --shell-cyan: #06B6D4;
 }
 
+[data-theme="black"] {
+  --shell-bg: #000000;
+  --shell-panel: #050505;
+  --shell-card: #111111;
+  --shell-card-2: #0D0D0D;
+  --shell-border: #1A1A1A;
+  --shell-border-2: #2A2A2A;
+  --shell-muted-3: #3A3F48;
+  --shell-muted-2: #505868;
+  --shell-muted: #7A8898;
+  --shell-text: #C8D4E4;
+  --shell-text-bright: #E8F0F8;
+}
+
+[data-theme="light"] {
+  --shell-bg: #F0F4F8;
+  --shell-panel: #FFFFFF;
+  --shell-card: #FFFFFF;
+  --shell-card-2: #F8FAFC;
+  --shell-border: #CBD5E1;
+  --shell-border-2: #94A3B8;
+  --shell-muted-3: #94A3B8;
+  --shell-muted-2: #64748B;
+  --shell-muted: #475569;
+  --shell-text: #1E293B;
+  --shell-text-bright: #0F172A;
+}
+
 @theme inline {
-  --color-background: var(--shell-dark);
+  --color-background: var(--shell-bg);
   --color-foreground: var(--shell-text);
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -25,7 +60,7 @@
 
 /* ── Global ─────────────────────────────────── */
 html, body {
-  background: var(--shell-dark);
+  background: var(--shell-bg);
   color: var(--shell-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -33,14 +68,14 @@ html, body {
 
 /* ── Scrollbar ──────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--shell-dark); }
+::-webkit-scrollbar-track { background: var(--shell-bg); }
 ::-webkit-scrollbar-thumb { background: var(--shell-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #334155; }
+::-webkit-scrollbar-thumb:hover { background: var(--shell-border-2); }
 
 /* ── Selection ──────────────────────────────── */
 ::selection {
   background: rgba(56, 189, 248, 0.3);
-  color: #F8FAFC;
+  color: var(--shell-text-bright);
 }
 
 /* ── Pulsing dot ────────────────────────────── */

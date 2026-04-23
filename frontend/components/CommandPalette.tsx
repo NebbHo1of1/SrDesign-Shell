@@ -228,10 +228,10 @@ export default function CommandPalette() {
             transition={{ duration: 0.15 }}
             className="fixed top-[15%] left-1/2 -translate-x-1/2 w-full max-w-lg z-50"
           >
-            <div className="bg-[#0D1321] border border-[#1E293B] rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-[var(--shell-panel)] border border-[var(--shell-border)] rounded-2xl shadow-2xl overflow-hidden">
               {/* Search input */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-[#1E293B]">
-                <Search className="w-4 h-4 text-[#64748B] shrink-0" />
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--shell-border)]">
+                <Search className="w-4 h-4 text-[var(--shell-muted-2)] shrink-0" />
                 <input
                   ref={inputRef}
                   type="text"
@@ -239,9 +239,9 @@ export default function CommandPalette() {
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Search pages, headlines, or actions…"
-                  className="flex-1 bg-transparent text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none"
+                  className="flex-1 bg-transparent text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none"
                 />
-                <kbd className="hidden sm:inline text-[0.55rem] text-[#475569] bg-[#1A2234] px-1.5 py-0.5 rounded border border-[#1E293B]">
+                <kbd className="hidden sm:inline text-[0.55rem] text-[var(--shell-muted-3)] bg-[var(--shell-card)] px-1.5 py-0.5 rounded border border-[var(--shell-border)]">
                   ESC
                 </kbd>
               </div>
@@ -250,14 +250,14 @@ export default function CommandPalette() {
               <div className="max-h-[400px] overflow-y-auto py-2">
                 {filtered.length === 0 ? (
                   <div className="px-4 py-8 text-center">
-                    <Search className="w-6 h-6 text-[#334155] mx-auto mb-2" />
-                    <p className="text-sm text-[#64748B]">No results found</p>
+                    <Search className="w-6 h-6 text-[var(--shell-border-2)] mx-auto mb-2" />
+                    <p className="text-sm text-[var(--shell-muted-2)]">No results found</p>
                   </div>
                 ) : (
                   Object.entries(grouped).map(([category, categoryItems]) => (
                     <div key={category}>
                       <div className="px-4 py-1.5">
-                        <span className="text-[0.6rem] font-bold tracking-[0.1em] text-[#475569] uppercase">
+                        <span className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-3)] uppercase">
                           {categoryLabels[category] ?? category}
                         </span>
                       </div>
@@ -270,11 +270,11 @@ export default function CommandPalette() {
                             onMouseEnter={() => setSelected(idx)}
                             className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                               selected === idx
-                                ? "bg-[#1E293B] text-[#F8FAFC]"
-                                : "text-[#94A3B8] hover:bg-[#1E293B]/50"
+                                ? "bg-[var(--shell-border)] text-[var(--shell-text-bright)]"
+                                : "text-[var(--shell-muted)] hover:bg-[var(--shell-border)]/50"
                             }`}
                           >
-                            <span className={selected === idx ? "text-[#38BDF8]" : "text-[#64748B]"}>
+                            <span className={selected === idx ? "text-[#38BDF8]" : "text-[var(--shell-muted-2)]"}>
                               {item.icon}
                             </span>
                             <div className="flex-1 min-w-0">
@@ -282,7 +282,7 @@ export default function CommandPalette() {
                                 {item.label}
                               </p>
                               {item.description && (
-                                <p className="text-[0.6rem] text-[#475569] truncate">
+                                <p className="text-[0.6rem] text-[var(--shell-muted-3)] truncate">
                                   {item.description}
                                 </p>
                               )}
@@ -296,17 +296,17 @@ export default function CommandPalette() {
               </div>
 
               {/* Footer hint */}
-              <div className="flex items-center gap-4 px-4 py-2.5 border-t border-[#1E293B] text-[0.55rem] text-[#475569]">
+              <div className="flex items-center gap-4 px-4 py-2.5 border-t border-[var(--shell-border)] text-[0.55rem] text-[var(--shell-muted-3)]">
                 <span className="flex items-center gap-1">
-                  <kbd className="bg-[#1A2234] px-1 py-0.5 rounded border border-[#1E293B]">↑↓</kbd>
+                  <kbd className="bg-[var(--shell-card)] px-1 py-0.5 rounded border border-[var(--shell-border)]">↑↓</kbd>
                   Navigate
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="bg-[#1A2234] px-1 py-0.5 rounded border border-[#1E293B]">↵</kbd>
+                  <kbd className="bg-[var(--shell-card)] px-1 py-0.5 rounded border border-[var(--shell-border)]">↵</kbd>
                   Select
                 </span>
                 <span className="flex items-center gap-1">
-                  <kbd className="bg-[#1A2234] px-1 py-0.5 rounded border border-[#1E293B]">ESC</kbd>
+                  <kbd className="bg-[var(--shell-card)] px-1 py-0.5 rounded border border-[var(--shell-border)]">ESC</kbd>
                   Close
                 </span>
               </div>

@@ -39,16 +39,16 @@ export default function ToastContainer() {
             <div className="flex items-start gap-2.5">
               <div className="shrink-0 mt-0.5">{ICON_MAP[toast.type]}</div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#F8FAFC] leading-snug">
+                <p className="text-sm font-medium text-[var(--shell-text-bright)] leading-snug">
                   {toast.message}
                 </p>
                 {toast.detail && (
-                  <p className="text-[0.65rem] text-[#94A3B8] mt-0.5">{toast.detail}</p>
+                  <p className="text-[0.65rem] text-[var(--shell-muted)] mt-0.5">{toast.detail}</p>
                 )}
               </div>
               <button
                 onClick={() => dismissToast(toast.id)}
-                className="shrink-0 text-[#64748B] hover:text-[#F8FAFC] transition-colors"
+                className="shrink-0 text-[var(--shell-muted-2)] hover:text-[var(--shell-text-bright)] transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

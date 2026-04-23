@@ -36,13 +36,13 @@ export default class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center">
           <AlertTriangle className="w-12 h-12 text-[#F59E0B] mb-4" />
-          <h2 className="text-lg font-bold text-[#F8FAFC] mb-2">
+          <h2 className="text-lg font-bold text-[var(--shell-text-bright)] mb-2">
             Something went wrong
           </h2>
-          <p className="text-sm text-[#94A3B8] mb-4 max-w-md">
+          <p className="text-sm text-[var(--shell-muted)] mb-4 max-w-md">
             A rendering error occurred. Check the browser console for details.
           </p>
-          <pre className="text-xs text-[#EF4444] bg-[#0A0E17] border border-[#1E293B] rounded-lg p-4 max-w-lg overflow-auto">
+          <pre className="text-xs text-[#EF4444] bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg p-4 max-w-lg overflow-auto">
             {this.state.error?.message}
           </pre>
           <button

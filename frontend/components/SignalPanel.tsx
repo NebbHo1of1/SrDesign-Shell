@@ -22,12 +22,12 @@ interface Props {
 export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" }: Props) {
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-full animate-pulse">
-        <div className="h-4 w-24 bg-[#334155] rounded mb-4" />
-        <div className="h-16 w-24 bg-[#334155] rounded mx-auto my-6" />
+      <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 h-full animate-pulse">
+        <div className="h-4 w-24 bg-[var(--shell-border-2)] rounded mb-4" />
+        <div className="h-16 w-24 bg-[var(--shell-border-2)] rounded mx-auto my-6" />
         <div className="space-y-2">
-          <div className="h-3 w-full bg-[#1E293B] rounded" />
-          <div className="h-3 w-3/4 bg-[#1E293B] rounded" />
+          <div className="h-3 w-full bg-[var(--shell-border)] rounded" />
+          <div className="h-3 w-3/4 bg-[var(--shell-border)] rounded" />
         </div>
       </div>
     );
@@ -69,11 +69,11 @@ export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" 
   ];
 
   return (
-    <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-full animate-glow-border">
+    <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 h-full animate-glow-border">
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
         <Zap className="w-4 h-4 text-[#FBCE07]" />
-        <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+        <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
           AI Signal — {commodity}
         </span>
       </div>
@@ -91,10 +91,10 @@ export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" 
       {/* Confidence Gauge */}
       <div className="mb-5">
         <div className="flex items-center justify-between text-xs mb-1.5">
-          <span className="text-[#64748B]">Confidence</span>
-          <span className="text-[#F8FAFC] font-bold">{confPct}%</span>
+          <span className="text-[var(--shell-muted-2)]">Confidence</span>
+          <span className="text-[var(--shell-text-bright)] font-bold">{confPct}%</span>
         </div>
-        <div className="h-2 bg-[#0A0E17] rounded-full overflow-hidden">
+        <div className="h-2 bg-[var(--shell-bg)] rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-1000 ${confBarColor}`}
             style={{ width: `${confPct}%` }}
@@ -105,7 +105,7 @@ export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" 
       {/* Signal Strength */}
       <div className="mb-5">
         <div className="flex items-center justify-between text-xs mb-1.5">
-          <span className="text-[#64748B]">Signal Strength</span>
+          <span className="text-[var(--shell-muted-2)]">Signal Strength</span>
           <span className="text-[#38BDF8] font-semibold">
             {confPct >= 75 ? "Strong" : confPct >= 55 ? "Moderate" : "Weak"}
           </span>
@@ -117,7 +117,7 @@ export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" 
               className={`h-1.5 flex-1 rounded-full ${
                 i < Math.ceil(confPct / 20)
                   ? "bg-[#38BDF8]"
-                  : "bg-[#1E293B]"
+                  : "bg-[var(--shell-border)]"
               }`}
             />
           ))}
@@ -126,7 +126,7 @@ export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" 
 
       {/* Top Drivers */}
       <div>
-        <div className="text-[0.6rem] font-bold tracking-[0.08em] text-[#475569] uppercase mb-2">
+        <div className="text-[0.6rem] font-bold tracking-[0.08em] text-[var(--shell-muted-3)] uppercase mb-2">
           Top Drivers
         </div>
         <div className="space-y-1.5">
@@ -135,7 +135,7 @@ export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" 
               key={d.label}
               className="flex items-center justify-between text-xs"
             >
-              <span className="text-[#94A3B8]">{d.label}</span>
+              <span className="text-[var(--shell-muted)]">{d.label}</span>
               <span
                 className={`font-bold ${
                   d.positive ? "text-[#22C55E]" : "text-[#EF4444]"
@@ -150,11 +150,11 @@ export default function SignalPanel({ kpi, headline, loading, commodity = "WTI" 
 
       {/* Latest headline context */}
       {headline && (
-        <div className="mt-4 pt-4 border-t border-[#1E293B]">
-          <p className="text-[0.6rem] text-[#475569] uppercase tracking-[0.08em] mb-1">
+        <div className="mt-4 pt-4 border-t border-[var(--shell-border)]">
+          <p className="text-[0.6rem] text-[var(--shell-muted-3)] uppercase tracking-[0.08em] mb-1">
             Latest Signal Source
           </p>
-          <p className="text-xs text-[#94A3B8] leading-relaxed line-clamp-2">
+          <p className="text-xs text-[var(--shell-muted)] leading-relaxed line-clamp-2">
             {headline.title}
           </p>
         </div>

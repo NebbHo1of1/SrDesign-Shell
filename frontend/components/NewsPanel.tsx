@@ -64,10 +64,10 @@ function PredBadge({ label }: { label: string }) {
 export default function NewsPanel({ headlines, loading }: Props) {
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-full animate-pulse">
-        <div className="h-4 w-32 bg-[#334155] rounded mb-4" />
+      <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 h-full animate-pulse">
+        <div className="h-4 w-32 bg-[var(--shell-border-2)] rounded mb-4" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-16 bg-[#1E293B] rounded-lg mb-2" />
+          <div key={i} className="h-16 bg-[var(--shell-border)] rounded-lg mb-2" />
         ))}
       </div>
     );
@@ -76,10 +76,10 @@ export default function NewsPanel({ headlines, loading }: Props) {
   const items = headlines.slice(0, 8);
 
   return (
-    <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-full">
+    <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+        <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
           Intelligence Feed
         </span>
         <span className="flex items-center gap-1.5 text-[0.6rem] text-[#22C55E]">
@@ -89,7 +89,7 @@ export default function NewsPanel({ headlines, loading }: Props) {
       </div>
 
       {items.length === 0 && (
-        <p className="text-sm text-[#64748B] text-center py-8">
+        <p className="text-sm text-[var(--shell-muted-2)] text-center py-8">
           No headlines available. Seed the database via POST /seed.
         </p>
       )}
@@ -111,22 +111,22 @@ export default function NewsPanel({ headlines, loading }: Props) {
               href={h.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-[#0A0E17]/50 border border-[#1E293B] rounded-lg p-3 hover:border-[#38BDF8]/50 transition-all group"
+              className="block bg-[var(--shell-bg)]/50 border border-[var(--shell-border)] rounded-lg p-3 hover:border-[#38BDF8]/50 transition-all group"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[#F8FAFC] font-semibold leading-snug line-clamp-2 group-hover:text-[#38BDF8] transition-colors">
+                  <p className="text-sm text-[var(--shell-text-bright)] font-semibold leading-snug line-clamp-2 group-hover:text-[#38BDF8] transition-colors">
                     {h.title}
                   </p>
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span className="text-[0.6rem] text-[#475569]">
+                    <span className="text-[0.6rem] text-[var(--shell-muted-3)]">
                       {h.source}
                     </span>
-                    <span className="text-[0.6rem] text-[#334155]">•</span>
-                    <span className="text-[0.6rem] text-[#475569]">
+                    <span className="text-[0.6rem] text-[var(--shell-border-2)]">•</span>
+                    <span className="text-[0.6rem] text-[var(--shell-muted-3)]">
                       {h.event_type}
                     </span>
-                    <span className="text-[0.6rem] text-[#334155]">•</span>
+                    <span className="text-[0.6rem] text-[var(--shell-border-2)]">•</span>
                     <span className={`text-[0.6rem] font-semibold ${impactClass}`}>
                       Impact {h.impact_score.toFixed(0)}
                     </span>
@@ -144,7 +144,7 @@ export default function NewsPanel({ headlines, loading }: Props) {
               </div>
 
               {/* Sentiment bar */}
-              <div className="mt-2 h-[3px] bg-[#1E293B] rounded-full overflow-hidden">
+              <div className="mt-2 h-[3px] bg-[var(--shell-border)] rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
@@ -160,7 +160,7 @@ export default function NewsPanel({ headlines, loading }: Props) {
               </div>
 
               {/* External link hint */}
-              <ExternalLink className="w-3 h-3 text-[#334155] group-hover:text-[#38BDF8] absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ExternalLink className="w-3 h-3 text-[var(--shell-border-2)] group-hover:text-[#38BDF8] absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity" />
             </a>
           );
         })}

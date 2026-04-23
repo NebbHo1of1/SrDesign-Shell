@@ -22,10 +22,10 @@ interface Props {
 
 function Skeleton() {
   return (
-    <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 animate-pulse">
-      <div className="h-3 w-20 bg-[#334155] rounded mb-3" />
-      <div className="h-7 w-16 bg-[#334155] rounded mb-2" />
-      <div className="h-3 w-24 bg-[#1E293B] rounded" />
+    <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 animate-pulse">
+      <div className="h-3 w-20 bg-[var(--shell-border-2)] rounded mb-3" />
+      <div className="h-7 w-16 bg-[var(--shell-border-2)] rounded mb-2" />
+      <div className="h-3 w-24 bg-[var(--shell-border)] rounded" />
     </div>
   );
 }
@@ -124,7 +124,7 @@ export default function KPICards({ wti, brent, loading }: Props) {
           ? "text-[#22C55E]"
           : sentiment < -0.1
             ? "text-[#EF4444]"
-            : "text-[#94A3B8]",
+            : "text-[var(--shell-muted)]",
       border: "border-[#A78BFA]/30",
     },
   ];
@@ -134,16 +134,16 @@ export default function KPICards({ wti, brent, loading }: Props) {
       {cards.map((c) => (
         <div
           key={c.label}
-          className={`bg-gradient-to-br from-[#1A2234] to-[#1E293B] border rounded-xl p-5 transition-all hover:shadow-lg hover:shadow-[#38BDF8]/5 ${c.border}`}
+          className={`bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border rounded-xl p-5 transition-all hover:shadow-lg hover:shadow-[#38BDF8]/5 ${c.border}`}
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[0.6rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               {c.label}
             </span>
             {c.icon}
           </div>
           <div className={`text-2xl font-extrabold ${c.color}`}>{c.value}</div>
-          <p className="text-xs text-[#64748B] mt-1">{c.sub}</p>
+          <p className="text-xs text-[var(--shell-muted-2)] mt-1">{c.sub}</p>
         </div>
       ))}
     </div>

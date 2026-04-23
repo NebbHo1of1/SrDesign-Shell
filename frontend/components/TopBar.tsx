@@ -1,23 +1,28 @@
-/* ── SIGNAL — Top Bar ─────────────────────────────────────────────────
-   User info, role badge, notifications bell, system clock.
-   Executive users get a gold "Executive Mode" indicator.
-   ──────────────────────────────────────────────────────────────────── */
-
 "use client";
 
 import { useAuth } from "@/lib/auth";
-import { LogOut, Shield, Crown, Command } from "lucide-react";
+import { useTheme, type Theme } from "@/lib/theme";
+import { LogOut, Shield, Crown, Command, Moon, Sun, Circle } from "lucide-react";
 import { useEffect, useState } from "react";
 import NotificationCenter from "@/components/NotificationCenter";
 
 const ROLE_COLORS: Record<string, string> = {
   Executive: "bg-[#FFD700]/10 text-[#FFD700] border-[#FFD700]/30",
   Analyst: "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/30",
-  Viewer: "bg-[#94A3B8]/10 text-[#94A3B8] border-[#94A3B8]/30",
+  Viewer: "bg-[var(--shell-muted)]/10 text-[var(--shell-muted)] border-[var(--shell-muted)]/30",
 };
+
+const THEME_CYCLE: Theme[] = ["dark", "black", "light"];
+
+function ThemeIcon({ theme }: { theme: Theme }) {
+  if (theme === "light") return <Sun className="w-3.5 h-3.5" />;
+  if (theme === "black") return <Circle className="w-3.5 h-3.5 fill-current" />;
+  return <Moon className="w-3.5 h-3.5" />;
+}
 
 export default function TopBar() {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [time, setTime] = useState("");
 
   useEffect(() => {
@@ -43,16 +48,21 @@ export default function TopBar() {
 
   const isExec = user.role === "Executive";
 
+  const cycleTheme = () => {
+    const idx = THEME_CYCLE.indexOf(theme);
+    setTheme(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length]);
+  };
+
   return (
-    <header className={`relative z-50 flex items-center justify-between px-6 py-3 border-b bg-[#0D1321]/80 backdrop-blur-lg shrink-0 ${
-      isExec ? "border-[#FFD700]/10" : "border-[#1E293B]"
+    <header className={`relative z-50 flex items-center justify-between px-6 py-3 border-b bg-[var(--shell-panel)]/80 backdrop-blur-lg shrink-0 ${
+      isExec ? "border-[#FFD700]/10" : "border-[var(--shell-border)]"
     }`}>
       {/* Left — SIGNAL wordmark */}
       <div className="flex items-center gap-3">
         <span className={`text-sm font-extrabold tracking-[0.15em] ${isExec ? "text-[#FFD700]" : "text-[#FBCE07]"}`}>
           SIGNAL
         </span>
-        <span className="text-[0.6rem] text-[#475569] tracking-[0.08em] hidden sm:inline">
+        <span className="text-[0.6rem] text-[var(--shell-muted-3)] tracking-[0.08em] hidden sm:inline">
           CRUDE OIL INTELLIGENCE
         </span>
         {/* Executive Mode indicator */}
@@ -67,16 +77,26 @@ export default function TopBar() {
       {/* Right — user / notifications / clock */}
       <div className="flex items-center gap-4">
         {/* Clock */}
-        <span className="text-xs text-[#64748B] font-mono hidden md:inline">
+        <span className="text-xs text-[var(--shell-muted-2)] font-mono hidden md:inline">
           {time}
         </span>
+
+        {/* Theme cycle button */}
+        <button
+          onClick={cycleTheme}
+          className="hidden sm:flex items-center gap-1.5 text-[0.6rem] text-[var(--shell-muted-3)] hover:text-[var(--shell-muted)] bg-[var(--shell-card)] border border-[var(--shell-border)] rounded-lg px-2 py-1 transition-colors capitalize"
+          title={`Theme: ${theme} — click to cycle`}
+        >
+          <ThemeIcon theme={theme} />
+          <span className="hidden md:inline">{theme}</span>
+        </button>
 
         {/* Cmd+K hint */}
         <button
           onClick={() => {
             window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
           }}
-          className="hidden sm:flex items-center gap-1.5 text-[0.6rem] text-[#475569] hover:text-[#94A3B8] bg-[#1A2234] border border-[#1E293B] rounded-lg px-2 py-1 transition-colors"
+          className="hidden sm:flex items-center gap-1.5 text-[0.6rem] text-[var(--shell-muted-3)] hover:text-[var(--shell-muted)] bg-[var(--shell-card)] border border-[var(--shell-border)] rounded-lg px-2 py-1 transition-colors"
           title="Search (⌘K)"
         >
           <Command className="w-3 h-3" />
@@ -101,14 +121,14 @@ export default function TopBar() {
         </span>
 
         {/* User name */}
-        <span className="text-xs text-[#94A3B8] font-medium hidden sm:inline">
+        <span className="text-xs text-[var(--shell-muted)] font-medium hidden sm:inline">
           {user.name}
         </span>
 
         {/* Logout */}
         <button
           onClick={logout}
-          className="text-[#64748B] hover:text-[#EF4444] transition-colors"
+          className="text-[var(--shell-muted-2)] hover:text-[#EF4444] transition-colors"
           title="Sign out"
         >
           <LogOut className="w-4 h-4" />

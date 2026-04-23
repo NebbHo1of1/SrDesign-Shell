@@ -35,22 +35,22 @@ function RiskMeter({ score }: { score: number }) {
         : "bg-[#22C55E]";
 
   return (
-    <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+    <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
       <div className="flex items-center gap-2 mb-3">
         <Shield className="w-4 h-4 text-[#EF4444]" />
-        <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+        <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
           Risk Level
         </span>
       </div>
       <div className={`text-3xl font-extrabold ${color} mb-1`}>{label}</div>
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-2 bg-[#0A0E17] rounded-full overflow-hidden">
+        <div className="flex-1 h-2 bg-[var(--shell-bg)] rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-1000 ${barColor}`}
             style={{ width: `${Math.min(100, score)}%` }}
           />
         </div>
-        <span className="text-xs text-[#94A3B8] font-mono">
+        <span className="text-xs text-[var(--shell-muted)] font-mono">
           {score.toFixed(0)}
         </span>
       </div>
@@ -118,7 +118,7 @@ export default function SignalsPage() {
           <button
             onClick={() => setRetryKey((n) => n + 1)}
             disabled={loading}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#F8FAFC] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[var(--shell-text-bright)] bg-[#EF4444]/20 hover:bg-[#EF4444]/30 border border-[#EF4444]/40 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
             Retry
@@ -129,7 +129,7 @@ export default function SignalsPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Zap className="w-5 h-5 text-[#FBCE07]" />
-          <h1 className="text-xl font-extrabold text-[#F8FAFC]">
+          <h1 className="text-xl font-extrabold text-[var(--shell-text-bright)]">
             Signal Engine
           </h1>
         </div>
@@ -141,7 +141,7 @@ export default function SignalsPage() {
               className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-semibold ${
                 commodity === c
                   ? "bg-[#38BDF8]/10 text-[#38BDF8] border-[#38BDF8]/40"
-                  : "text-[#64748B] border-[#1E293B] hover:border-[#334155]"
+                  : "text-[var(--shell-muted-2)] border-[var(--shell-border)] hover:border-[var(--shell-border-2)]"
               }`}
             >
               {c}
@@ -155,10 +155,10 @@ export default function SignalsPage() {
         <RiskMeter score={riskScore} />
 
         {/* Market Status */}
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <Activity className="w-4 h-4 text-[#38BDF8]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               Market Status — {commodity}
             </span>
           </div>
@@ -166,7 +166,7 @@ export default function SignalsPage() {
             {marketStatus.icon}
             <span className="text-3xl font-extrabold">{marketStatus.label}</span>
           </div>
-          <p className="text-xs text-[#64748B] mt-2">
+          <p className="text-xs text-[var(--shell-muted-2)] mt-2">
             Confidence:{" "}
             {kpi?.last_confidence != null
               ? `${(kpi.last_confidence * 100).toFixed(0)}%`
@@ -175,33 +175,33 @@ export default function SignalsPage() {
         </div>
 
         {/* 24h Summary */}
-        <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
           <div className="flex items-center gap-2 mb-3">
             <Globe className="w-4 h-4 text-[#06B6D4]" />
-            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+            <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
               24h Intelligence
             </span>
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-[#94A3B8]">Headlines</span>
-              <span className="text-[#F8FAFC] font-bold">
+              <span className="text-[var(--shell-muted)]">Headlines</span>
+              <span className="text-[var(--shell-text-bright)] font-bold">
                 {kpi?.total_headlines_24h ?? 0}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-[#94A3B8]">High Impact</span>
+              <span className="text-[var(--shell-muted)]">High Impact</span>
               <span className="text-[#EF4444] font-bold">{highImpact}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-[#94A3B8]">Avg Sentiment</span>
+              <span className="text-[var(--shell-muted)]">Avg Sentiment</span>
               <span
                 className={`font-bold ${
                   sentiment > 0.1
                     ? "text-[#22C55E]"
                     : sentiment < -0.1
                       ? "text-[#EF4444]"
-                      : "text-[#94A3B8]"
+                      : "text-[var(--shell-muted)]"
                 }`}
               >
                 {sentiment > 0 ? "+" : ""}
@@ -213,10 +213,10 @@ export default function SignalsPage() {
       </div>
 
       {/* Alert feed */}
-      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+      <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />
-          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
             High-Impact Signal Feed
           </span>
           {alerts.length > 0 && (
@@ -229,13 +229,13 @@ export default function SignalsPage() {
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 bg-[#0A0E17]/50 rounded-lg animate-pulse" />
+              <div key={i} className="h-16 bg-[var(--shell-bg)]/50 rounded-lg animate-pulse" />
             ))}
           </div>
         ) : alerts.length === 0 ? (
           <div className="text-center py-8">
-            <Zap className="w-8 h-8 text-[#334155] mx-auto mb-2" />
-            <p className="text-sm text-[#64748B]">No high-impact signals detected</p>
+            <Zap className="w-8 h-8 text-[var(--shell-border-2)] mx-auto mb-2" />
+            <p className="text-sm text-[var(--shell-muted-2)]">No high-impact signals detected</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -257,7 +257,7 @@ export default function SignalsPage() {
                       <p className={`text-sm font-medium line-clamp-2 ${sevText}`}>
                         {h.title}
                       </p>
-                      <div className="flex items-center gap-3 mt-1 text-[0.6rem] text-[#475569]">
+                      <div className="flex items-center gap-3 mt-1 text-[0.6rem] text-[var(--shell-muted-3)]">
                         <span>{h.source}</span>
                         <span>{h.event_type}</span>
                         <span className="font-bold">

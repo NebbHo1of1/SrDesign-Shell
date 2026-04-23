@@ -19,11 +19,11 @@ export default function AlertFeedPanel() {
   const { alerts, clearAlerts } = useAlerts();
 
   return (
-    <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5">
+    <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4 text-[#F59E0B]" />
-          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
             Alert Feed
           </span>
           {alerts.length > 0 && (
@@ -35,7 +35,7 @@ export default function AlertFeedPanel() {
         {alerts.length > 0 && (
           <button
             onClick={clearAlerts}
-            className="text-[#64748B] hover:text-[#EF4444] transition-colors"
+            className="text-[var(--shell-muted-2)] hover:text-[#EF4444] transition-colors"
             title="Clear all alerts"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -45,9 +45,9 @@ export default function AlertFeedPanel() {
 
       {alerts.length === 0 && (
         <div className="text-center py-6">
-          <Zap className="w-8 h-8 text-[#334155] mx-auto mb-2" />
-          <p className="text-sm text-[#64748B]">No threshold alerts</p>
-          <p className="text-xs text-[#475569] mt-1">
+          <Zap className="w-8 h-8 text-[var(--shell-border-2)] mx-auto mb-2" />
+          <p className="text-sm text-[var(--shell-muted-2)]">No threshold alerts</p>
+          <p className="text-xs text-[var(--shell-muted-3)] mt-1">
             Alerts appear when price thresholds are crossed
           </p>
         </div>

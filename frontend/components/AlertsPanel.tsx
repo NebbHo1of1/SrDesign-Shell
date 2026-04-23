@@ -94,10 +94,10 @@ const severityStyle = {
 export default function AlertsPanel({ headlines, loading }: Props) {
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-full animate-pulse">
-        <div className="h-4 w-28 bg-[#334155] rounded mb-4" />
+      <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 h-full animate-pulse">
+        <div className="h-4 w-28 bg-[var(--shell-border-2)] rounded mb-4" />
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-14 bg-[#1E293B] rounded-lg mb-2" />
+          <div key={i} className="h-14 bg-[var(--shell-border)] rounded-lg mb-2" />
         ))}
       </div>
     );
@@ -106,12 +106,12 @@ export default function AlertsPanel({ headlines, loading }: Props) {
   const alerts = deriveAlerts(headlines);
 
   return (
-    <div className="bg-gradient-to-br from-[#1A2234] to-[#1E293B] border border-[#1E293B] rounded-xl p-5 h-full">
+    <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5 h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-[#F59E0B]" />
-          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[#64748B] uppercase">
+          <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
             Active Alerts
           </span>
         </div>
@@ -124,9 +124,9 @@ export default function AlertsPanel({ headlines, loading }: Props) {
 
       {alerts.length === 0 && (
         <div className="text-center py-8">
-          <Zap className="w-8 h-8 text-[#334155] mx-auto mb-2" />
-          <p className="text-sm text-[#64748B]">No active alerts</p>
-          <p className="text-xs text-[#475569] mt-1">
+          <Zap className="w-8 h-8 text-[var(--shell-border-2)] mx-auto mb-2" />
+          <p className="text-sm text-[var(--shell-muted-2)]">No active alerts</p>
+          <p className="text-xs text-[var(--shell-muted-3)] mt-1">
             Markets appear stable
           </p>
         </div>

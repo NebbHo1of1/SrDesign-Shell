@@ -73,7 +73,7 @@ export default function NotificationCenter() {
       {/* Bell button */}
       <button
         onClick={() => setOpen(!open)}
-        className="relative text-[#64748B] hover:text-[#F8FAFC] transition-colors"
+        className="relative text-[var(--shell-muted-2)] hover:text-[var(--shell-text-bright)] transition-colors"
         aria-label="Notifications"
       >
         <Bell className="w-4 h-4" />
@@ -94,13 +94,13 @@ export default function NotificationCenter() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-8 w-80 sm:w-96 bg-[#0D1321] border border-[#1E293B]/80 rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] ring-1 ring-[#1E293B] z-50 overflow-hidden"
+            className="absolute right-0 top-8 w-80 sm:w-96 bg-[var(--shell-panel)] border border-[var(--shell-border)]/80 rounded-xl shadow-[0_8px_40px_rgba(0,0,0,0.6)] ring-1 ring-[var(--shell-border)] z-50 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#1E293B]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--shell-border)]">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-[#FBCE07]" />
-                <span className="text-sm font-bold text-[#F8FAFC]">Notifications</span>
+                <span className="text-sm font-bold text-[var(--shell-text-bright)]">Notifications</span>
                 {unreadCount > 0 && (
                   <span className="text-[0.55rem] font-bold text-[#DD1D21] bg-[#DD1D21]/10 px-1.5 py-0.5 rounded-full border border-[#DD1D21]/30">
                     {unreadCount} new
@@ -111,7 +111,7 @@ export default function NotificationCenter() {
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllRead}
-                    className="text-[0.6rem] text-[#64748B] hover:text-[#38BDF8] transition-colors flex items-center gap-1"
+                    className="text-[0.6rem] text-[var(--shell-muted-2)] hover:text-[#38BDF8] transition-colors flex items-center gap-1"
                     title="Mark all read"
                   >
                     <CheckCheck className="w-3 h-3" />
@@ -120,7 +120,7 @@ export default function NotificationCenter() {
                 {alerts.length > 0 && (
                   <button
                     onClick={clearAlerts}
-                    className="text-[0.6rem] text-[#64748B] hover:text-[#EF4444] transition-colors flex items-center gap-1"
+                    className="text-[0.6rem] text-[var(--shell-muted-2)] hover:text-[#EF4444] transition-colors flex items-center gap-1"
                     title="Clear all"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -128,7 +128,7 @@ export default function NotificationCenter() {
                 )}
                 <button
                   onClick={() => setOpen(false)}
-                  className="text-[#64748B] hover:text-[#F8FAFC] transition-colors ml-1"
+                  className="text-[var(--shell-muted-2)] hover:text-[var(--shell-text-bright)] transition-colors ml-1"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -139,9 +139,9 @@ export default function NotificationCenter() {
             <div className="max-h-[360px] overflow-y-auto">
               {alerts.length === 0 ? (
                 <div className="px-4 py-10 text-center">
-                  <Bell className="w-6 h-6 text-[#334155] mx-auto mb-2" />
-                  <p className="text-sm text-[#64748B]">No notifications yet</p>
-                  <p className="text-[0.6rem] text-[#475569] mt-1">
+                  <Bell className="w-6 h-6 text-[var(--shell-border-2)] mx-auto mb-2" />
+                  <p className="text-sm text-[var(--shell-muted-2)]">No notifications yet</p>
+                  <p className="text-[0.6rem] text-[var(--shell-muted-3)] mt-1">
                     Alerts will appear here when thresholds are triggered.
                   </p>
                 </div>
@@ -157,7 +157,7 @@ export default function NotificationCenter() {
                         className={`w-full text-left px-4 py-3 border-l-2 ${style.border} transition-colors ${
                           alert.read
                             ? "opacity-60 hover:opacity-80"
-                            : "bg-[#1A2234]/30 hover:bg-[#1E293B]/50"
+                            : "bg-[var(--shell-card)]/30 hover:bg-[var(--shell-border)]/50"
                         }`}
                       >
                         <div className="flex items-start gap-2.5">
@@ -166,11 +166,11 @@ export default function NotificationCenter() {
                           </span>
                           <div className="flex-1 min-w-0">
                             <p className={`text-xs font-medium leading-relaxed ${
-                              alert.read ? "text-[#94A3B8]" : "text-[#F8FAFC]"
+                              alert.read ? "text-[var(--shell-muted)]" : "text-[var(--shell-text-bright)]"
                             }`}>
                               {alert.message}
                             </p>
-                            <p className="text-[0.55rem] text-[#475569] mt-1">
+                            <p className="text-[0.55rem] text-[var(--shell-muted-3)] mt-1">
                               {new Date(alert.timestamp).toLocaleString("en-GB", {
                                 day: "2-digit",
                                 month: "short",
@@ -193,8 +193,8 @@ export default function NotificationCenter() {
 
             {/* Footer */}
             {alerts.length > 0 && (
-              <div className="px-4 py-2 border-t border-[#1E293B] text-center">
-                <span className="text-[0.55rem] text-[#475569]">
+              <div className="px-4 py-2 border-t border-[var(--shell-border)] text-center">
+                <span className="text-[0.55rem] text-[var(--shell-muted-3)]">
                   Showing {Math.min(alerts.length, 20)} of {alerts.length} alerts
                 </span>
               </div>

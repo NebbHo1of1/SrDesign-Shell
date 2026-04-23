@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import GreetingTransition from "./GreetingTransition";
+import ThemeToggle from "./ThemeToggle";
 
 export default function LoginScreen() {
   const { user, login } = useAuth();
@@ -58,7 +59,8 @@ export default function LoginScreen() {
   }
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#0A0E17]">
+    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[var(--shell-bg)]">
+      <ThemeToggle />
       {/* ── Background gradient layers ─────────────────────────── */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(221,29,33,0.08)_0%,transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(56,189,248,0.06)_0%,transparent_50%)]" />
@@ -97,7 +99,7 @@ export default function LoginScreen() {
         {/* Top accent bar */}
         <div className="h-[3px] rounded-t-2xl bg-gradient-to-r from-[#DD1D21] via-[#FBCE07] to-[#38BDF8]" />
 
-        <div className="bg-gradient-to-b from-[#111827] to-[#0D1321] border border-[#1E293B] rounded-b-2xl p-8 sm:p-10 backdrop-blur-xl">
+        <div className="bg-gradient-to-b from-[var(--shell-card-2)] to-[var(--shell-panel)] border border-[var(--shell-border)] rounded-b-2xl p-8 sm:p-10 backdrop-blur-xl">
           {/* ── Branding ─────────────────────────────────────── */}
           <div className="text-center mb-8">
             <motion.div
@@ -107,20 +109,20 @@ export default function LoginScreen() {
             >
               <div className="inline-flex items-center gap-2 mb-4">
                 <Shield className="w-5 h-5 text-[#FBCE07]" />
-                <span className="text-xs font-bold tracking-[0.3em] text-[#64748B] uppercase">
+                <span className="text-xs font-bold tracking-[0.3em] text-[var(--shell-muted-2)] uppercase">
                   Secure Access
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#F8FAFC] mb-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--shell-text-bright)] mb-2">
                 Welcome to{" "}
                 <span className="bg-gradient-to-r from-[#DD1D21] via-[#FBCE07] to-[#38BDF8] bg-clip-text text-transparent animate-shimmer">
                   SIGNAL
                 </span>
               </h1>
-              <p className="text-sm text-[#94A3B8] leading-relaxed">
+              <p className="text-sm text-[var(--shell-muted)] leading-relaxed">
                 A Shell Intelligence System
               </p>
-              <p className="text-[0.65rem] text-[#475569] tracking-[0.12em] uppercase mt-1">
+              <p className="text-[0.65rem] text-[var(--shell-muted-3)] tracking-[0.12em] uppercase mt-1">
                 System for Intelligent Geopolitical News &amp; Asset Linking
               </p>
             </motion.div>
@@ -129,7 +131,7 @@ export default function LoginScreen() {
           {/* ── Form ─────────────────────────────────────────── */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
                 Email
               </label>
               <input
@@ -138,12 +140,12 @@ export default function LoginScreen() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="operator@shell.com"
                 required
-                className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-3 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all"
+                className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-3 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[#64748B] uppercase mb-1.5">
+              <label className="block text-[0.65rem] font-semibold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -153,9 +155,9 @@ export default function LoginScreen() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full bg-[#0A0E17] border border-[#1E293B] rounded-lg px-4 py-3 text-sm text-[#F8FAFC] placeholder-[#475569] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
+                  className="w-full bg-[var(--shell-bg)] border border-[var(--shell-border)] rounded-lg px-4 py-3 text-sm text-[var(--shell-text-bright)] placeholder-[var(--shell-muted-3)] focus:outline-none focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/30 transition-all pr-10"
                 />
-                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#475569]" />
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--shell-muted-3)]" />
               </div>
             </div>
 
@@ -197,11 +199,11 @@ export default function LoginScreen() {
           </form>
 
           {/* ── Footer info ──────────────────────────────── */}
-          <div className="mt-6 pt-5 border-t border-[#1E293B] space-y-2">
-            <p className="text-[0.6rem] text-[#475569] text-center tracking-wide">
+          <div className="mt-6 pt-5 border-t border-[var(--shell-border)] space-y-2">
+            <p className="text-[0.6rem] text-[var(--shell-muted-3)] text-center tracking-wide">
               Demo credentials: admin@shell.com / analyst@shell.com / viewer@shell.com — password: signal
             </p>
-            <p className="text-xs text-[#64748B] text-center">
+            <p className="text-xs text-[var(--shell-muted-2)] text-center">
               New to SIGNAL?{" "}
               <a href="/register" className="text-[#38BDF8] hover:text-[#7DD3FC] font-medium transition-colors">
                 Create Account
@@ -216,7 +218,7 @@ export default function LoginScreen() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 0.8 }}
-        className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-6 text-[0.6rem] text-[#475569] tracking-wide"
+        className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-6 text-[0.6rem] text-[var(--shell-muted-3)] tracking-wide"
       >
         <span className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse-dot" />
