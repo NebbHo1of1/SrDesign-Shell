@@ -393,7 +393,7 @@ def main():
         else:
             X_tr_fit, X_te_fit = X_train, X_test
 
-        mdl.fit(X_tr_fit, y_tr)
+        mdl.fit(X_tr_fit, y_train)
         preds = mdl.predict(X_te_fit)
         metrics = regression_metrics(y_test, preds)
         holdout_results[name] = {**metrics, "predictions": preds}
