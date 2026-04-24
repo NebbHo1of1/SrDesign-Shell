@@ -14,7 +14,17 @@ Model architecture
 
 Usage
 -----
-    python train_price_model.py [--target {next_price,future_price_3}]
+    python train_price_model.py [--target {next_price,price_change,next_day_return,future_price_3}]
+
+    Recommended for improved R²:
+        python train_price_model.py --target price_change
+
+Target modes
+------------
+  next_price      (default) predict absolute price level $/bbl  [original behaviour]
+  price_change              predict Δprice = next_price − price; metrics on reconstructed abs price
+  next_day_return           predict % return; metrics on reconstructed abs price
+  future_price_3            predict price 3 periods ahead (original option)
 
 Outputs
 -------
@@ -22,6 +32,7 @@ Outputs
   outputs/price_predictions.csv        — actual vs predicted prices with error columns
 """
 
+import argparse
 import logging
 import math
 import os
@@ -31,7 +42,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import ElasticNetCV, LassoCV, RidgeCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
@@ -44,8 +55,6 @@ try:
 except ImportError:
     XGBOOST_AVAILABLE = False
 
-import argparse
-
 # ---------------------------------------------------------------------------
 # Logging configuration
 # ---------------------------------------------------------------------------
@@ -56,6 +65,9 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore", category=UserWarning)
+
+# Linear models require StandardScaler before fitting.
+LINEAR_MODELS = frozenset({"Ridge", "Lasso", "ElasticNet"})
 
 
 # ---------------------------------------------------------------------------
@@ -88,6 +100,26 @@ def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
     mape_val = mape(y_true, y_pred)
     r2   = r2_score(y_true, y_pred)
     return {"MAE": mae, "RMSE": rmse, "MAPE (%)": mape_val, "R²": r2}
+
+
+def reconstruct_price(
+    raw_preds: np.ndarray,
+    current_prices: np.ndarray,
+    target_mode: str,
+) -> np.ndarray:
+    """
+    Convert raw model predictions back to absolute $/bbl so that evaluation
+    metrics are always in dollars regardless of the training target.
+
+      price_change    : pred_abs = current_price + raw_pred
+      next_day_return : pred_abs = current_price * (1 + raw_pred)
+      next_price / future_price_3 : pred_abs = raw_pred  (already absolute)
+    """
+    if target_mode == "price_change":
+        return current_prices + raw_preds
+    if target_mode == "next_day_return":
+        return current_prices * (1.0 + raw_preds)
+    return raw_preds
 
 
 # ---------------------------------------------------------------------------
@@ -180,12 +212,14 @@ def main():
         "--target",
         type=str,
         default="next_price",
-        choices=["next_price", "future_price_3"],
+        choices=["next_price", "price_change", "next_day_return", "future_price_3"],
         help=(
-            "Regression target column.  "
-            "'next_price'    = price of the next available data point (already in parquet).  "
-            "'future_price_3' = price 3 periods into the future (computed via shift(-3)).  "
-            "Default: next_price"
+            "Regression target.  "
+            "'next_price'      = absolute price of next trading day (original, default).  "
+            "'price_change'    = Δprice (next−current); evaluated on reconstructed abs price.  "
+            "'next_day_return' = %% return; evaluated on reconstructed abs price.  "
+            "'future_price_3'  = absolute price 3 periods ahead.  "
+            "Recommended for improved R²: --target price_change"
         ),
     )
     args = parser.parse_args()
@@ -210,22 +244,42 @@ def main():
     #    they are reliably excluded from the feature matrix.
     # ------------------------------------------------------------------
     if args.target == "next_price":
-        # 'next_price' = price shifted -1 and is already present in the parquet.
         target_col = "next_price"
-        log.info("Target: next_price (price of next trading day already in dataset)")
+        log.info("Target: next_price (absolute price of next trading day)")
+
+    elif args.target == "price_change":
+        df["price_change"] = df["next_price"] - df["price"]
+        target_col = "price_change"
+        log.info(
+            "Target: price_change (Δprice = next_price − price); "
+            "all metrics shown on reconstructed absolute price"
+        )
+
+    elif args.target == "next_day_return":
+        if "next_day_return" not in df.columns:
+            raise KeyError(
+                "'next_day_return' column not found in parquet — "
+                "re-run scripts/build_training_table.py"
+            )
+        target_col = "next_day_return"
+        log.info(
+            "Target: next_day_return (%% return); "
+            "all metrics shown on reconstructed absolute price"
+        )
 
     else:  # future_price_3
-        # Compute price 3 periods ahead — this loses 3 rows at the tail.
         df["future_price_3"] = df.groupby("commodity")["price"].shift(-3)
         target_col = "future_price_3"
-        log.info("Target: future_price_3 (price 3 periods ahead, computed via shift(-3))")
+        log.info("Target: future_price_3 (absolute price 3 periods ahead)")
 
     # Drop rows where the target is NaN (tail of each commodity series).
     df = drop_nan_with_log(df, subset=[target_col], stage="target-NaN removal")
 
     log.info(
-        "Target '%s' stats — min: %.2f, max: %.2f, mean: %.2f",
-        target_col, df[target_col].min(), df[target_col].max(), df[target_col].mean(),
+        "Target '%s' stats — min: %.4f, max: %.4f, mean: %.4f, std: %.4f",
+        target_col,
+        df[target_col].min(), df[target_col].max(),
+        df[target_col].mean(), df[target_col].std(),
     )
 
     # ------------------------------------------------------------------
@@ -254,6 +308,7 @@ def main():
         "next_price",       # forward-looking — always excluded
         "next_day_return",  # derived from next_price
         "target_up_down",   # derived from next_day_return
+        "price_change",     # derived from next_price (excluded if computed)
         "future_price_3",   # forward-looking — always excluded
         "future_return_3",  # forward-looking return
         "date",             # metadata index (non-numeric)
@@ -278,6 +333,10 @@ def main():
     X = combined
     log.info("Final clean dataset: %d rows × %d feature columns", *X.shape)
 
+    # 'price' column is in X as a feature and also used here to reconstruct
+    # absolute prices from change/return predictions and for the LastPrice baseline.
+    price_series = X["price"].values
+
     # ------------------------------------------------------------------
     # 5. Time-series cross-validation (5 folds)
     #    TimeSeriesSplit ensures training data always precedes test data,
@@ -285,30 +344,50 @@ def main():
     # ------------------------------------------------------------------
     tscv = TimeSeriesSplit(n_splits=5)
 
-    # Define all candidate models.  Ridge uses StandardScaler internally
-    # so its scaler is constructed per-fold inside the loop.
+    # Define all candidate models.  Linear models (Ridge/Lasso/ElasticNet) use
+    # StandardScaler internally; tree models work on raw features.
+    # make_models() is a closure so LassoCV/ElasticNetCV can use cv=3 (a simple
+    # integer) to avoid over-splitting the small per-fold training sets.
     def make_models():
         candidates = {
-            "Ridge": Ridge(alpha=1.0),
+            "Ridge": RidgeCV(alphas=[0.01, 0.1, 1, 10, 100, 1000]),
+            "Lasso": LassoCV(
+                alphas=[0.001, 0.01, 0.1, 1, 10],
+                cv=3,
+                max_iter=5000,
+            ),
+            "ElasticNet": ElasticNetCV(
+                l1_ratio=[0.1, 0.5, 0.9, 1.0],
+                alphas=[0.001, 0.01, 0.1, 1, 10],
+                cv=3,
+                max_iter=5000,
+            ),
             "RandomForest": RandomForestRegressor(
-                n_estimators=500,
+                n_estimators=200,
+                max_depth=4,
+                min_samples_leaf=5,
                 random_state=42,
                 n_jobs=-1,
             ),
             "GradientBoosting": GradientBoostingRegressor(
-                n_estimators=300,
-                learning_rate=0.03,
-                max_depth=3,
+                n_estimators=100,
+                learning_rate=0.05,
+                max_depth=2,
+                min_samples_leaf=5,
+                subsample=0.8,
                 random_state=42,
             ),
         }
         if XGBOOST_AVAILABLE:
             candidates["XGBoost"] = XGBRegressor(
-                n_estimators=300,
-                learning_rate=0.03,
-                max_depth=3,
+                n_estimators=100,
+                learning_rate=0.05,
+                max_depth=2,
+                min_child_weight=5,
                 subsample=0.8,
                 colsample_bytree=0.8,
+                reg_alpha=0.1,
+                reg_lambda=1.0,
                 random_state=42,
                 verbosity=0,
             )
@@ -317,17 +396,36 @@ def main():
         return candidates
 
     model_names = list(make_models().keys())
-    cv_results = {name: [] for name in model_names}
+    # ALL_NAMES includes "LastPrice" (naïve random-walk baseline) first.
+    ALL_NAMES = ["LastPrice"] + model_names
+    cv_results = {name: [] for name in ALL_NAMES}
 
     log.info("Starting %d-fold time-series cross-validation...", tscv.n_splits)
+    log.info("Models: %s", ALL_NAMES)
 
     for fold, (train_idx, test_idx) in enumerate(tscv.split(X), start=1):
         X_tr, X_te = X.iloc[train_idx].values, X.iloc[test_idx].values
         y_tr, y_te = y[train_idx], y[test_idx]
 
+        # Current prices for the test fold — used for reconstruction and
+        # the LastPrice (naïve random-walk) baseline.
+        price_te = price_series[test_idx]
+
+        # Actual next prices in absolute $/bbl for all metric computations.
+        y_te_abs = reconstruct_price(y_te, price_te, args.target)
+
+        # --- LastPrice baseline: predict tomorrow = today ---
+        last_metrics = regression_metrics(y_te_abs, price_te)
+        cv_results["LastPrice"].append(last_metrics)
+        log.info(
+            "  Fold %d | %-18s | MAE=%.3f  RMSE=%.3f  MAPE=%.2f%%  R²=%.4f  [baseline]",
+            fold, "LastPrice",
+            last_metrics["MAE"], last_metrics["RMSE"],
+            last_metrics["MAPE (%)"], last_metrics["R²"],
+        )
+
         for name, mdl in make_models().items():
-            # Ridge requires scaling; all others work on raw features.
-            if name == "Ridge":
+            if name in LINEAR_MODELS:
                 sc = StandardScaler()
                 X_tr_fit = sc.fit_transform(X_tr)
                 X_te_fit = sc.transform(X_te)
@@ -335,8 +433,8 @@ def main():
                 X_tr_fit, X_te_fit = X_tr, X_te
 
             mdl.fit(X_tr_fit, y_tr)
-            preds = mdl.predict(X_te_fit)
-            metrics = regression_metrics(y_te, preds)
+            preds_abs = reconstruct_price(mdl.predict(X_te_fit), price_te, args.target)
+            metrics = regression_metrics(y_te_abs, preds_abs)
             cv_results[name].append(metrics)
             log.info(
                 "  Fold %d | %-18s | MAE=%.3f  RMSE=%.3f  MAPE=%.2f%%  R²=%.4f",
@@ -347,19 +445,21 @@ def main():
     # Aggregate CV results (mean across folds).
     log.info("\nCross-validation summary (mean across %d folds):", tscv.n_splits)
     cv_summary = {}
-    for name in model_names:
+    for name in ALL_NAMES:
         folds_data = cv_results[name]
         cv_summary[name] = {
             k: float(np.mean([f[k] for f in folds_data]))
             for k in folds_data[0]
         }
+        suffix = "  [baseline]" if name == "LastPrice" else ""
         log.info(
-            "  %-18s | MAE=%.3f  RMSE=%.3f  MAPE=%.2f%%  R²=%.4f",
+            "  %-18s | MAE=%.3f  RMSE=%.3f  MAPE=%.2f%%  R²=%.4f%s",
             name,
             cv_summary[name]["MAE"],
             cv_summary[name]["RMSE"],
             cv_summary[name]["MAPE (%)"],
             cv_summary[name]["R²"],
+            suffix,
         )
 
     # ------------------------------------------------------------------
@@ -372,8 +472,14 @@ def main():
     X_test  = X.iloc[last_test_idx].values
     y_train = y[last_train_idx]
     y_test  = y[last_test_idx]
-    # Keep the date index for the output CSV (needed for the dashboard later).
-    test_dates = df["date"].iloc[last_test_idx].values
+    price_test = price_series[last_test_idx]
+
+    # Actual next prices in absolute $/bbl for holdout evaluation.
+    y_test_abs = reconstruct_price(y_test, price_test, args.target)
+
+    # Use label-based index lookup so dates remain correct even when the
+    # post-feature-engineering NaN removal dropped rows from the front.
+    test_dates = df.loc[X.index[last_test_idx], "date"].values
 
     log.info(
         "Final holdout — train: %d rows, test: %d rows",
@@ -384,8 +490,22 @@ def main():
     trained_models  = {}
     scalers         = {}
 
+    # --- LastPrice baseline ---
+    holdout_results["LastPrice"] = {
+        **regression_metrics(y_test_abs, price_test),
+        "predictions_abs": price_test,
+    }
+    log.info(
+        "  Holdout %-18s | MAE=%.3f  RMSE=%.3f  MAPE=%.2f%%  R²=%.4f  [baseline]",
+        "LastPrice",
+        holdout_results["LastPrice"]["MAE"],
+        holdout_results["LastPrice"]["RMSE"],
+        holdout_results["LastPrice"]["MAPE (%)"],
+        holdout_results["LastPrice"]["R²"],
+    )
+
     for name, mdl in make_models().items():
-        if name == "Ridge":
+        if name in LINEAR_MODELS:
             sc = StandardScaler()
             X_tr_fit = sc.fit_transform(X_train)
             X_te_fit = sc.transform(X_test)
@@ -394,9 +514,9 @@ def main():
             X_tr_fit, X_te_fit = X_train, X_test
 
         mdl.fit(X_tr_fit, y_train)
-        preds = mdl.predict(X_te_fit)
-        metrics = regression_metrics(y_test, preds)
-        holdout_results[name] = {**metrics, "predictions": preds}
+        preds_abs = reconstruct_price(mdl.predict(X_te_fit), price_test, args.target)
+        metrics = regression_metrics(y_test_abs, preds_abs)
+        holdout_results[name] = {**metrics, "predictions_abs": preds_abs}
         trained_models[name]  = mdl
         log.info(
             "  Holdout %-18s | MAE=%.3f  RMSE=%.3f  MAPE=%.2f%%  R²=%.4f",
@@ -407,39 +527,52 @@ def main():
     # ------------------------------------------------------------------
     # 7. Print comparison table
     # ------------------------------------------------------------------
-    print("\n" + "=" * 70)
-    print("PRICE FORECAST ENGINE — MODEL COMPARISON")
-    print(f"Target: {target_col}  |  Holdout size: {len(y_test)} rows")
-    print("=" * 70)
-    header = f"{'Model':<20} {'MAE':>8} {'RMSE':>8} {'MAPE (%)':>10} {'R²':>8}"
+    baseline_mae = holdout_results["LastPrice"]["MAE"]
+    print("\n" + "=" * 82)
+    print("PRICE FORECAST ENGINE — MODEL COMPARISON  (all metrics on reconstructed $/bbl)")
+    print(f"Target mode: {args.target}  |  Holdout size: {len(y_test)} rows")
+    print("=" * 82)
+    header = f"{'Model':<20} {'MAE':>8} {'RMSE':>8} {'MAPE (%)':>10} {'R²':>8}  vs Baseline"
     print(header)
-    print("-" * 70)
-    for name in model_names:
+    print("-" * 82)
+    for name in ALL_NAMES:
         m = holdout_results[name]
+        if name == "LastPrice":
+            flag = "  ← naïve random-walk baseline"
+        else:
+            delta = m["MAE"] - baseline_mae
+            flag = f"  {delta:+.3f} vs baseline"
         print(
             f"{name:<20} {m['MAE']:>8.3f} {m['RMSE']:>8.3f} "
-            f"{m['MAPE (%)']:>10.2f} {m['R²']:>8.4f}"
+            f"{m['MAPE (%)']:>10.2f} {m['R²']:>8.4f}{flag}"
         )
-    print("=" * 70)
+    print("=" * 82)
 
     # ------------------------------------------------------------------
     # 8. Select best model by lowest MAE on the holdout set
+    #    (LastPrice is excluded — it is only a reference baseline)
     # ------------------------------------------------------------------
     best_name = min(
         model_names,
         key=lambda n: holdout_results[n]["MAE"],
     )
-    best_metrics = holdout_results[best_name]
-    best_model   = trained_models[best_name]
-    best_preds   = best_metrics["predictions"]
+    best_metrics  = holdout_results[best_name]
+    best_model    = trained_models[best_name]
+    best_preds    = best_metrics["predictions_abs"]   # always in $/bbl
 
-    print(f"\n✅ Best model: {best_name}")
+    beats_baseline = best_metrics["MAE"] < baseline_mae
+    print(f"\n{'✅' if beats_baseline else '⚠️ '} Best model: {best_name}")
     print(
         f"   MAE={best_metrics['MAE']:.3f}  "
         f"RMSE={best_metrics['RMSE']:.3f}  "
         f"MAPE={best_metrics['MAPE (%)']:.2f}%  "
         f"R²={best_metrics['R²']:.4f}"
     )
+    if not beats_baseline:
+        print(
+            f"   ⚠️  No model beat the LastPrice baseline (MAE={baseline_mae:.3f}).  "
+            "Consider collecting more data or using --target price_change."
+        )
 
     # ------------------------------------------------------------------
     # 9. Save the best model
@@ -449,10 +582,15 @@ def main():
     os.makedirs("models", exist_ok=True)
     model_save_path = "models/price_forecast_model.joblib"
 
-    save_bundle = {"model": best_model, "features": X.columns.tolist(), "target": target_col}
-    if best_name == "Ridge" and best_name in scalers:
+    save_bundle = {
+        "model": best_model,
+        "features": X.columns.tolist(),
+        "target": args.target,
+        "target_col": target_col,
+    }
+    if best_name in LINEAR_MODELS and best_name in scalers:
         save_bundle["scaler"] = scalers[best_name]
-        log.info("Ridge scaler included in saved bundle.")
+        log.info("StandardScaler included in saved bundle for '%s'.", best_name)
 
     joblib.dump(save_bundle, model_save_path)
     log.info("Best model ('%s') saved to %s", best_name, model_save_path)
@@ -465,11 +603,12 @@ def main():
 
     # ------------------------------------------------------------------
     # 10. Build and save the holdout predictions CSV
-    #     Columns: Date | Actual Price | Predicted Price | Error | Percent Error
+    #     All prices are in absolute $/bbl regardless of target mode.
     # ------------------------------------------------------------------
-    actual_prices  = y_test
-    errors         = np.abs(actual_prices - best_preds)
-    pct_errors     = np.where(
+    actual_prices    = y_test_abs          # actual next prices ($/bbl)
+    predicted_prices = best_preds          # reconstructed absolute predictions
+    errors           = np.abs(actual_prices - predicted_prices)
+    pct_errors       = np.where(
         actual_prices != 0,
         (errors / np.abs(actual_prices)) * 100,
         np.nan,
@@ -478,7 +617,7 @@ def main():
     predictions_df = pd.DataFrame({
         "Date":            pd.to_datetime(test_dates).strftime("%Y-%m-%d"),
         "Actual Price":    np.round(actual_prices, 2),
-        "Predicted Price": np.round(best_preds, 2),
+        "Predicted Price": np.round(predicted_prices, 2),
         "Error":           np.round(errors, 2),
         "Percent Error":   np.round(pct_errors, 4),
     })
