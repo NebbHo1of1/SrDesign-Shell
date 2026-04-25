@@ -227,11 +227,27 @@ def main():
     # ------------------------------------------------------------------
     # 1. Load data
     # ------------------------------------------------------------------
-    parquet_path = "data/processed/model_training_table.parquet"
-    if not os.path.exists(parquet_path):
+    # Prefer the daily-frequency table (built by scripts/build_daily_training_table.py)
+    # which has ~7× more rows than the weekly-aggregated table.  Fall back to the
+    # original table so the script still works in environments that haven't regenerated
+    # the data.  The direction model (prediction_model.joblib) uses the original
+    # model_training_table.parquet and is never affected by this choice.
+    daily_path = "data/processed/daily_training_table.parquet"
+    weekly_path = "data/processed/model_training_table.parquet"
+    if os.path.exists(daily_path):
+        parquet_path = daily_path
+        log.info("Using daily training table: %s", parquet_path)
+    elif os.path.exists(weekly_path):
+        parquet_path = weekly_path
+        log.warning(
+            "Daily training table not found; falling back to %s.  "
+            "Run scripts/build_daily_training_table.py for better performance.",
+            parquet_path,
+        )
+    else:
         raise FileNotFoundError(
-            f"Training data not found at '{parquet_path}'.  "
-            "Run scripts/build_training_table.py first."
+            f"No training data found at '{daily_path}' or '{weekly_path}'.  "
+            "Run scripts/build_daily_training_table.py first."
         )
 
     df = pd.read_parquet(parquet_path)
