@@ -812,6 +812,43 @@ def main():
                 "is_baseline": _nm == "LastPrice",
             })
 
+        # Extract price feature importances from the best model's GBM sub-models
+        _price_fi: dict = {}
+        try:
+            _feat_names = X.columns.tolist()
+            if best_name == "Stacking" and hasattr(best_model, "named_estimators_"):
+                _fi_arrays = []
+                for _est_key in ["histgbm", "lgbm", "xgb"]:
+                    _est = best_model.named_estimators_.get(_est_key)
+                    if _est is not None and hasattr(_est, "feature_importances_"):
+                        _fi = np.array(_est.feature_importances_, dtype=float)
+                        _fi_sum = _fi.sum()
+                        if _fi_sum > 0:
+                            _fi_arrays.append(_fi / _fi_sum)
+                if _fi_arrays:
+                    _avg_fi = np.mean(_fi_arrays, axis=0)
+                    _sorted_idx = np.argsort(_avg_fi)[::-1][:15]
+                    _price_fi = {
+                        _feat_names[i]: round(float(_avg_fi[i]), 6)
+                        for i in _sorted_idx
+                    }
+            elif hasattr(best_model, "feature_importances_"):
+                _fi = np.array(best_model.feature_importances_, dtype=float)
+                _fi_sum = _fi.sum()
+                if _fi_sum > 0:
+                    _fi = _fi / _fi_sum
+                _sorted_idx = np.argsort(_fi)[::-1][:15]
+                _price_fi = {_feat_names[i]: round(float(_fi[i]), 6) for i in _sorted_idx}
+            elif hasattr(best_model, "coef_"):
+                _fi = np.abs(np.array(best_model.coef_, dtype=float))
+                _fi_sum = _fi.sum()
+                if _fi_sum > 0:
+                    _fi = _fi / _fi_sum
+                _sorted_idx = np.argsort(_fi)[::-1][:15]
+                _price_fi = {_feat_names[i]: round(float(_fi[i]), 6) for i in _sorted_idx}
+        except Exception:
+            log.warning("Could not extract price feature importances", exc_info=True)
+
         _existing.update({
             "price_model_type": best_name,
             "price_rmse": round(best_metrics["RMSE"], 4),
@@ -822,6 +859,7 @@ def main():
             "baseline_mae": round(holdout_results["LastPrice"]["MAE"], 4),
             "baseline_r2": round(holdout_results["LastPrice"]["R\u00b2"], 4),
             "all_price_models": _all_price_models,
+            **({"price_feature_importances": _price_fi} if _price_fi else {}),
         })
 
         with open(price_report_path, "w") as _f:

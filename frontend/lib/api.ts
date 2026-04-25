@@ -96,6 +96,8 @@ export interface ModelReport {
     deployed: boolean;
     is_baseline?: boolean;
   }>;
+  /** Feature importances for the price forecast model (top features from GBM base models) */
+  price_feature_importances?: Record<string, number>;
 }
 
 export interface PredictionHistoryPoint {
