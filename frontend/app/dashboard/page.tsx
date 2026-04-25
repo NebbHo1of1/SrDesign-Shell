@@ -7,9 +7,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
-import { api, type Headline, type KPIs, type PriceSeries } from "@/lib/api";
+import { api, type Headline, type KPIs, type PriceSeries, type ModelReport } from "@/lib/api";
 import KPICards from "@/components/KPICards";
-import SignalPanel from "@/components/SignalPanel";
+import ForecastKPICards from "@/components/ForecastKPICards";
+import BaselineComparisonPanel from "@/components/BaselineComparisonPanel";
 import NewsPanel from "@/components/NewsPanel";
 import PriceChart from "@/components/PriceChart";
 import AlertsPanel from "@/components/AlertsPanel";
@@ -34,6 +35,7 @@ export default function DashboardPage() {
   const [kpiBrent, setKpiBrent] = useState<KPIs | null>(null);
   const [headlines, setHeadlines] = useState<Headline[]>([]);
   const [prices, setPrices] = useState<PriceSeries | null>(null);
+  const [modelReport, setModelReport] = useState<ModelReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
@@ -44,11 +46,12 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [wti, brent, news, priceData] = await Promise.all([
+      const [wti, brent, news, priceData, report] = await Promise.all([
         api.kpis("WTI").catch(() => null),
         api.kpis("BRENT").catch(() => null),
         api.headlines(commodity, 30),
         api.prices(commodity, "14d").catch(() => null),
+        api.modelReport().catch(() => null),
       ]);
       console.debug("[SIGNAL] Dashboard data loaded:", {
         headlines: news?.length ?? 0,
@@ -58,6 +61,7 @@ export default function DashboardPage() {
       setKpiBrent(brent);
       setHeadlines(news);
       setPrices(priceData);
+      setModelReport(report);
 
       // If API is reachable but returned no headlines, auto-seed
       if (news.length === 0) {
@@ -234,12 +238,17 @@ export default function DashboardPage() {
         <KPICards wti={kpiWTI} brent={kpiBrent} loading={loading} />
       </motion.div>
 
-      {/* ── Two-column: Signal + News ────────────────────────── */}
+      {/* ── Price Forecast KPI Cards ─────────────────────────── */}
+      <motion.div variants={fadeUp}>
+        <ForecastKPICards report={modelReport} loading={loading} />
+      </motion.div>
+
+      {/* ── Baseline Comparison + Intelligence Feed ───────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div variants={fadeUp} className="lg:col-span-1">
-          <SignalPanel kpi={commodity === "WTI" ? kpiWTI : kpiBrent} headline={headlines[0]} loading={loading} commodity={commodity} />
-        </motion.div>
         <motion.div variants={fadeUp} className="lg:col-span-2">
+          <BaselineComparisonPanel report={modelReport} loading={loading} />
+        </motion.div>
+        <motion.div variants={fadeUp} className="lg:col-span-1">
           <NewsPanel headlines={headlines} loading={loading} />
         </motion.div>
       </div>
