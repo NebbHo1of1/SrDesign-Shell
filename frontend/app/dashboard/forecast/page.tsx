@@ -436,11 +436,11 @@ export default function ForecastPage() {
                     color: "var(--shell-text)",
                     fontSize: "12px",
                   }}
-                  formatter={(value: number, name: string) => [
-                    `$${value.toFixed(2)}/bbl`,
-                    name === "actual"
+                  formatter={(value, name) => [
+                    `$${(value as number).toFixed(2)}/bbl`,
+                    String(name) === "actual"
                       ? "Actual"
-                      : name === "predicted"
+                      : String(name) === "predicted"
                         ? "Predicted"
                         : "Baseline",
                   ]}
