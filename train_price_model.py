@@ -818,9 +818,8 @@ def main():
             _feat_names = X.columns.tolist()
             if best_name == "Stacking" and hasattr(best_model, "named_estimators_"):
                 _fi_arrays = []
-                for _est_key in ["histgbm", "lgbm", "xgb"]:
-                    _est = best_model.named_estimators_.get(_est_key)
-                    if _est is not None and hasattr(_est, "feature_importances_"):
+                for _est_key, _est in best_model.named_estimators_.items():
+                    if hasattr(_est, "feature_importances_"):
                         _fi = np.array(_est.feature_importances_, dtype=float)
                         _fi_sum = _fi.sum()
                         if _fi_sum > 0:
