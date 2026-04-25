@@ -807,8 +807,9 @@ def main():
                 "rmse": round(_m["RMSE"], 4),
                 "mae": round(_m["MAE"], 4),
                 "r2": round(_m["R\u00b2"], 4),
-                "mape": round(_m["MAPE (%)"], 4),
+                "mape": round(_m["MAPE (%)"], 4) if "MAPE (%)" in _m else None,
                 "deployed": _nm == best_name,
+                "is_baseline": _nm == "LastPrice",
             })
 
         _existing.update({

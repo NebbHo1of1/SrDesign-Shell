@@ -92,8 +92,9 @@ export interface ModelReport {
     rmse: number;
     mae: number;
     r2: number;
-    mape?: number;
+    mape?: number | null;
     deployed: boolean;
+    is_baseline?: boolean;
   }>;
 }
 

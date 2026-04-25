@@ -343,7 +343,7 @@ export default function ModelPage() {
                 </thead>
                 <tbody>
                   {report.all_price_models.map((m) => {
-                    const isBaseline = m.name.toLowerCase().includes("lastprice") || m.name.toLowerCase().includes("baseline");
+                    const isBaseline = m.is_baseline === true;
                     return (
                       <tr
                         key={m.name}
