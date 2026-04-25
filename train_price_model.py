@@ -33,6 +33,7 @@ Outputs
 """
 
 import argparse
+import json
 import logging
 import math
 import os
@@ -783,7 +784,53 @@ def main():
         log.warning("models/prediction_model.joblib not found — was it already missing?")
 
     # ------------------------------------------------------------------
-    # 10. Build and save the holdout predictions CSV
+    # 10. Merge price regression metrics into models/model_report.json
+    #     so the dashboard can display them without a separate endpoint.
+    #     We only touch the price-specific fields — direction classifier
+    #     metrics (test_accuracy, classification_metrics, …) are left intact.
+    # ------------------------------------------------------------------
+    price_report_path = "models/model_report.json"
+    try:
+        if os.path.exists(price_report_path):
+            with open(price_report_path) as _f:
+                _existing = json.load(_f)
+        else:
+            _existing = {}
+
+        _all_price_models = []
+        for _nm in ALL_NAMES:
+            if _nm not in holdout_results:
+                continue
+            _m = holdout_results[_nm]
+            _all_price_models.append({
+                "name": _nm,
+                "rmse": round(_m["RMSE"], 4),
+                "mae": round(_m["MAE"], 4),
+                "r2": round(_m["R\u00b2"], 4),
+                "mape": round(_m["MAPE (%)"], 4),
+                "deployed": _nm == best_name,
+            })
+
+        _existing.update({
+            "price_model_type": best_name,
+            "price_rmse": round(best_metrics["RMSE"], 4),
+            "price_mae": round(best_metrics["MAE"], 4),
+            "price_r2": round(best_metrics["R\u00b2"], 4),
+            "price_mape": round(best_metrics["MAPE (%)"], 4),
+            "baseline_rmse": round(holdout_results["LastPrice"]["RMSE"], 4),
+            "baseline_mae": round(holdout_results["LastPrice"]["MAE"], 4),
+            "baseline_r2": round(holdout_results["LastPrice"]["R\u00b2"], 4),
+            "all_price_models": _all_price_models,
+        })
+
+        with open(price_report_path, "w") as _f:
+            json.dump(_existing, _f, indent=2)
+        log.info("Price regression metrics merged into %s", price_report_path)
+    except Exception:
+        log.warning("Could not update %s with price metrics", price_report_path, exc_info=True)
+
+    # ------------------------------------------------------------------
+    # 11. Build and save the holdout predictions CSV
     #     All prices are in absolute $/bbl regardless of target mode.
     # ------------------------------------------------------------------
     actual_prices    = y_test_abs          # actual next prices ($/bbl)

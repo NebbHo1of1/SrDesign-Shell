@@ -78,6 +78,23 @@ export interface ModelReport {
   test_samples: number;
   feature_importances: Record<string, number>;
   all_features: string[];
+  /* Price Forecast Model metrics (added by train_price_model.py) */
+  price_model_type?: string;
+  price_rmse?: number;
+  price_mae?: number;
+  price_r2?: number;
+  price_mape?: number;
+  baseline_rmse?: number;
+  baseline_mae?: number;
+  baseline_r2?: number;
+  all_price_models?: Array<{
+    name: string;
+    rmse: number;
+    mae: number;
+    r2: number;
+    mape?: number;
+    deployed: boolean;
+  }>;
 }
 
 export interface PredictionHistoryPoint {

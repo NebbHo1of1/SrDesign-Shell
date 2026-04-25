@@ -8,7 +8,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Brain, Gauge, Cpu, GitBranch, AlertCircle, BookOpen, History } from "lucide-react";
+import { Brain, Gauge, Cpu, GitBranch, AlertCircle, BookOpen, History, ChevronDown, ChevronUp } from "lucide-react";
 import RoleGate from "@/components/RoleGate";
 import {
   ResponsiveContainer,
@@ -93,6 +93,7 @@ export default function ModelPage() {
   const [prediction, setPrediction] = useState<ModelPrediction | null>(null);
   const [predHistory, setPredHistory] = useState<PredictionHistoryPoint[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
 
   useEffect(() => {
     api
@@ -194,44 +195,202 @@ export default function ModelPage() {
               Model: {prediction.model_type}
             </span>
           </div>
+          {/* Price forecast model quality pills */}
+          {report?.price_rmse != null && (
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              {report.price_rmse < (report.baseline_rmse ?? Infinity) && (
+                <span className="text-[0.6rem] font-bold tracking-wide px-2 py-0.5 rounded-full bg-[#22C55E]/10 text-[#22C55E] border border-[#22C55E]/20">
+                  ✓ Beats random-walk baseline on RMSE
+                </span>
+              )}
+              <span className="text-[0.6rem] font-bold tracking-wide px-2 py-0.5 rounded-full bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20">
+                RMSE {report.price_rmse.toFixed(3)} $/bbl
+              </span>
+              {report.price_mape != null && (
+                <span className="text-[0.6rem] font-bold tracking-wide px-2 py-0.5 rounded-full bg-[#FBCE07]/10 text-[#FBCE07] border border-[#FBCE07]/20">
+                  MAPE {report.price_mape.toFixed(2)}%
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Model metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: "Accuracy",
-            value: accuracy !== "—" ? `${accuracy}%` : "—",
-            color: "text-[#22C55E]",
-          },
-          {
-            label: "Precision",
-            value: precision,
-            color: "text-[#38BDF8]",
-          },
-          {
-            label: "Recall",
-            value: recall,
-            color: "text-[#FBCE07]",
-          },
-          {
-            label: "F1 Score",
-            value: f1,
-            color: "text-[#A78BFA]",
-          },
-        ].map((m) => (
-          <div
-            key={m.label}
-            className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5"
-          >
-            <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
-              {m.label}
-            </p>
-            <p className={`text-2xl font-extrabold ${m.color}`}>{m.value}</p>
-          </div>
-        ))}
+      {/* ── Direction Model metrics ─────────────────────────────────── */}
+      <div>
+        <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-3)] uppercase mb-2">
+          Direction Model — UP / DOWN Classifier
+        </p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              label: "Accuracy",
+              value: accuracy !== "—" ? `${accuracy}%` : "—",
+              color: "text-[#22C55E]",
+            },
+            {
+              label: "Precision",
+              value: precision,
+              color: "text-[#38BDF8]",
+            },
+            {
+              label: "Recall",
+              value: recall,
+              color: "text-[#FBCE07]",
+            },
+            {
+              label: "F1 Score",
+              value: f1,
+              color: "text-[#A78BFA]",
+            },
+          ].map((m) => (
+            <div
+              key={m.label}
+              className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5"
+            >
+              <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
+                {m.label}
+              </p>
+              <p className={`text-2xl font-extrabold ${m.color}`}>{m.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* ── Price Forecast Model metrics ────────────────────────────── */}
+      {report?.price_rmse != null && (
+        <div>
+          <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-3)] uppercase mb-2">
+            Price Forecast Model — {report.price_model_type ?? "Regression"} · $/bbl
+          </p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* RMSE */}
+            <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
+              <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">RMSE</p>
+              <p className="text-2xl font-extrabold text-[#38BDF8]">{report.price_rmse.toFixed(3)}</p>
+              {report.baseline_rmse != null && report.price_rmse < report.baseline_rmse && (
+                <p className="text-[0.58rem] text-[#22C55E] mt-1">
+                  ✓ Beats baseline ({report.baseline_rmse.toFixed(3)})
+                </p>
+              )}
+            </div>
+            {/* MAE */}
+            <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
+              <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">MAE</p>
+              <p className="text-2xl font-extrabold text-[#38BDF8]">{report.price_mae?.toFixed(3) ?? "—"}</p>
+              {report.baseline_mae != null && report.price_mae != null && (
+                <p className={`text-[0.58rem] mt-1 ${report.price_mae < report.baseline_mae ? "text-[#22C55E]" : "text-[var(--shell-muted-3)]"}`}>
+                  Baseline: {report.baseline_mae.toFixed(3)}
+                </p>
+              )}
+            </div>
+            {/* R² */}
+            <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
+              <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">R²</p>
+              <p className="text-2xl font-extrabold text-[#22C55E]">
+                {report.price_r2 != null ? `${(report.price_r2 * 100).toFixed(1)}%` : "—"}
+              </p>
+              {report.baseline_r2 != null && (
+                <p className="text-[0.58rem] text-[var(--shell-muted-3)] mt-1">
+                  Baseline: {(report.baseline_r2 * 100).toFixed(1)}%
+                </p>
+              )}
+            </div>
+            {/* MAPE */}
+            <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5">
+              <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">MAPE</p>
+              <p className="text-2xl font-extrabold text-[#FBCE07]">
+                {report.price_mape != null ? `${report.price_mape.toFixed(2)}%` : "—"}
+              </p>
+              <p className="text-[0.58rem] text-[var(--shell-muted-3)] mt-1">Mean abs % error</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Model Comparison Table ──────────────────────────────────── */}
+      {report?.all_price_models != null && report.all_price_models.length > 0 && (
+        <div className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl overflow-hidden">
+          <button
+            onClick={() => setShowComparison((v) => !v)}
+            className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[var(--shell-border)]/30 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Gauge className="w-4 h-4 text-[#A78BFA]" />
+              <span className="text-[0.65rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase">
+                Model Comparison — Price Forecast (Holdout Test)
+              </span>
+            </div>
+            {showComparison
+              ? <ChevronUp className="w-4 h-4 text-[var(--shell-muted-2)]" />
+              : <ChevronDown className="w-4 h-4 text-[var(--shell-muted-2)]" />
+            }
+          </button>
+          {showComparison && (
+            <div className="px-5 pb-5 overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-[var(--shell-border)]">
+                    <th className="text-left py-2 pr-4 text-[var(--shell-muted-2)] font-bold uppercase tracking-wider">Model</th>
+                    <th className="text-right py-2 px-3 text-[#38BDF8] font-bold uppercase tracking-wider">RMSE</th>
+                    <th className="text-right py-2 px-3 text-[#38BDF8] font-bold uppercase tracking-wider">MAE</th>
+                    <th className="text-right py-2 px-3 text-[#22C55E] font-bold uppercase tracking-wider">R²</th>
+                    {report.all_price_models.some((m) => m.mape != null) && (
+                      <th className="text-right py-2 px-3 text-[#FBCE07] font-bold uppercase tracking-wider">MAPE</th>
+                    )}
+                    <th className="text-right py-2 pl-3 text-[var(--shell-muted-2)] font-bold uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.all_price_models.map((m) => {
+                    const isBaseline = m.name.toLowerCase().includes("lastprice") || m.name.toLowerCase().includes("baseline");
+                    return (
+                      <tr
+                        key={m.name}
+                        className={`border-b border-[var(--shell-border)]/50 last:border-0 ${
+                          m.deployed
+                            ? "bg-[#38BDF8]/5"
+                            : ""
+                        }`}
+                      >
+                        <td className="py-2.5 pr-4 font-medium text-[var(--shell-text)]">
+                          {m.deployed && <span className="mr-1">★</span>}
+                          {m.name}
+                        </td>
+                        <td className="text-right py-2.5 px-3 font-mono text-[var(--shell-text-bright)]">
+                          {m.rmse.toFixed(3)}
+                        </td>
+                        <td className="text-right py-2.5 px-3 font-mono text-[var(--shell-text-bright)]">
+                          {m.mae.toFixed(3)}
+                        </td>
+                        <td className="text-right py-2.5 px-3 font-mono text-[var(--shell-text-bright)]">
+                          {(m.r2 * 100).toFixed(2)}%
+                        </td>
+                        {report.all_price_models!.some((x) => x.mape != null) && (
+                          <td className="text-right py-2.5 px-3 font-mono text-[var(--shell-text-bright)]">
+                            {m.mape != null ? `${m.mape.toFixed(2)}%` : "—"}
+                          </td>
+                        )}
+                        <td className="text-right py-2.5 pl-3">
+                          {m.deployed
+                            ? <span className="text-[#22C55E] font-bold">✅ DEPLOYED</span>
+                            : isBaseline
+                              ? <span className="text-[var(--shell-muted)]">📊 Baseline</span>
+                              : <span className="text-[var(--shell-muted-2)]">◻ Candidate</span>
+                          }
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <p className="text-[0.6rem] text-[var(--shell-muted-3)] mt-3">
+                Lower RMSE / MAE and higher R² are better. Evaluated on held-out test data unseen during training.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Feature Importance */}
