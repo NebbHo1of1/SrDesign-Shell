@@ -41,19 +41,32 @@ import warnings
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
-from sklearn.linear_model import ElasticNetCV, LassoCV, RidgeCV
+from sklearn.ensemble import (
+    GradientBoostingRegressor,
+    HistGradientBoostingRegressor,
+    RandomForestRegressor,
+    StackingRegressor,
+    VotingRegressor,
+)
+from sklearn.linear_model import ElasticNetCV, HuberRegressor, LassoCV, RidgeCV
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
-# Optional XGBoost — imported inside try/except so the script still runs
-# when XGBoost is not installed.
+# Optional XGBoost
 try:
     from xgboost import XGBRegressor
     XGBOOST_AVAILABLE = True
 except ImportError:
     XGBOOST_AVAILABLE = False
+
+# Optional LightGBM
+try:
+    from lightgbm import LGBMRegressor
+    LIGHTGBM_AVAILABLE = True
+except ImportError:
+    LIGHTGBM_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Logging configuration
@@ -67,7 +80,7 @@ log = logging.getLogger(__name__)
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # Linear models require StandardScaler before fitting.
-LINEAR_MODELS = frozenset({"Ridge", "Lasso", "ElasticNet"})
+LINEAR_MODELS = frozenset({"Ridge", "Lasso", "ElasticNet", "Huber"})
 
 
 # ---------------------------------------------------------------------------
@@ -128,50 +141,97 @@ def reconstruct_price(
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Apply the same technical and sentiment feature engineering used by the
-    Direction Signal Engine.  All computations are purely backward-looking
-    so no future information leaks into X.
+    Apply rich technical and sentiment feature engineering.
+    All computations are purely backward-looking — no future information leaks.
     """
     # --- Downside pressure flags ---
     df["neg_tone_flag"]   = (df["avg_tone"] < 0).astype(int)
     df["strong_neg_tone"] = (df["avg_tone"] < -0.5).astype(int)
 
     # --- Volatility spike flag ---
-    df["volatility_spike"] = (
-        df["volatility_5"] > df["volatility_5"].rolling(5).mean()
-    ).astype(int)
+    if "volatility_5" in df.columns:
+        df["volatility_spike"] = (
+            df["volatility_5"] > df["volatility_5"].rolling(5).mean()
+        ).astype(int)
 
     # --- Price momentum features ---
-    df["down_momentum"] = (df["price"] < df["price_lag_1"]).astype(int)
-    df["price_diff_1"]  = df["price"] - df["price_lag_1"]
-    df["price_diff_2"]  = df["price_lag_1"] - df["price_lag_2"]
+    if "price_lag_1" in df.columns:
+        df["down_momentum"] = (df["price"] < df["price_lag_1"]).astype(int)
+    if "price_lag_1" in df.columns:
+        df["price_diff_1"] = df["price"] - df["price_lag_1"]
+    if "price_lag_1" in df.columns and "price_lag_2" in df.columns:
+        df["price_diff_2"] = df["price_lag_1"] - df["price_lag_2"]
+
+    # --- Ensure return columns exist ---
+    if "return_1" not in df.columns:
+        df["return_1"] = df["price"].pct_change(1)
+    if "return_2" not in df.columns:
+        df["return_2"] = df["price"].pct_change(2)
+    if "return_3" not in df.columns:
+        df["return_3"] = df["price"].pct_change(3)
+    if "return_5" not in df.columns:
+        df["return_5"] = df["price"].pct_change(5)
+    if "return_10" not in df.columns:
+        df["return_10"] = df["price"].pct_change(10)
+
+    # --- Ensure rolling MA / volatility columns exist ---
+    if "price_ma_3" not in df.columns:
+        df["price_ma_3"] = df["price"].rolling(3).mean()
+    if "price_ma_5" not in df.columns:
+        df["price_ma_5"] = df["price"].rolling(5).mean()
+    if "price_ma_10" not in df.columns:
+        df["price_ma_10"] = df["price"].rolling(10).mean()
+    if "price_ma_20" not in df.columns:
+        df["price_ma_20"] = df["price"].rolling(20).mean()
+    if "volatility_5" not in df.columns:
+        df["volatility_5"] = df["return_1"].rolling(5).std()
+    if "volatility_10" not in df.columns:
+        df["volatility_10"] = df["return_1"].rolling(10).std()
+    if "volatility_20" not in df.columns:
+        df["volatility_20"] = df["return_1"].rolling(20).std()
 
     # --- Sentiment rolling features ---
-    df["tone_ma_3"]        = df["avg_tone"].rolling(3).mean()
+    df["tone_ma_3"]  = df["avg_tone"].rolling(3).mean()
     df["tone_x_volatility"] = df["avg_tone"] * df["volatility_5"]
-
-    # --- Short-term returns ---
-    df["return_2"] = df["price"].pct_change(2)
+    if "tone_ma_5" not in df.columns:
+        df["tone_ma_5"]  = df["avg_tone"].rolling(5).mean()
+    if "tone_ma_10" not in df.columns:
+        df["tone_ma_10"] = df["avg_tone"].rolling(10).mean()
 
     # --- Trend and acceleration ---
     df["trend_strength"] = df["price_ma_3"] - df["price_ma_5"]
+    df["trend_10"]       = df["price_ma_5"] - df["price_ma_10"]
     df["acceleration"]   = df["return_1"] - df["return_2"]
 
     # --- Sentiment change ---
     df["tone_change"] = df["avg_tone"] - df["avg_tone"].shift(1)
 
-    # --- 3-period momentum (price units) ---
-    df["momentum_3"] = df["price"] - df["price_lag_2"]
+    # --- 3-period and 5-period momentum (price units) ---
+    if "price_lag_2" in df.columns:
+        df["momentum_3"] = df["price"] - df["price_lag_2"]
+    if "price_lag_4" in df.columns:
+        df["momentum_5"] = df["price"] - df["price_lag_4"]
+    elif "price_lag_2" in df.columns:
+        df["momentum_5"] = df["price"].diff(4)
 
     # --- Price position relative to moving averages (stationary ratios) ---
-    df["price_vs_ma5"] = df["price"] / df["price_ma_5"] - 1
-    df["ma3_vs_ma5"]   = df["price_ma_3"] / df["price_ma_5"] - 1
+    df["price_vs_ma5"]  = df["price"] / df["price_ma_5"] - 1
+    df["ma3_vs_ma5"]    = df["price_ma_3"] / df["price_ma_5"] - 1
+    df["price_vs_ma10"] = df["price"] / df["price_ma_10"] - 1
+    df["price_vs_ma20"] = df["price"] / df["price_ma_20"] - 1
+
+    # --- Bollinger Bands (20-day) ---
+    _bb_std = df["price"].rolling(20).std()
+    df["bb_upper"]    = df["price_ma_20"] + 2 * _bb_std
+    df["bb_lower"]    = df["price_ma_20"] - 2 * _bb_std
+    df["bb_width"]    = (df["bb_upper"] - df["bb_lower"]) / df["price_ma_20"]
+    df["bb_position"] = (df["price"] - df["bb_lower"]) / (df["bb_upper"] - df["bb_lower"] + 1e-9)
 
     # --- EWM-based indicators (no NaN row loss) ---
 
     # MACD
-    _ema12          = df["price"].ewm(span=12, adjust=False).mean()
-    _ema26          = df["price"].ewm(span=26, adjust=False).mean()
+    _ema12           = df["price"].ewm(span=12, adjust=False).mean()
+    _ema26           = df["price"].ewm(span=26, adjust=False).mean()
     df["macd"]        = _ema12 - _ema26
     df["macd_signal"] = df["macd"].ewm(span=9, adjust=False).mean()
     df["macd_hist"]   = df["macd"] - df["macd_signal"]
@@ -182,20 +242,37 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     _delta    = df["price"].diff()
     _avg_gain = _delta.clip(lower=0).ewm(com=13, adjust=False).mean()
     _avg_loss = (-_delta.clip(upper=0)).ewm(com=13, adjust=False).mean()
-    df["rsi"]         = 100 - (100 / (1 + _avg_gain / _avg_loss.replace(0, float("nan"))))
-    df["rsi_norm"]    = (df["rsi"] - 50) / 50   # centred on 0
+    df["rsi"]          = 100 - (100 / (1 + _avg_gain / _avg_loss.replace(0, float("nan"))))
+    df["rsi_norm"]     = (df["rsi"] - 50) / 50   # centred on 0
     df["rsi_overbought"] = (df["rsi"] > 70).astype(int)
     df["rsi_oversold"]   = (df["rsi"] < 30).astype(int)
+
+    # Stochastic oscillator (14-day) — %K
+    _lo14 = df["price"].rolling(14).min()
+    _hi14 = df["price"].rolling(14).max()
+    df["stoch_k"] = 100 * (df["price"] - _lo14) / (_hi14 - _lo14 + 1e-9)
+    df["stoch_d"] = df["stoch_k"].rolling(3).mean()
 
     # --- Cyclical calendar encoding ---
     df["date"] = pd.to_datetime(df["date"])
     df["month_sin"] = df["date"].dt.month.apply(lambda m: math.sin(2 * math.pi * m / 12))
     df["month_cos"] = df["date"].dt.month.apply(lambda m: math.cos(2 * math.pi * m / 12))
 
+    # Day-of-week (0=Mon … 4=Fri) — oil markets exhibit weekly seasonality
+    if "dow_sin" not in df.columns:
+        _dow = df["date"].dt.dayofweek
+        df["dow_sin"] = _dow.apply(lambda d: math.sin(2 * math.pi * d / 5))
+        df["dow_cos"] = _dow.apply(lambda d: math.cos(2 * math.pi * d / 5))
+
     # --- Sentiment × technical interaction features ---
     df["macd_x_tone"] = df["macd_hist"] * df["avg_tone"]
     df["rsi_x_tone"]  = df["rsi_norm"]  * df["avg_tone"]
     df["macd_x_vol"]  = df["macd_hist"] * df["volatility_5"]
+    df["rsi_x_vol"]   = df["rsi_norm"]  * df["volatility_5"]
+
+    # --- Commodity dummy (WTI=1, BRENT=0) ---
+    if "commodity" in df.columns:
+        df["is_wti"] = (df["commodity"] == "WTI").astype(int)
 
     return df
 
@@ -366,49 +443,119 @@ def main():
     # integer) to avoid over-splitting the small per-fold training sets.
     def make_models():
         candidates = {
-            "Ridge": RidgeCV(alphas=[0.01, 0.1, 1, 10, 100, 1000]),
+            "Ridge": RidgeCV(
+                alphas=[0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000],
+            ),
             "Lasso": LassoCV(
-                alphas=[0.001, 0.01, 0.1, 1, 10],
+                alphas=[0.0001, 0.001, 0.01, 0.1, 1, 10],
                 cv=3,
-                max_iter=5000,
+                max_iter=10000,
             ),
             "ElasticNet": ElasticNetCV(
-                l1_ratio=[0.1, 0.5, 0.9, 1.0],
-                alphas=[0.001, 0.01, 0.1, 1, 10],
+                l1_ratio=[0.1, 0.3, 0.5, 0.7, 0.9, 0.95, 1.0],
+                alphas=[0.0001, 0.001, 0.01, 0.1, 1, 10],
                 cv=3,
-                max_iter=5000,
+                max_iter=10000,
+            ),
+            # Huber regression — robust to large oil-price outlier days
+            "Huber": HuberRegressor(
+                epsilon=1.35,
+                alpha=0.01,
+                max_iter=300,
             ),
             "RandomForest": RandomForestRegressor(
-                n_estimators=200,
-                max_depth=4,
+                n_estimators=500,
+                max_depth=5,
                 min_samples_leaf=5,
+                max_features=0.4,
                 random_state=42,
                 n_jobs=-1,
             ),
             "GradientBoosting": GradientBoostingRegressor(
-                n_estimators=100,
-                learning_rate=0.05,
-                max_depth=2,
+                n_estimators=300,
+                learning_rate=0.03,
+                max_depth=3,
                 min_samples_leaf=5,
                 subsample=0.8,
+                max_features=0.5,
+                random_state=42,
+            ),
+            # HistGradientBoosting — fast, handles NaN natively, great with many features
+            "HistGBM": HistGradientBoostingRegressor(
+                max_iter=300,
+                learning_rate=0.03,
+                max_depth=4,
+                min_samples_leaf=10,
+                l2_regularization=1.0,
                 random_state=42,
             ),
         }
         if XGBOOST_AVAILABLE:
             candidates["XGBoost"] = XGBRegressor(
-                n_estimators=100,
-                learning_rate=0.05,
-                max_depth=2,
+                n_estimators=300,
+                learning_rate=0.03,
+                max_depth=3,
                 min_child_weight=5,
                 subsample=0.8,
-                colsample_bytree=0.8,
+                colsample_bytree=0.6,
                 reg_alpha=0.1,
-                reg_lambda=1.0,
+                reg_lambda=2.0,
                 random_state=42,
                 verbosity=0,
+                n_jobs=-1,
             )
         else:
             log.warning("XGBoost not installed — skipping XGBRegressor.")
+
+        if LIGHTGBM_AVAILABLE:
+            candidates["LightGBM"] = LGBMRegressor(
+                n_estimators=300,
+                learning_rate=0.03,
+                max_depth=4,
+                num_leaves=20,
+                min_child_samples=15,
+                subsample=0.8,
+                colsample_bytree=0.6,
+                reg_alpha=0.1,
+                reg_lambda=2.0,
+                random_state=42,
+                verbosity=-1,
+                n_jobs=-1,
+            )
+        else:
+            log.warning("LightGBM not installed — skipping LGBMRegressor.")
+
+        # Stacking: best linear + best tree models → Ridge meta-learner
+        stack_base = [
+            ("ridge", make_pipeline(
+                StandardScaler(),
+                RidgeCV(alphas=[0.01, 0.1, 1, 10, 100]),
+            )),
+            ("histgbm", HistGradientBoostingRegressor(
+                max_iter=200, learning_rate=0.05, max_depth=3,
+                min_samples_leaf=10, l2_regularization=1.0, random_state=42,
+            )),
+        ]
+        if LIGHTGBM_AVAILABLE:
+            stack_base.append(("lgbm", LGBMRegressor(
+                n_estimators=200, learning_rate=0.05, max_depth=3,
+                num_leaves=15, min_child_samples=15, subsample=0.8,
+                colsample_bytree=0.6, reg_alpha=0.1, reg_lambda=2.0,
+                random_state=42, verbosity=-1, n_jobs=-1,
+            )))
+        elif XGBOOST_AVAILABLE:
+            stack_base.append(("xgb", XGBRegressor(
+                n_estimators=200, learning_rate=0.05, max_depth=3,
+                subsample=0.8, colsample_bytree=0.6, random_state=42,
+                verbosity=0, n_jobs=-1,
+            )))
+        candidates["Stacking"] = StackingRegressor(
+            estimators=stack_base,
+            final_estimator=RidgeCV(alphas=[0.01, 0.1, 1, 10, 100]),
+            cv=3,
+            n_jobs=1,  # avoid nested parallelism issues
+        )
+
         return candidates
 
     model_names = list(make_models().keys())
@@ -543,51 +690,69 @@ def main():
     # ------------------------------------------------------------------
     # 7. Print comparison table
     # ------------------------------------------------------------------
-    baseline_mae = holdout_results["LastPrice"]["MAE"]
-    print("\n" + "=" * 82)
+    baseline_mae  = holdout_results["LastPrice"]["MAE"]
+    baseline_rmse = holdout_results["LastPrice"]["RMSE"]
+    print("\n" + "=" * 90)
     print("PRICE FORECAST ENGINE — MODEL COMPARISON  (all metrics on reconstructed $/bbl)")
     print(f"Target mode: {args.target}  |  Holdout size: {len(y_test)} rows")
-    print("=" * 82)
-    header = f"{'Model':<20} {'MAE':>8} {'RMSE':>8} {'MAPE (%)':>10} {'R²':>8}  vs Baseline"
+    print("=" * 90)
+    header = (
+        f"{'Model':<20} {'MAE':>8} {'RMSE':>8} {'MAPE (%)':>10} {'R²':>8}  "
+        f"MAE vs BL  RMSE vs BL"
+    )
     print(header)
-    print("-" * 82)
+    print("-" * 90)
     for name in ALL_NAMES:
         m = holdout_results[name]
         if name == "LastPrice":
-            flag = "  ← naïve random-walk baseline"
+            flags = "  ← naïve random-walk baseline"
         else:
-            delta = m["MAE"] - baseline_mae
-            flag = f"  {delta:+.3f} vs baseline"
+            d_mae  = m["MAE"]  - baseline_mae
+            d_rmse = m["RMSE"] - baseline_rmse
+            mae_sym  = "✅" if d_mae  < 0 else "  "
+            rmse_sym = "✅" if d_rmse < 0 else "  "
+            flags = f"  {mae_sym}{d_mae:+.3f}    {rmse_sym}{d_rmse:+.3f}"
         print(
             f"{name:<20} {m['MAE']:>8.3f} {m['RMSE']:>8.3f} "
-            f"{m['MAPE (%)']:>10.2f} {m['R²']:>8.4f}{flag}"
+            f"{m['MAPE (%)']:>10.2f} {m['R²']:>8.4f}{flags}"
         )
-    print("=" * 82)
+    print("=" * 90)
 
     # ------------------------------------------------------------------
-    # 8. Select best model by lowest MAE on the holdout set
-    #    (LastPrice is excluded — it is only a reference baseline)
+    # 8. Select best model by lowest RMSE on the holdout set
+    #    (RMSE penalises large mis-predictions more, which is appropriate
+    #    for an oil-price forecasting use-case. LastPrice is excluded —
+    #    it is only a reference baseline.)
     # ------------------------------------------------------------------
     best_name = min(
         model_names,
-        key=lambda n: holdout_results[n]["MAE"],
+        key=lambda n: holdout_results[n]["RMSE"],
     )
     best_metrics  = holdout_results[best_name]
     best_model    = trained_models[best_name]
     best_preds    = best_metrics["predictions_abs"]   # always in $/bbl
 
-    beats_baseline = best_metrics["MAE"] < baseline_mae
-    print(f"\n{'✅' if beats_baseline else '⚠️ '} Best model: {best_name}")
+    beats_mae  = best_metrics["MAE"]  < baseline_mae
+    beats_rmse = best_metrics["RMSE"] < baseline_rmse
+    beats_any  = beats_mae or beats_rmse
+    print(f"\n{'✅' if beats_any else '⚠️ '} Best model (by RMSE): {best_name}")
     print(
         f"   MAE={best_metrics['MAE']:.3f}  "
         f"RMSE={best_metrics['RMSE']:.3f}  "
         f"MAPE={best_metrics['MAPE (%)']:.2f}%  "
         f"R²={best_metrics['R²']:.4f}"
     )
-    if not beats_baseline:
+    if beats_rmse:
+        print(f"   ✅ Beats random-walk baseline on RMSE "
+              f"({best_metrics['RMSE']:.3f} < {baseline_rmse:.3f})")
+    if beats_mae:
+        print(f"   ✅ Beats random-walk baseline on MAE "
+              f"({best_metrics['MAE']:.3f} < {baseline_mae:.3f})")
+    if not beats_any:
         print(
-            f"   ⚠️  No model beat the LastPrice baseline (MAE={baseline_mae:.3f}).  "
-            "Consider collecting more data or using --target price_change."
+            f"   ⚠️  No model beat the LastPrice baseline "
+            f"(MAE={baseline_mae:.3f}, RMSE={baseline_rmse:.3f}).  "
+            "Consider collecting more data."
         )
 
     # ------------------------------------------------------------------
