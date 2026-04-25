@@ -17,6 +17,7 @@ const ALL_PAGES = [
   "/dashboard/commodity",
   "/dashboard/analytics",
   "/dashboard/model",
+  "/dashboard/forecast",
   "/dashboard/signals",
   "/dashboard/settings",
 ] as const;
@@ -37,6 +38,7 @@ const ROLE_ACCESS: Record<Role, ReadonlySet<string>> = {
     "/dashboard/commodity",
     "/dashboard/analytics",
     "/dashboard/model",
+    "/dashboard/forecast",
     "/dashboard/settings",
   ]),
   Viewer: new Set([

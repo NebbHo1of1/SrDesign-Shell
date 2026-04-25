@@ -843,6 +843,8 @@ def main():
         np.nan,
     )
 
+    baseline_prices = holdout_results["LastPrice"]["predictions_abs"]
+
     predictions_df = pd.DataFrame({
         "Date":            pd.to_datetime(test_dates).strftime("%Y-%m-%d"),
         "Actual Price":    np.round(actual_prices, 2),
@@ -855,6 +857,28 @@ def main():
     csv_path = "outputs/price_predictions.csv"
     predictions_df.to_csv(csv_path, index=False)
     log.info("Holdout predictions saved to %s", csv_path)
+
+    # Save holdout predictions as JSON for the Price Forecast dashboard chart.
+    # Each entry carries actual, predicted (best model), and baseline (LastPrice)
+    # so the frontend can render the 3-line Actual / Predicted / Baseline overlay.
+    holdout_json_path = "models/holdout_predictions.json"
+    holdout_json = [
+        {
+            "date": str(date),
+            "actual": float(round(float(actual), 2)),
+            "predicted": float(round(float(pred), 2)),
+            "baseline": float(round(float(base), 2)),
+        }
+        for date, actual, pred, base in zip(
+            pd.to_datetime(test_dates).strftime("%Y-%m-%d"),
+            actual_prices,
+            predicted_prices,
+            baseline_prices,
+        )
+    ]
+    with open(holdout_json_path, "w") as _hf:
+        json.dump(holdout_json, _hf, indent=2)
+    log.info("Holdout predictions JSON saved to %s", holdout_json_path)
 
     # Print sample output table.
     print("\n" + "=" * 70)

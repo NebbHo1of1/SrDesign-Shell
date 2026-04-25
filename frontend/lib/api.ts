@@ -108,6 +108,13 @@ export interface PredictionHistoryPoint {
   down_count: number;
 }
 
+export interface HoldoutPoint {
+  date: string;
+  actual: number;
+  predicted: number;
+  baseline: number;
+}
+
 /* ── Fetcher ─────────────────────────────────────────────────────────── */
 
 async function get<T>(path: string, params?: Record<string, string>): Promise<T> {
@@ -183,6 +190,9 @@ export const api = {
   /** Fetch daily prediction history for charting model performance over time. */
   predictionHistory: (commodity = "WTI", limit = 30) =>
     get<PredictionHistoryPoint[]>("/prediction-history", { commodity, limit: String(limit) }),
+
+  /** Fetch holdout test-set predictions for the Actual vs. Predicted chart. */
+  holdoutPredictions: () => get<HoldoutPoint[]>("/holdout-predictions"),
 
   /** Trigger database seeding (creates synthetic data if real APIs are unavailable). */
   seed: () => post<{ status: string; headlines: number; price_points: number }>("/seed"),
