@@ -31,7 +31,8 @@ const NAV = [
   { href: "/dashboard/feed", label: "Intelligence Feed", icon: Newspaper },
   { href: "/dashboard/commodity", label: "Commodity View", icon: TrendingUp },
   { href: "/dashboard/analytics", label: "Data Analytics", icon: BarChart3 },
-  { href: "/dashboard/model", label: "AI Model", icon: Brain },
+  { href: "/dashboard/model", label: "Direction Model", icon: Brain },
+  { href: "/dashboard/forecast", label: "Price Forecast", icon: TrendingUp },
   { href: "/dashboard/signals", label: "Signal Engine", icon: Zap },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];

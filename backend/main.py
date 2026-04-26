@@ -187,6 +187,22 @@ def model_report():
         raise HTTPException(status_code=503, detail=str(exc))
 
 
+@app.get("/holdout-predictions")
+def holdout_predictions():
+    """Return the price forecast holdout test-set predictions as a list of
+    {date, actual, predicted, baseline} objects, used for the Actual vs.
+    Predicted chart on the Price Forecast dashboard."""
+    import json as _json
+    holdout_path = "models/holdout_predictions.json"
+    if not os.path.exists(holdout_path):
+        raise HTTPException(
+            status_code=503,
+            detail="Holdout predictions not found — run train_price_model.py first.",
+        )
+    with open(holdout_path) as _f:
+        return _json.load(_f)
+
+
 @app.get("/prediction-history")
 def prediction_history(
     commodity: str = Query(default="WTI"),

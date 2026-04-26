@@ -78,6 +78,26 @@ export interface ModelReport {
   test_samples: number;
   feature_importances: Record<string, number>;
   all_features: string[];
+  /* Price Forecast Model metrics (added by train_price_model.py) */
+  price_model_type?: string;
+  price_rmse?: number;
+  price_mae?: number;
+  price_r2?: number;
+  price_mape?: number;
+  baseline_rmse?: number;
+  baseline_mae?: number;
+  baseline_r2?: number;
+  all_price_models?: Array<{
+    name: string;
+    rmse: number;
+    mae: number;
+    r2: number;
+    mape?: number | null;
+    deployed: boolean;
+    is_baseline?: boolean;
+  }>;
+  /** Feature importances for the price forecast model (top features from GBM base models) */
+  price_feature_importances?: Record<string, number>;
 }
 
 export interface PredictionHistoryPoint {
@@ -88,6 +108,13 @@ export interface PredictionHistoryPoint {
   headline_count: number;
   up_count: number;
   down_count: number;
+}
+
+export interface HoldoutPoint {
+  date: string;
+  actual: number;
+  predicted: number;
+  baseline: number;
 }
 
 /* ── Fetcher ─────────────────────────────────────────────────────────── */
@@ -165,6 +192,9 @@ export const api = {
   /** Fetch daily prediction history for charting model performance over time. */
   predictionHistory: (commodity = "WTI", limit = 30) =>
     get<PredictionHistoryPoint[]>("/prediction-history", { commodity, limit: String(limit) }),
+
+  /** Fetch holdout test-set predictions for the Actual vs. Predicted chart. */
+  holdoutPredictions: () => get<HoldoutPoint[]>("/holdout-predictions"),
 
   /** Trigger database seeding (creates synthetic data if real APIs are unavailable). */
   seed: () => post<{ status: string; headlines: number; price_points: number }>("/seed"),

@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { api, type Headline, type KPIs, type PriceSeries } from "@/lib/api";
 import KPICards from "@/components/KPICards";
-import SignalPanel from "@/components/SignalPanel";
+import HoldoutChartPanel from "@/components/HoldoutChartPanel";
 import NewsPanel from "@/components/NewsPanel";
 import PriceChart from "@/components/PriceChart";
 import AlertsPanel from "@/components/AlertsPanel";
@@ -75,8 +75,7 @@ export default function DashboardPage() {
           setHeadlines(freshNews);
           setKpiWTI(freshWti);
           setKpiBrent(freshBrent);
-          setPrices(freshPrices);
-        } catch (seedErr) {
+          setPrices(freshPrices);        } catch (seedErr) {
           console.warn("[SIGNAL] Auto-seed failed:", seedErr);
         } finally {
           setSeeding(false);
@@ -234,12 +233,12 @@ export default function DashboardPage() {
         <KPICards wti={kpiWTI} brent={kpiBrent} loading={loading} />
       </motion.div>
 
-      {/* ── Two-column: Signal + News ────────────────────────── */}
+      {/* ── Holdout Chart + Intelligence Feed ────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div variants={fadeUp} className="lg:col-span-1">
-          <SignalPanel kpi={commodity === "WTI" ? kpiWTI : kpiBrent} headline={headlines[0]} loading={loading} commodity={commodity} />
-        </motion.div>
         <motion.div variants={fadeUp} className="lg:col-span-2">
+          <HoldoutChartPanel />
+        </motion.div>
+        <motion.div variants={fadeUp} className="lg:col-span-1">
           <NewsPanel headlines={headlines} loading={loading} />
         </motion.div>
       </div>

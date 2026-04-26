@@ -1,10 +1,88 @@
-# SIGNAL — Shell Intelligence System
+# S.I.G.N.A.L. — Shell Intelligence System
 
-News-driven crude oil market intelligence platform with AI-powered predictions.
+> **AI-powered crude oil market intelligence platform built for energy analysts.**
 
-- **FastAPI backend** — REST API with SQLite, auto-seeding, and ML predictions.
-- **Next.js frontend** — real-time dashboard with KPIs, price charts, and news feed.
-- **XGBoost model** — trained on sentiment + price features for market direction.
+SIGNAL (**S**hell **I**ntelligence **G**enerating **N**ews **A**nalysis & **L**earning) is a full-stack decision-support platform that transforms raw oil-market news into actionable intelligence. It combines live sentiment analysis, machine-learning price forecasting, and an analyst-grade dashboard to give energy teams an edge on every trading session.
+
+---
+
+## What Is SIGNAL?
+
+SIGNAL ingests crude oil news headlines in real time, scores them with NLP sentiment analysis, and feeds that signal — combined with historical price data — into two distinct AI models:
+
+1. **Direction Model** — An ensemble classifier that predicts whether WTI crude oil will move **UP** or **DOWN** on the next session, with 81.5% directional accuracy.
+2. **Price Forecast Model** — A stacking ensemble (Ridge + HistGBM + LightGBM → RidgeCV meta-learner) that predicts the next closing price in $/bbl, beating a naïve random-walk baseline (RMSE 2.07 vs 2.09, R² 0.953).
+
+Everything is surfaced through a role-gated, theme-aware dashboard so analysts, executives, and viewers each see exactly what they need.
+
+---
+
+## How SIGNAL Helps Analysts
+
+| Analyst Pain Point | How SIGNAL Solves It |
+|----|-----|
+| **Information overload** — hundreds of headlines per day | Intelligence Feed consolidates all headlines with auto-tagged event type, impact score, and sentiment in a single scannable view |
+| **Gut-feel direction calls** | Direction Model gives a data-backed UP/DOWN prediction with confidence score and full prediction history chart |
+| **No quantitative price anchor** | Price Forecast dashboard shows predicted next-session close vs. the naïve baseline, with error analysis (within-2%, largest miss, direction accuracy) |
+| **Black-box models** | Feature Importance bar chart, collapsible glossary, and 3-step model architecture explainer make every prediction transparent |
+| **Alert fatigue** | Configurable price-move and sentiment-spike thresholds trigger targeted alerts in the Notification Center — analysts only get pinged on signals that matter |
+| **Context switching** | Global Command Palette (⌘K / Ctrl+K) searches headlines, navigates pages, and runs actions without leaving the keyboard |
+| **Senior vs. junior access** | Role-based access control keeps executives on strategic pages and restricts the Signal Engine to executive-only use |
+
+---
+
+## Dashboard Pages
+
+| Page | Role Access | Purpose |
+|------|-------------|---------|
+| **Command Center** | All roles | Live KPI cards (sentiment, confidence, headlines, alerts), Actual-vs-Predicted holdout chart, rolling price chart, news panel, alert log |
+| **Intelligence Feed** | All roles | Full paginated news feed with sentiment badges, impact scores, event tags, and filterable commodity selector |
+| **Commodity View** | All roles | Detailed WTI/Brent price chart with volume overlay and date-range selector |
+| **Data Analytics** | Analyst + Executive | Sentiment vs. price correlation charts, tone trend analysis, article-count heatmaps |
+| **Direction Model** | Analyst + Executive | UP/DOWN classifier metrics (Accuracy/Precision/Recall/F1), daily prediction history chart, feature importance, model pipeline explainer |
+| **Price Forecast** | Analyst + Executive | RMSE/MAE/R²/MAPE metrics with baseline callouts, 3-line Actual vs Predicted vs Baseline chart, error-analysis row, feature importance, model comparison table |
+| **Signal Engine** | Executive only | High-level strategic signal aggregation and escalation protocols |
+| **Settings** | All roles | User profile, alert threshold editor (price move %, sentiment spike), theme selector, session info |
+
+---
+
+## AI Models At a Glance
+
+### Direction Model (UP/DOWN Classifier)
+- **Algorithm:** XGBoost ensemble
+- **Accuracy:** 81.5 % | Precision: 83 % | Recall: 80 % | F1: 81 %
+- **Features:** price lags (1–10 days), return horizons, moving averages, volatility windows, rolling news sentiment, article-count MAs, day-of-week encoding
+- **Output:** Directional label + confidence score, logged per prediction to SQLite
+
+### Price Forecast Model (Next-Close Regression)
+- **Algorithm:** Stacking ensemble — Ridge + HistGBM + LightGBM base learners → RidgeCV meta-learner
+- **RMSE:** 2.072 (baseline: 2.086) | **R²:** 0.953 | **MAPE:** displayed live
+- **Target modes:** `next_price` (default), `price_change`, `next_day_return`, `future_price_3`
+- **Holdout chart:** 20 % out-of-sample predictions stored in `models/holdout_predictions.json` and streamed to the frontend via `/holdout-predictions`
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 15 + React 19, Tailwind CSS, Framer Motion, Recharts |
+| **Backend** | FastAPI (Python 3.10+), SQLAlchemy, SQLite |
+| **ML / Data** | scikit-learn, XGBoost, LightGBM, pandas, VADER Sentiment |
+| **Auth / RBAC** | localStorage JWT-style session, 3-role system (Executive / Analyst / Viewer) |
+| **Theming** | 3-theme system — dark (default), black, light — persisted to `localStorage` |
+
+---
+
+## Roles
+
+| Role | Access |
+|------|--------|
+| **Executive** | Full platform access including Signal Engine; cinematic 6-step onboarding with escalation protocols |
+| **Analyst** | All pages except Signal Engine; standard 5-step onboarding |
+| **Viewer** | Command Center, Intelligence Feed, Commodity View, Settings only |
+
+---
 
 ## Prerequisites
 

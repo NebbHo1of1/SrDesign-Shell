@@ -144,7 +144,7 @@ export default function ModelPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-xl font-extrabold text-[var(--shell-text-bright)]">
-          AI Model — Explainable Intelligence
+          Direction Model — UP / DOWN Classifier
         </h1>
         <div className="flex items-center gap-2">
           {COMMODITIES.map((c) => (
@@ -197,40 +197,45 @@ export default function ModelPage() {
         </div>
       )}
 
-      {/* Model metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: "Accuracy",
-            value: accuracy !== "—" ? `${accuracy}%` : "—",
-            color: "text-[#22C55E]",
-          },
-          {
-            label: "Precision",
-            value: precision,
-            color: "text-[#38BDF8]",
-          },
-          {
-            label: "Recall",
-            value: recall,
-            color: "text-[#FBCE07]",
-          },
-          {
-            label: "F1 Score",
-            value: f1,
-            color: "text-[#A78BFA]",
-          },
-        ].map((m) => (
-          <div
-            key={m.label}
-            className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5"
-          >
-            <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
-              {m.label}
-            </p>
-            <p className={`text-2xl font-extrabold ${m.color}`}>{m.value}</p>
-          </div>
-        ))}
+      {/* ── Direction Model metrics ─────────────────────────────────── */}
+      <div>
+        <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-3)] uppercase mb-2">
+          Direction Model — UP / DOWN Classifier
+        </p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              label: "Accuracy",
+              value: accuracy !== "—" ? `${accuracy}%` : "—",
+              color: "text-[#22C55E]",
+            },
+            {
+              label: "Precision",
+              value: precision,
+              color: "text-[#38BDF8]",
+            },
+            {
+              label: "Recall",
+              value: recall,
+              color: "text-[#FBCE07]",
+            },
+            {
+              label: "F1 Score",
+              value: f1,
+              color: "text-[#A78BFA]",
+            },
+          ].map((m) => (
+            <div
+              key={m.label}
+              className="bg-gradient-to-br from-[var(--shell-card)] to-[var(--shell-border)] border border-[var(--shell-border)] rounded-xl p-5"
+            >
+              <p className="text-[0.6rem] font-bold tracking-[0.1em] text-[var(--shell-muted-2)] uppercase mb-2">
+                {m.label}
+              </p>
+              <p className={`text-2xl font-extrabold ${m.color}`}>{m.value}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

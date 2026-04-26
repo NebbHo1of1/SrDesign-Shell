@@ -11,6 +11,30 @@
   "feature_count": 33,
   "training_samples": 135,
   "test_samples": 27,
+  "price_model_type": "Stacking",
+  "price_rmse": 2.072,
+  "price_mae": 1.29,
+  "price_r2": 0.9532,
+  "price_mape": 1.82,
+  "baseline_rmse": 2.086,
+  "baseline_mae": 1.277,
+  "baseline_r2": 0.9526,
+  "all_price_models": [
+    {"name": "Stacking", "rmse": 2.072, "mae": 1.29, "r2": 0.9532, "mape": 1.82, "deployed": true, "is_baseline": false},
+    {"name": "LastPrice (Baseline)", "rmse": 2.086, "mae": 1.277, "r2": 0.9526, "mape": null, "deployed": false, "is_baseline": true}
+  ],
+  "price_feature_importances": {
+    "price_lag_1": 0.182,
+    "price_lag_2": 0.094,
+    "price_ma_3": 0.076,
+    "price_lag_3": 0.058,
+    "return_1": 0.049,
+    "volatility_5": 0.043,
+    "tone_ma_3": 0.036,
+    "rsi": 0.031,
+    "avg_tone": 0.027,
+    "month_sin": 0.021
+  },
   "feature_importances": {
     "rsi": 0.063542,
     "rsi_norm": 0.058119,
