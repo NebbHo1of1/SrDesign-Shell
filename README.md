@@ -66,9 +66,9 @@ Everything is surfaced through a role-gated, theme-aware dashboard so analysts, 
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 15 + React 19, Tailwind CSS, Framer Motion, Recharts |
-| **Backend** | FastAPI (Python 3.10+), SQLAlchemy, SQLite |
-| **ML / Data** | scikit-learn, XGBoost, LightGBM, pandas, VADER Sentiment |
+| **Frontend** | Next.js 16 + React 19, Tailwind CSS, Framer Motion, Recharts |
+| **Backend** | FastAPI (Python 3.10+), Pydantic, SQLAlchemy, SQLite |
+| **ML / Data** | scikit-learn, XGBoost, TabPFN, LightGBM (optional), pandas, NumPy, VADER Sentiment |
 | **Auth / RBAC** | localStorage JWT-style session, 3-role system (Executive / Analyst / Viewer) |
 | **Theming** | 3-theme system — dark (default), black, light — persisted to `localStorage` |
 
