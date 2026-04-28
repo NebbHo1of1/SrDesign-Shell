@@ -49,7 +49,7 @@ Everything is surfaced through a role-gated, theme-aware dashboard so analysts, 
 ## AI Models At a Glance
 
 ### Direction Model (UP/DOWN Classifier)
-- **Algorithm:** XGBoost ensemble
+- **Algorithm:** Random Forest (`RandomForestClassifier`, 500 trees, scikit-learn)
 - **Accuracy:** 81.5 % | Precision: 83 % | Recall: 80 % | F1: 81 %
 - **Features:** price lags (1–10 days), return horizons, moving averages, volatility windows, rolling news sentiment, article-count MAs, day-of-week encoding
 - **Output:** Directional label + confidence score, logged per prediction to SQLite
@@ -162,7 +162,7 @@ curl -X POST http://localhost:8000/seed
 /backend/            FastAPI API server
 /frontend/           Next.js 16 dashboard (React 19)
 /dashboard/          Legacy Streamlit UI (deprecated)
-/models/             Trained XGBoost model artifacts
+/models/             Trained model artifacts (Random Forest + Stacking ensemble)
 /scripts/            Helper scripts
 /data/               Raw / processed datasets
 ```
