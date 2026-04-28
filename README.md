@@ -49,7 +49,7 @@ Everything is surfaced through a role-gated, theme-aware dashboard so analysts, 
 ## AI Models At a Glance
 
 ### Direction Model (UP/DOWN Classifier)
-- **Algorithm:** XGBoost ensemble
+- **Algorithm:** Random Forest (`RandomForestClassifier`, 500 trees, scikit-learn)
 - **Accuracy:** 81.5 % | Precision: 83 % | Recall: 80 % | F1: 81 %
 - **Features:** price lags (1–10 days), return horizons, moving averages, volatility windows, rolling news sentiment, article-count MAs, day-of-week encoding
 - **Output:** Directional label + confidence score, logged per prediction to SQLite
@@ -66,9 +66,9 @@ Everything is surfaced through a role-gated, theme-aware dashboard so analysts, 
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 15 + React 19, Tailwind CSS, Framer Motion, Recharts |
-| **Backend** | FastAPI (Python 3.10+), SQLAlchemy, SQLite |
-| **ML / Data** | scikit-learn, XGBoost, LightGBM, pandas, VADER Sentiment |
+| **Frontend** | Next.js 16 + React 19, Tailwind CSS, Framer Motion, Recharts |
+| **Backend** | FastAPI (Python 3.10+), Pydantic, SQLAlchemy, SQLite |
+| **ML / Data** | scikit-learn, XGBoost, TabPFN, LightGBM (optional), pandas, NumPy, VADER Sentiment |
 | **Auth / RBAC** | localStorage JWT-style session, 3-role system (Executive / Analyst / Viewer) |
 | **Theming** | 3-theme system — dark (default), black, light — persisted to `localStorage` |
 
@@ -162,7 +162,7 @@ curl -X POST http://localhost:8000/seed
 /backend/            FastAPI API server
 /frontend/           Next.js 16 dashboard (React 19)
 /dashboard/          Legacy Streamlit UI (deprecated)
-/models/             Trained XGBoost model artifacts
+/models/             Trained model artifacts (Random Forest + Stacking ensemble)
 /scripts/            Helper scripts
 /data/               Raw / processed datasets
 ```
